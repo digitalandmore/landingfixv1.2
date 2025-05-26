@@ -83,29 +83,47 @@ function setupCheckout() {
 
   // --- PayPal ---
   function renderPaypalButton() {
-    const paypalContainer = document.getElementById('paypal-button-container');
-    if (!paypalContainer) return;
-    paypalContainer.innerHTML = '';
-    if (currentEur === 0) return;
+  const paypalContainer = document.getElementById('paypal-button-container');
+  if (!paypalContainer) return;
+  paypalContainer.innerHTML = '';
+  if (currentEur === 0) return;
 
-    // Se PayPal SDK non è ancora caricato, non fare nulla
-    if (!window.paypal) return;
+  // Se PayPal SDK non è ancora caricato, non fare nulla
+  if (!window.paypal) return;
 
-    paypal.Buttons({
-      style: { layout: 'vertical', color: 'blue', shape: 'pill', label: 'pay', height: 40 },
-      createOrder: function(data, actions) {
-        return actions.order.create({
-          purchase_units: [{ amount: { value: currentEur.toFixed(2), currency_code: 'EUR' } }]
-        });
-      },
-      onApprove: function(data, actions) {
-        return actions.order.capture().then(function(details) {
-          document.getElementById('checkout-popup').style.display = 'none';
-          if (window.unlockReport) window.unlockReport();
-        });
-      }
-    }).render('#paypal-button-container');
-  }
+  paypal.Buttons({
+    style: { layout: 'vertical', color: 'blue', shape: 'pill', label: 'pay', height: 40 },
+    createOrder: function(data, actions) {
+      return actions.order.create({
+        purchase_units: [{ amount: { value: currentEur.toFixed(2), currency_code: 'EUR' } }]
+      });
+    },
+    onApprove: function(data, actions) {
+      return actions.order.capture().then(function(details) {
+        document.getElementById('checkout-popup').style.display = 'none';
+        if (window.unlockReport) window.unlockReport();
+
+        // --- TRACKING EVENTO ACQUISTO ---
+        // Meta Pixel (Facebook)
+        if (typeof fbq === 'function') {
+          fbq('track', 'Purchase', {
+            value: currentEur,
+            currency: 'EUR'
+          });
+        }
+        // Google Analytics 4
+        if (typeof gtag === 'function') {
+          gtag('event', 'purchase', {
+            value: currentEur,
+            currency: 'EUR',
+            transaction_id: details.id || undefined
+          });
+        }
+        // --- FINE TRACKING ---
+      });
+    }
+  }).render('#paypal-button-container');
+}
 
   // --- Carica PayPal SDK solo se serve e solo una volta ---
   function loadPaypalSdkAndRender() {
