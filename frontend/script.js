@@ -173,9 +173,32 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Loader overlay per submit finale
+function showFinalLoader() {
+  let loader = document.getElementById('report-loader');
+  if (!loader) {
+    loader = document.createElement('div');
+    loader.id = 'report-loader';
+    loader.style = 'display:flex;align-items:center;justify-content:center;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.85);text-align:center;';
+    loader.innerHTML = `
+      <div style="position:relative;">
+        <div class="loader" style="margin-bottom:16px;">
+          <i class="fas fa-spinner fa-spin" style="font-size:2.5rem;color:#0070ba;"></i>
+        </div>
+        <div style="font-size:1.2rem;color:#222;">Generating your report, please wait…</div>
+      </div>
+    `;
+    document.body.appendChild(loader);
+  }
+  loader.style.display = 'flex';
+}
+
 document.addEventListener('submit', async function(e) {
   if (e.target && e.target.id === 'extraForm') {
     e.preventDefault();
+
+    // Mostra loader overlay subito
+    showFinalLoader();
 
     // Raccogli dati
     const name = document.getElementById('userName').value;
@@ -202,20 +225,15 @@ document.addEventListener('submit', async function(e) {
     };
 
     try {
-      const response = await fetch('https://landingfix-com.onrender.com/api/subscribe', {
+      await fetch('https://landingfix-com.onrender.com/api/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
       });
-
-      // Puoi gestire la risposta come preferisci
-      // if (response.ok) { ... }
-
     } catch (err) {
       // Gestisci eventuali errori di rete
-      // alert('Network error. Please try again.');
     }
 
     // Vai alla pagina report
