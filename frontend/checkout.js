@@ -3,7 +3,7 @@ function setupCheckout() {
   const EUR_PRICE = 20.00;
   const USD_PRICE = 22.68;
   const COUPONS = {
-    'ADMIN': { discount: 1.0, msg: 'Coupon applied: 100% off!' },
+    'ADMINCALABRIA2025': { discount: 1.0, msg: 'Coupon applied: 100% off!' },
     'TRY5':  { discount: 0.75, msg: 'Try LandingFix AI: only €5 (~$5.50)!' }
   };
 
@@ -92,37 +92,38 @@ function setupCheckout() {
   if (!window.paypal) return;
 
   paypal.Buttons({
-    style: { layout: 'vertical', color: 'blue', shape: 'pill', label: 'pay', height: 40 },
-    createOrder: function(data, actions) {
-      return actions.order.create({
-        purchase_units: [{ amount: { value: currentEur.toFixed(2), currency_code: 'EUR' } }]
-      });
-    },
-    onApprove: function(data, actions) {
-      return actions.order.capture().then(function(details) {
-        document.getElementById('checkout-popup').style.display = 'none';
-        if (window.unlockReport) window.unlockReport();
+  style: { layout: 'vertical', color: 'blue', shape: 'pill', label: 'pay', height: 40 },
+  createOrder: function(data, actions) {
+    return actions.order.create({
+      purchase_units: [{
+        amount: { value: currentEur.toFixed(2), currency_code: 'EUR' },
+        shipping_preference: 'NO_SHIPPING' // <-- aggiunto per sicurezza
+      }]
+    });
+  },
+  onApprove: function(data, actions) {
+    return actions.order.capture().then(function(details) {
+      document.getElementById('checkout-popup').style.display = 'none';
+      if (window.unlockReport) window.unlockReport();
 
-        // --- TRACKING EVENTO ACQUISTO ---
-        // Meta Pixel (Facebook)
-        if (typeof fbq === 'function') {
-          fbq('track', 'Purchase', {
-            value: currentEur,
-            currency: 'EUR'
-          });
-        }
-        // Google Analytics 4
-        if (typeof gtag === 'function') {
-          gtag('event', 'purchase', {
-            value: currentEur,
-            currency: 'EUR',
-            transaction_id: details.id || undefined
-          });
-        }
-        // --- FINE TRACKING ---
-      });
-    }
-  }).render('#paypal-button-container');
+      // --- TRACKING EVENTO ACQUISTO ---
+      if (typeof fbq === 'function') {
+        fbq('track', 'Purchase', {
+          value: currentEur,
+          currency: 'EUR'
+        });
+      }
+      if (typeof gtag === 'function') {
+        gtag('event', 'purchase', {
+          value: currentEur,
+          currency: 'EUR',
+          transaction_id: details.id || undefined
+        });
+      }
+      // --- FINE TRACKING ---
+    });
+  }
+}).render('#paypal-button-container');
 }
 
   // --- Carica PayPal SDK solo se serve e solo una volta ---
