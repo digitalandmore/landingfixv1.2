@@ -202,7 +202,7 @@ document.addEventListener('submit', async function(e) {
     };
 
     try {
-      const response = await fetch('https://landingfix.onrender.com/api/subscribe', { // <-- ENDPOINT CORRETTO ONLINE
+      const response = await fetch('https://landingfix-com.onrender.com/api/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
