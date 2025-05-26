@@ -225,18 +225,20 @@ document.addEventListener('submit', async function(e) {
     };
 
     try {
-      await fetch('https://landingfix-com.onrender.com/api/subscribe', {
+      const res = await fetch('https://landingfix-com.onrender.com/api/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
       });
+      const result = await res.json();
+      console.log('Subscribe API result:', result); // <-- Vedi la risposta in console
     } catch (err) {
-      // Gestisci eventuali errori di rete
+      console.error('Network error:', err);
     }
 
-    // Vai alla pagina report
+    // Vai alla pagina report SOLO dopo la risposta
     window.location.href = 'report.html';
   }
 });
