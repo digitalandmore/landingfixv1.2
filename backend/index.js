@@ -17,6 +17,9 @@ app.post('/api/subscribe', async (req, res) => {
   const { name, email, company, url, goals } = req.body;
   const apiKey = process.env.BREVO_API_KEY;
 
+  console.log('BREVO_API_KEY:', apiKey ? 'PRESENTE' : 'MANCANTE');
+  console.log('Dati ricevuti:', { name, email, company, url, goals });
+
   if (!apiKey) {
     return res.status(500).json({ error: 'BREVO_API_KEY mancante' });
   }
@@ -29,7 +32,7 @@ app.post('/api/subscribe', async (req, res) => {
       LANDING_URL: url,
       GOALS: Array.isArray(goals) ? goals.join(', ') : (goals || '')
     },
-    listIds: [38], // Sostituisci con il tuo ID lista
+    listIds: [38],
     updateEnabled: true
   };
 
@@ -44,6 +47,7 @@ app.post('/api/subscribe', async (req, res) => {
       body: JSON.stringify(data)
     });
     const result = await response.json();
+    console.log('Brevo status:', response.status, 'Brevo response:', result);
     res.status(response.status).json(result);
   } catch (err) {
     console.error(err);
