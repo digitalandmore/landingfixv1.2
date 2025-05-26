@@ -11,7 +11,8 @@
   display:flex;
   align-items:center;
   justify-content:center;
-">  <div style="background:#fff;padding:32px 32px 28px 32px;border-radius:16px;max-width:410px;width:95vw;margin:auto;text-align:left;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;display:flex;flex-direction:column;">
+">
+  <div style="background:#fff;padding:32px 32px 28px 32px;border-radius:16px;max-width:410px;width:95vw;margin:auto;text-align:left;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;display:flex;flex-direction:column;">
     <button id="close-popup" style="position:absolute;top:18px;right:18px;background:none;border:none;font-size:1.5em;color:#888;cursor:pointer;">&times;</button>
     <h2 style="margin-bottom:18px;font-size:1.35em;color:#222;font-weight:700;text-align:left;">Checkout</h2>
     
@@ -44,21 +45,21 @@
     <div style="margin-bottom:18px;">
       <div style="display:flex;align-items:center;gap:12px;">
         <span style="font-size:1.08em;color:#222;">Total:</span>
-        <span id="checkout-eur" style="font-size:1.18em;font-weight:600;color:#0070ba;">€19.00</span>
-        <span id="checkout-usd" style="font-size:1.08em;color:#888;">(~$20.50)</span>
+        <span id="checkout-eur" style="font-size:1.18em;font-weight:600;color:#0070ba;">€20.00</span>
+        <span id="checkout-usd" style="font-size:1.08em;color:#888;">(~$22.68)</span>
       </div>
     </div>
     <div style="margin-bottom:18px;">
       <label for="coupon-input" style="font-size:0.98em;color:#444;">Coupon code:</label>
       <div style="display:flex;gap:8px;margin-top:6px;">
         <input id="coupon-input" type="text" placeholder="Enter coupon" style="flex:1;padding:8px 12px;border:1px solid #ccc;border-radius:6px;font-size:1em;">
-        <button id="apply-coupon" style="padding:8px 18px;background:#0070ba;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:1em;">Apply</button>
+        <button id="apply-coupon" type="button" style="padding:8px 18px;background:#0070ba;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:1em;">Apply</button>
       </div>
       <div id="coupon-msg" style="font-size:0.97em;color:#c0392b;margin-top:6px;display:none;"></div>
     </div>
     <div id="paypal-or-free" style="margin-top:18px;text-align:center;">
       <div id="paypal-button-container"></div>
-      <button id="unlock-free-btn" style="display:none;padding:12px 32px;font-size:1.1em;background:#27ae60;color:#fff;border:none;border-radius:6px;cursor:pointer;">
+      <button id="unlock-free-btn" type="button" style="display:none;padding:12px 32px;font-size:1.1em;background:#27ae60;color:#fff;border:none;border-radius:6px;cursor:pointer;">
         Unlock Report Free
       </button>
     </div>

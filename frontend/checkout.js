@@ -3,9 +3,9 @@ function setupCheckout() {
   const EUR_PRICE = 20.00;
   const USD_PRICE = 22.68;
   const COUPONS = {
-  'ADMIN': { discount: 1.0, msg: 'Coupon applied: 100% off!' },
-  'TRY5':  { discount: 0.75, msg: 'Try LandingFix AI: only €5 (~$5.50)!' }
-};
+    'ADMIN': { discount: 1.0, msg: 'Coupon applied: 100% off!' },
+    'TRY5':  { discount: 0.75, msg: 'Try LandingFix AI: only €5 (~$5.50)!' }
+  };
 
   let currentEur = EUR_PRICE;
   let currentUsd = USD_PRICE;
@@ -33,44 +33,44 @@ function setupCheckout() {
   }
 
   // --- Coupon ---
-const applyCouponBtn = document.getElementById('apply-coupon');
-const couponInput = document.getElementById('coupon-input');
-if (applyCouponBtn) {
-  function handleCouponApply() {
-    const code = couponInput.value.trim().toUpperCase();
-    const msg = document.getElementById('coupon-msg');
-    if (COUPONS[code]) {
-      currentEur = EUR_PRICE * (1 - COUPONS[code].discount);
-      currentUsd = USD_PRICE * (1 - COUPONS[code].discount);
-      msg.textContent = COUPONS[code].msg;
-      msg.style.color = "#27ae60";
-      msg.style.display = "block";
-    } else if (code) {
-      currentEur = EUR_PRICE;
-      currentUsd = USD_PRICE;
-      msg.textContent = "Invalid coupon code.";
-      msg.style.color = "#c0392b";
-      msg.style.display = "block";
-    } else {
-      currentEur = EUR_PRICE;
-      currentUsd = USD_PRICE;
-      msg.style.display = "none";
-    }
-    updatePrices();
-    renderPaypalButton();
-  }
-
-  applyCouponBtn.onclick = handleCouponApply;
-
-  // Permetti invio con Enter
-  if (couponInput) {
-    couponInput.addEventListener('keydown', function(e) {
-      if (e.key === "Enter") {
-        handleCouponApply();
+  const applyCouponBtn = document.getElementById('apply-coupon');
+  const couponInput = document.getElementById('coupon-input');
+  if (applyCouponBtn) {
+    function handleCouponApply() {
+      const code = couponInput.value.trim().toUpperCase();
+      const msg = document.getElementById('coupon-msg');
+      if (COUPONS[code]) {
+        currentEur = EUR_PRICE * (1 - COUPONS[code].discount);
+        currentUsd = USD_PRICE * (1 - COUPONS[code].discount);
+        msg.textContent = COUPONS[code].msg;
+        msg.style.color = "#27ae60";
+        msg.style.display = "block";
+      } else if (code) {
+        currentEur = EUR_PRICE;
+        currentUsd = USD_PRICE;
+        msg.textContent = "Invalid coupon code.";
+        msg.style.color = "#c0392b";
+        msg.style.display = "block";
+      } else {
+        currentEur = EUR_PRICE;
+        currentUsd = USD_PRICE;
+        msg.style.display = "none";
       }
-    });
+      updatePrices();
+      renderPaypalButton();
+    }
+
+    applyCouponBtn.onclick = handleCouponApply;
+
+    // Permetti invio con Enter
+    if (couponInput) {
+      couponInput.addEventListener('keydown', function(e) {
+        if (e.key === "Enter") {
+          handleCouponApply();
+        }
+      });
+    }
   }
-}
 
   // --- Unlock Free ---
   const unlockFreeBtn = document.getElementById('unlock-free-btn');
@@ -84,9 +84,13 @@ if (applyCouponBtn) {
   // --- PayPal ---
   function renderPaypalButton() {
     const paypalContainer = document.getElementById('paypal-button-container');
-    if (!window.paypal || !paypalContainer) return;
+    if (!paypalContainer) return;
     paypalContainer.innerHTML = '';
     if (currentEur === 0) return;
+
+    // Se PayPal SDK non è ancora caricato, non fare nulla
+    if (!window.paypal) return;
+
     paypal.Buttons({
       style: { layout: 'vertical', color: 'blue', shape: 'pill', label: 'pay', height: 40 },
       createOrder: function(data, actions) {
@@ -103,32 +107,51 @@ if (applyCouponBtn) {
     }).render('#paypal-button-container');
   }
 
-  // --- Carica PayPal SDK solo se serve ---
-  if (!window.paypal && currentEur > 0) {
-    const script = document.createElement('script');
-    script.src = "https://www.paypal.com/sdk/js?client-id=sb&currency=EUR"; // Sostituisci 'sb' con il tuo client-id reale
-    script.onload = renderPaypalButton;
-    document.body.appendChild(script);
-  } else {
+  // --- Carica PayPal SDK solo se serve e solo una volta ---
+  function loadPaypalSdkAndRender() {
+  if (currentEur === 0) return;
+  if (!document.querySelector('script[src*="paypal.com/sdk/js"]')) {
+    fetch('https://landingfix-com.onrender.com/api/paypal-client-id')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.clientId) {
+          console.error('PayPal clientId mancante!');
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = `https://www.paypal.com/sdk/js?client-id=${data.clientId}&currency=EUR`;
+        script.onload = renderPaypalButton;
+        document.body.appendChild(script);
+      })
+      .catch(err => {
+        console.error('Errore nel recupero del clientId PayPal:', err);
+      });
+  } else if (window.paypal) {
     renderPaypalButton();
   }
+}
 
   updatePrices();
+  loadPaypalSdkAndRender();
 }
 
 // Funzione globale per aprire il popup da report.html
 window.openCheckout = function() {
   document.getElementById('checkout-popup').style.display = 'flex';
   setupCheckout();
-  startOtoCountdown(); // <--- AGGIUNGI QUESTA RIGA
-  // (Ri)assegna la chiusura ogni volta che il popup viene aperto
-  const closeBtn = document.getElementById('close-popup');
-  if (closeBtn) {
-    closeBtn.onclick = function() {
-      document.getElementById('checkout-popup').style.display = 'none';
-      clearInterval(otoTimerInterval);
-    };
-  }
+  startOtoCountdown();
+
+  // Gestione chiusura popup
+  setTimeout(() => {
+    const closeBtn = document.getElementById('close-popup');
+    if (closeBtn) {
+      closeBtn.onclick = function() {
+        document.getElementById('checkout-popup').style.display = 'none';
+        clearInterval(otoTimerInterval);
+      };
+    }
+  }, 0);
+
   // ESC per chiudere
   document.addEventListener('keydown', function escHandler(e) {
     if (e.key === "Escape") {
@@ -173,19 +196,3 @@ function startOtoCountdown() {
   updateTimer();
   otoTimerInterval = setInterval(updateTimer, 1000);
 }
-
-// Avvia il countdown ogni volta che apri il popup
-function openCheckout() {
-  document.getElementById('checkout-popup').style.display = 'flex';
-  startOtoCountdown();
-  // ...altro codice di apertura popup...
-}
-
-// Se già usi window.openCheckout, aggiorna così:
-window.openCheckout = openCheckout;
-
-// Chiudi popup e ferma timer se serve
-document.getElementById('close-popup').onclick = function() {
-  document.getElementById('checkout-popup').style.display = 'none';
-  clearInterval(otoTimerInterval);
-};

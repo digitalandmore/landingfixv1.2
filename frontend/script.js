@@ -225,20 +225,30 @@ document.addEventListener('submit', async function(e) {
     };
 
     try {
-      const res = await fetch('https://landingfix-com.onrender.com/api/subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-      const result = await res.json();
-      console.log('Subscribe API result:', result); // <-- Vedi la risposta in console
-    } catch (err) {
-      console.error('Network error:', err);
-    }
+  const res = await fetch('https://landingfix-com.onrender.com/api/subscribe', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  });
+  const result = await res.json();
+  console.log('Subscribe API result:', result);
 
-    // Vai alla pagina report SOLO dopo la risposta
-    window.location.href = 'report.html';
+  // --- TRACKING EVENTI LEAD ---
+  if (typeof fbq === 'function') {
+    fbq('track', 'Lead');
+  }
+  if (typeof gtag === 'function') {
+    gtag('event', 'generate_lead');
+  }
+  // --- FINE TRACKING ---
+
+} catch (err) {
+  console.error('Network error:', err);
+}
+
+// Vai alla pagina report SOLO dopo la risposta
+window.location.href = 'report.html';
   }
 });
