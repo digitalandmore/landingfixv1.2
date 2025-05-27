@@ -130,9 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
               <input type="checkbox" id="privacyAccept" required style="margin-top:3px;">
               <span>
                 I have read and accept the 
-                <a href="privacy.html" target="_blank" style="color:#0077cc;text-decoration:underline;">Privacy Policy</a> 
+                <a href="privacy-policy.html" target="_blank" style="color:#0077cc;text-decoration:underline;">Privacy Policy</a> 
                 and 
-                <a href="terms.html" target="_blank" style="color:#0077cc;text-decoration:underline;">Terms & Conditions</a>.
+                <a href="terms-conditions.html" target="_blank" style="color:#0077cc;text-decoration:underline;">Terms & Conditions</a>.
               </span>
             </label>
           </div>
