@@ -4,6 +4,7 @@ function setupCheckout() {
   const USD_PRICE = 22.68;
   const COUPONS = {
     'ADMINCALABRIA2025': { discount: 1.0, msg: 'Coupon applied: 100% off!' },
+    'TESTPAGAMENTO1ADMIN': { discount: 0.95, msg: 'Coupon applied: only €1 for your test!' },
     'TRY5':  { discount: 0.75, msg: 'Try LandingFix AI: only €5 (~$5.50)!' }
   };
 
