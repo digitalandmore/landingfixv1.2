@@ -95,13 +95,15 @@ function setupCheckout() {
   paypal.Buttons({
   style: { layout: 'vertical', color: 'blue', shape: 'pill', label: 'pay', height: 40 },
   createOrder: function(data, actions) {
-    return actions.order.create({
-      purchase_units: [{
-        amount: { value: currentEur.toFixed(2), currency_code: 'EUR' },
-        shipping_preference: 'NO_SHIPPING' // <-- aggiunto per sicurezza
-      }]
-    });
-  },
+  return actions.order.create({
+    purchase_units: [{
+      amount: { value: currentEur.toFixed(2), currency_code: 'EUR' }
+    }],
+    application_context: {
+      shipping_preference: 'NO_SHIPPING'
+    }
+  });
+},
   onApprove: function(data, actions) {
     return actions.order.capture().then(function(details) {
       document.getElementById('checkout-popup').style.display = 'none';
