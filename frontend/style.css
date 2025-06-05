@@ -28,32 +28,32 @@
   position: relative;
 }
 
-/* Logo image - base */
+/* Logo base */
 .header-logo {
-  height: 100px;
-  max-width: 280px;
+  height: 110px;
+  max-width: 240px;
   width: auto;
   display: block;
   margin: 0 auto;
   object-fit: contain;
 }
 
-/* Mobile: logo più grande e centrato */
+/* Mobile: logo proporzionato e centrato */
 @media (max-width: 800px) {
   .header-logo {
-    height: 110px;
-    max-width: 240px;
+    height: 90px;
+    max-width: 180px;
     width: auto;
-    margin: 0 auto;
+    margin: 0 auto 8px auto;
     display: block;
   }
 }
 @media (max-width: 600px) {
   .header-logo {
-    height: 90px;
-    max-width: 200px;
+    height: 72px;
+    max-width: 140px;
     width: auto;
-    margin: 0 auto;
+    margin: 0 auto 8px auto;
     display: block;
   }
 }
@@ -152,6 +152,18 @@
 }
 .header-cta-btn:hover {
   background: #005b96;
+}
+
+@media (max-width: 800px) {
+  .header-cta-btn {
+    margin: 16px auto 0 auto;
+    width: 90%;
+    max-width: 320px;
+    font-size: 1.08em;
+    padding: 14px 0;
+    display: block;
+    text-align: center;
+  }
 }
 
 /* Version badge */
