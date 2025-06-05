@@ -1,10 +1,11 @@
+// Score animation: always show as percentage
 function setScore(level) {
   const meter = document.getElementById('scoreMeter');
   const tab = document.getElementById('scoreDetails');
   if (!meter || !tab) return;
 
   meter.dataset.score = level;
-  meter.textContent = '0';
+  meter.textContent = '0%';
 
   let value = 0;
   let max = 0;
@@ -17,7 +18,7 @@ function setScore(level) {
         <h4>🚨 Poor Optimization</h4>
         <p>Your page has several issues affecting usability and conversions. CTAs may be unclear, the structure confusing, or load speed too slow.</p>
         <p><strong>Suggestion:</strong> Start optimizing now for better performance and user experience.</p>
-        <a href="#urlInput" class="cta-link">🔧 Analyze your landing page now →</a>
+        <a href="/#analyze-section" class="cta-link">🔧 Analyze your landing page now →</a>
       `;
       break;
     case 'medium':
@@ -26,7 +27,7 @@ function setScore(level) {
         <h4>⚠️ Average Optimization</h4>
         <p>Your page performs decently, but there’s clear room for improvement in layout, copy clarity, or conversion structure.</p>
         <p><strong>Suggestion:</strong> Focus on making your message stronger and streamlining the user journey.</p>
-        <a href="#urlInput" class="cta-link">📈 Optimize your site →</a>
+        <a href="/#analyze-section" class="cta-link">📈 Optimize your site →</a>
       `;
       break;
     case 'high':
@@ -35,18 +36,19 @@ function setScore(level) {
         <h4>✅ Excellent Optimization</h4>
         <p>Great job! Your landing page is well-structured, loads fast, and communicates value effectively.</p>
         <p><strong>Suggestion:</strong> Keep tracking performance and A/B test improvements for even better results.</p>
-        <a href="#urlInput" class="cta-link">🧪 Test another URL →</a>
+        <a href="/#analyze-section" class="cta-link">🧪 Test another URL →</a>
       `;
       break;
   }
 
-  // Animate score
+  // Animate score as percentage
   let count = setInterval(() => {
     if (value >= max) {
       clearInterval(count);
+      meter.textContent = Math.round((max / 10) * 100) + '%';
     } else {
       value++;
-      meter.textContent = value;
+      meter.textContent = Math.round((value / 10) * 100) + '%';
     }
   }, 100);
 
@@ -55,25 +57,40 @@ function setScore(level) {
   tab.style.display = 'block';
 }
 
+// URL normalization and loader for extra fields
 document.addEventListener('DOMContentLoaded', () => {
   const urlForm = document.getElementById('urlForm');
   const urlInput = document.getElementById('urlInput');
   const extraFields = document.getElementById('extraFields');
 
-  function showLoaderAndFields() {
-    if (!extraFields || extraFields.innerHTML.trim() !== "") return; // Evita duplicati
+  // Normalize URL on blur
+  if (urlInput) {
+    urlInput.addEventListener('blur', function() {
+      let val = urlInput.value.trim();
+      if (val && !/^https?:\/\//i.test(val)) {
+        urlInput.value = 'https://' + val;
+      }
+    });
+  }
 
-    // Prendi l'URL e salvalo in localStorage temporaneo
+  function showLoaderAndFields() {
+    if (!extraFields || extraFields.innerHTML.trim() !== "") return;
+
+    // Save URL in localStorage
     if (urlInput) {
-      const url = urlInput.value.trim();
-      if (!url) {
+      let url = urlInput.value.trim();
+      if (url && !/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+        urlInput.value = url;
+      }
+      if (!urlInput.value.trim() || urlInput.value.trim() === 'https://') {
         alert('Please enter a valid URL.');
         return;
       }
-      localStorage.setItem('landingfix_temp_url', url);
+      localStorage.setItem('landingfix_temp_url', urlInput.value.trim());
     }
 
-    // Loader con barra e messaggi step
+    // Loader with steps
     extraFields.innerHTML = `
       <div id="analyzing-loader" style="margin:32px auto 0;text-align:center;">
         <span id="analyze-msg" style="display:inline-block;padding:14px 28px;border-radius:24px;background:#e6f4ef;color:#0077cc;font-weight:600;font-size:17px;box-shadow:0 2px 8px rgba(0,119,204,0.06);margin-bottom:18px;">
@@ -85,7 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    // Step messages
     const steps = [
       "Analyzing your landing page...",
       "Checking page speed and structure...",
@@ -104,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 400);
 
     setTimeout(() => {
-      // Sostituisci loader con i campi extra
+      // Show extra fields
       extraFields.innerHTML = `
         <form id="extraForm" class="extra-form">
           <div class="extra-inputs">
@@ -155,14 +171,14 @@ document.addEventListener('DOMContentLoaded', () => {
         </form>
       `;
 
-      // Gestione selezione goals (toggle)
+      // Goals toggle
       document.querySelectorAll('.goal-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
           e.preventDefault();
           btn.classList.toggle('selected');
         });
       });
-    }, 4000); // Loader visibile per 4 secondi
+    }, 4000);
   }
 
   if (urlForm) {
@@ -173,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Loader overlay per submit finale
+// Loader overlay for final submit
 function showFinalLoader() {
   let loader = document.getElementById('report-loader');
   if (!loader) {
@@ -197,21 +213,21 @@ document.addEventListener('submit', async function(e) {
   if (e.target && e.target.id === 'extraForm') {
     e.preventDefault();
 
-    // Mostra loader overlay subito
+    // Show loader overlay
     showFinalLoader();
 
-    // Raccogli dati
+    // Collect data
     const name = document.getElementById('userName').value;
     const email = document.getElementById('userEmail').value;
     const company = document.getElementById('userCompany').value;
     const goals = Array.from(document.querySelectorAll('.goal-btn.selected')).map(btn => btn.textContent);
     const url = localStorage.getItem('landingfix_temp_url') || '';
 
-    // Salva dati per il report
+    // Save data for report
     localStorage.setItem('landingfix_report_data', JSON.stringify({ name, email, company, url, goals }));
 
-    // INVIO A BREVO
-    const listId = 38; // <-- Sostituisci con l'ID della tua lista Brevo
+    // Send to Brevo
+    const listId = 38; // <-- Replace with your Brevo list ID
     const data = {
       email: email,
       attributes: {
@@ -225,30 +241,170 @@ document.addEventListener('submit', async function(e) {
     };
 
     try {
-  const res = await fetch('https://landingfix-com.onrender.com/api/subscribe', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
+      const res = await fetch('https://landingfix-com.onrender.com/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      console.log('Subscribe API result:', result);
+
+      // Tracking events
+      if (typeof fbq === 'function') {
+        fbq('track', 'Lead');
+      }
+      if (typeof gtag === 'function') {
+        gtag('event', 'generate_lead');
+      }
+    } catch (err) {
+      console.error('Network error:', err);
+    }
+
+    // Redirect to report page
+    window.location.href = 'report.html';
+  }
+});
+
+// Accordion toggle functionality Report Example
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.accordion-element-toggle').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const expanded = this.getAttribute('aria-expanded') === 'true';
+      if (expanded) {
+        this.setAttribute('aria-expanded', 'false');
+        this.parentElement.querySelector('.accordion-element-content').style.display = 'none';
+      } else {
+        this.closest('.accordion-list').querySelectorAll('.accordion-element-toggle').forEach(b => {
+          b.setAttribute('aria-expanded', 'false');
+          b.parentElement.querySelector('.accordion-element-content').style.display = 'none';
+        });
+        this.setAttribute('aria-expanded', 'true');
+        this.parentElement.querySelector('.accordion-element-content').style.display = 'block';
+      }
+    });
   });
-  const result = await res.json();
-  console.log('Subscribe API result:', result);
+});
 
-  // --- TRACKING EVENTI LEAD ---
-  if (typeof fbq === 'function') {
-    fbq('track', 'Lead');
+// Versioned tabs functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const tabs = document.querySelectorAll('.v1-tab');
+  const panels = document.querySelectorAll('.v1-timeline-panel');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => { p.style.display = 'none'; });
+      this.classList.add('active');
+      document.querySelector('.' + this.dataset.version + '-panel').style.display = 'block';
+    });
+  });
+});
+
+// Issue and success contact form
+document.addEventListener('DOMContentLoaded', function() {
+  const contactForm = document.querySelector('.contact-form');
+  if (contactForm) {
+    contactForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const name = contactForm.querySelector('[name="name"]').value.trim();
+      const email = contactForm.querySelector('[name="email"]').value.trim();
+      const type = contactForm.querySelector('[name="type"]').value;
+      const message = contactForm.querySelector('[name="message"]').value.trim();
+
+      const subject = encodeURIComponent('LandingFix AI Contact: ' + type);
+      const body = encodeURIComponent(
+        `Name: ${name}\nEmail: ${email}\nType: ${type}\n\nMessage:\n${message}`
+      );
+
+      window.location.href = `mailto:support@landingfixai.com?subject=${subject}&body=${body}`;
+
+      contactForm.innerHTML = '<div class="form-success">Your email client should now open. If not, please email us at <a href="mailto:support@landingfixai.com">support@landingfixai.com</a>.</div>';
+    });
   }
-  if (typeof gtag === 'function') {
-    gtag('event', 'generate_lead');
+});
+
+// Hamburger menu toggle and CTA visibility
+document.addEventListener('DOMContentLoaded', function() {
+  const hamburger = document.getElementById('hamburger-btn');
+  const nav = document.getElementById('main-nav');
+  const cta = document.querySelector('.header-cta-btn');
+
+  function isMobile() {
+    return window.innerWidth <= 800;
   }
-  // --- FINE TRACKING ---
 
-} catch (err) {
-  console.error('Network error:', err);
-}
+  function closeMenu() {
+    nav.classList.remove('open');
+    if (cta && isMobile()) cta.style.display = 'none';
+  }
 
-// Vai alla pagina report SOLO dopo la risposta
-window.location.href = 'report.html';
+  function openMenu() {
+    nav.classList.add('open');
+    if (cta && isMobile()) cta.style.display = 'block';
+  }
+
+  function updateCTAVisibility() {
+    if (cta) {
+      if (isMobile()) {
+        cta.style.display = nav.classList.contains('open') ? 'block' : 'none';
+      } else {
+        cta.style.display = 'inline-block';
+      }
+    }
+  }
+
+  if (hamburger && nav) {
+    hamburger.addEventListener('click', function() {
+      if (nav.classList.contains('open')) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+      updateCTAVisibility();
+    });
+
+    nav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', function() {
+        if (isMobile()) {
+          closeMenu();
+          updateCTAVisibility();
+        }
+      });
+    });
+
+    window.addEventListener('resize', updateCTAVisibility);
+    updateCTAVisibility();
+  }
+});
+
+// Hero video play button logic
+document.addEventListener('DOMContentLoaded', function() {
+  const playBtn = document.querySelector('.hero-play-btn');
+  const video = document.getElementById('hero-video');
+  if (playBtn && video) {
+    playBtn.addEventListener('click', function() {
+      playBtn.style.display = 'none';
+      if (video.requestFullscreen) {
+        video.requestFullscreen();
+      } else if (video.webkitRequestFullscreen) {
+        video.webkitRequestFullscreen();
+      } else if (video.msRequestFullscreen) {
+        video.msRequestFullscreen();
+      }
+      video.play();
+    });
+    video.addEventListener('pause', function() {
+      playBtn.style.display = '';
+    });
+    video.addEventListener('play', function() {
+      playBtn.style.display = 'none';
+    });
+    video.addEventListener('click', function() {
+      if (!video.paused) {
+        video.pause();
+      }
+    });
   }
 });

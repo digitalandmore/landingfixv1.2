@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LandingFix AI – Features</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="images/favicon.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="report.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+  <!-- Header Include -->
+  <div id="main-header"></div>
+  <script>
+    fetch('header.html')
+      .then(res => res.text())
+      .then(html => { document.getElementById('main-header').innerHTML = html; });
+  </script>
+
+  <!-- How It Works Perspectives Section -->
+  <section class="section bg-light" id="how-works-perspectives">
+    <h2>🔍 How LandingFix AI Evaluates Your Page</h2>
+    <p class="section-intro">
+      Our analysis combines three expert perspectives to give you a holistic and actionable assessment. By evaluating your landing page like a real user, a skilled marketer, and a technical specialist, we ensure every element — from emotion to performance — is optimized for results.
+    </p>
+    <div class="card-grid">
+      <div class="card">
+        <i class="fas fa-user-circle"></i>
+        <h3>From a Visitor's View</h3>
+        <p>We simulate how a real user experiences your landing: clarity of message, trust signals, and ease of interaction.</p>
+      </div>
+      <div class="card">
+        <i class="fas fa-bullseye"></i>
+        <h3>From a Marketer's Lens</h3>
+        <p>We evaluate your persuasive power, CTA effectiveness, conversion journey, and emotional appeal.</p>
+      </div>
+      <div class="card">
+        <i class="fas fa-code"></i>
+        <h3>From a Tech Standpoint</h3>
+        <p>Our system checks speed, responsiveness, structure, and SEO/UX compliance to ensure top performance.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scoring Preview Section (0-100%) -->
+  <section class="section bg-white scoring-preview">
+    <h2>🎯 How Scoring Works</h2>
+    <div class="score-meter" id="scoreMeter" data-score="low">0%</div>
+    <div class="score-buttons">
+      <button onclick="setScore('low')">0-49%<br>Poor</button>
+      <button onclick="setScore('medium')">50-79%<br>Average</button>
+      <button onclick="setScore('high')">80-100%<br>Excellent</button>
+    </div>
+    <div class="score-legend">
+      <span class="low"><i></i> 0-49% Poor</span>
+      <span class="medium"><i></i> 50-79% Average</span>
+      <span class="high"><i></i> 80-100% Excellent</span>
+    </div>
+    <div class="score-explanation" id="scoreExplanation">
+      Click on a rating to discover what it means and how to improve your landing page performance.
+    </div>
+    <div id="scoreDetails" class="score-details"></div>
+  </section>
+
+  <!-- Report Example Section -->
+  <section class="section bg-light" id="report-example">
+    <div class="container">
+      <h2>Example AI-Powered Landing Page Report</h2>
+      <div class="report-preview">
+        <h3>LandingFix AI – Professional Audit Snapshot</h3>
+        <div class="accordion-report">
+
+          <!-- General Overview -->
+          <div class="report-section">
+            <div class="section-header">
+              <h4>General Overview</h4>
+            </div>
+            <ul class="accordion-list">
+              <li class="accordion-item">
+                <button class="accordion-element-toggle" aria-expanded="false">
+                  <i class="fa fa-chevron-down"></i> Value Proposition Clarity
+                </button>
+                <div class="accordion-element-content">
+                  <div class="explanation">
+                    <strong>Problem:</strong> The main value proposition is not immediately clear to new visitors.<br>
+                    <strong>Solution:</strong> Refine the hero section to highlight your unique benefits in a single, bold statement.<br>
+                    <strong>Actions:</strong>
+                    <ul>
+                      <li>Rewrite the headline to directly address your audience’s needs.</li>
+                      <li>Add a concise subheadline that reinforces your promise.</li>
+                      <li>Feature a prominent CTA above the fold.</li>
+                    </ul>
+                    <strong>Estimated implementation time:</strong> 30 minutes
+                  </div>
+                </div>
+              </li>
+              <li class="accordion-item">
+                <button class="accordion-element-toggle" aria-expanded="false">
+                  <i class="fa fa-chevron-down"></i> First Impression
+                </button>
+                <div class="accordion-element-content">
+                  <div class="explanation">
+                    <strong>Problem:</strong> The initial design feels generic and lacks trust signals.<br>
+                    <strong>Solution:</strong> Incorporate testimonials, client logos, and a more distinctive visual style.<br>
+                    <strong>Actions:</strong>
+                    <ul>
+                      <li>Add at least 2 client logos or testimonials near the top.</li>
+                      <li>Use a unique color palette and custom icons.</li>
+                      <li>Ensure your brand identity is visible on every screen size.</li>
+                    </ul>
+                    <strong>Estimated implementation time:</strong> 45 minutes
+                  </div>
+                </div>
+              </li>
+              <li class="accordion-item">
+                <button class="accordion-element-toggle" aria-expanded="false">
+                  <i class="fa fa-chevron-down"></i> Trust & Credibility
+                </button>
+                <div class="accordion-element-content">
+                  <div class="explanation">
+                    <strong>Problem:</strong> Trust indicators such as client logos or testimonials are not highlighted.<br>
+                    <strong>Solution:</strong> Add visible trust elements like customer testimonials or logos of known clients.<br>
+                    <strong>Actions:</strong>
+                    <ul>
+                      <li>Gather testimonials from satisfied clients.</li>
+                      <li>Include logos of recognized client companies.</li>
+                      <li>Display these elements prominently on the page.</li>
+                    </ul>
+                    <strong>Estimated implementation time:</strong> 1 hour
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <div class="category-summary">
+              <span class="category-score-badge"><i class="fa fa-gauge-high"></i> Optimization <b>80%</b></span>
+              <span class="category-time-badge"><i class="fa fa-clock"></i> Implementation Time <b>1 hour</b></span>
+            </div>
+          </div>
+
+          <!-- Copywriting & Persuasion -->
+          <div class="report-section">
+            <div class="section-header">
+              <h4>Copywriting & Persuasion</h4>
+            </div>
+            <ul class="accordion-list">
+              <li class="accordion-item">
+                <button class="accordion-element-toggle" aria-expanded="false">
+                  <i class="fa fa-chevron-down"></i> Headline
+                </button>
+                <div class="accordion-element-content">
+                  <div class="explanation">
+                    <strong>Problem:</strong> The headline lacks emotional appeal and specificity.<br>
+                    <strong>Solution:</strong> Make the headline outcome-focused and benefit-driven.<br>
+                    <strong>Actions:</strong>
+                    <ul>
+                      <li>Use action verbs and address a key pain point.</li>
+                      <li>Test at least two headline variations with users.</li>
+                      <li>Position the headline for maximum visibility.</li>
+                    </ul>
+                    <strong>Estimated implementation time:</strong> 20 minutes
+                  </div>
+                </div>
+              </li>
+              <li class="accordion-item">
+                <button class="accordion-element-toggle" aria-expanded="false">
+                  <i class="fa fa-chevron-down"></i> Call to Action (CTA)
+                </button>
+                <div class="accordion-element-content">
+                  <div class="explanation">
+                    <strong>Problem:</strong> The CTA button blends in and lacks urgency.<br>
+                    <strong>Solution:</strong> Use a contrasting color and more compelling text.<br>
+                    <strong>Actions:</strong>
+                    <ul>
+                      <li>Change the CTA color to stand out from the background.</li>
+                      <li>Use first-person, benefit-focused text (e.g., "Get My Free Audit").</li>
+                      <li>Place secondary CTAs after key sections.</li>
+                    </ul>
+                    <strong>Estimated implementation time:</strong> 15 minutes
+                  </div>
+                </div>
+              </li>
+              <li class="accordion-item">
+                <button class="accordion-element-toggle" aria-expanded="false">
+                  <i class="fa fa-chevron-down"></i> Persuasive Copy
+                </button>
+                <div class="accordion-element-content">
+                  <div class="explanation">
+                    <strong>Problem:</strong> The copy does not sufficiently address user needs or objections.<br>
+                    <strong>Solution:</strong> Refine copy to use more compelling language that showcases benefits directly.<br>
+                    <strong>Actions:</strong>
+                    <ul>
+                      <li>Use customer-centric language and examples.</li>
+                      <li>Implement storytelling elements.</li>
+                      <li>Highlight benefits that resonate with the target audience.</li>
+                    </ul>
+                    <strong>Estimated implementation time:</strong> 1 hour
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <div class="category-summary">
+              <span class="category-score-badge"><i class="fa fa-gauge-high"></i> Optimization <b>85%</b></span>
+              <span class="category-time-badge"><i class="fa fa-clock"></i> Implementation Time <b>40 minutes</b></span>
+            </div>
+          </div>
+
+          <!-- Design & User Experience -->
+          <div class="report-section">
+            <div class="section-header">
+              <h4>Design & User Experience</h4>
+            </div>
+            <ul class="accordion-list">
+              <li class="accordion-item">
+                <button class="accordion-element-toggle" aria-expanded="false">
+                  <i class="fa fa-chevron-down"></i> Visual Hierarchy
+                </button>
+                <div class="accordion-element-content">
+                  <div class="explanation">
+                    <strong>Problem:</strong> Important information is not visually prioritized.<br>
+                    <strong>Solution:</strong> Use size, color, and spacing to guide the user’s eye.<br>
+                    <strong>Actions:</strong>
+                    <ul>
+                      <li>Increase font size for section titles and CTAs.</li>
+                      <li>Add more whitespace between sections.</li>
+                      <li>Highlight key benefits with icons or badges.</li>
+                    </ul>
+                    <strong>Estimated implementation time:</strong> 25 minutes
+                  </div>
+                </div>
+              </li>
+              <li class="accordion-item">
+                <button class="accordion-element-toggle" aria-expanded="false">
+                  <i class="fa fa-chevron-down"></i> Mobile Responsiveness
+                </button>
+                <div class="accordion-element-content">
+                  <div class="explanation">
+                    <strong>Problem:</strong> Some elements are hard to read or interact with on mobile.<br>
+                    <strong>Solution:</strong> Optimize all layouts and buttons for smaller screens.<br>
+                    <strong>Actions:</strong>
+                    <ul>
+                      <li>Test the page on multiple devices and browsers.</li>
+                      <li>Increase button sizes and spacing for touch.</li>
+                      <li>Ensure text remains legible at all breakpoints.</li>
+                    </ul>
+                    <strong>Estimated implementation time:</strong> 30 minutes
+                  </div>
+                </div>
+              </li>
+              <li class="accordion-item">
+                <button class="accordion-element-toggle" aria-expanded="false">
+                  <i class="fa fa-chevron-down"></i> Imagery & Branding
+                </button>
+                <div class="accordion-element-content">
+                  <div class="explanation">
+                    <strong>Problem:</strong> Limited imagery reduces engagement and brand connection.<br>
+                    <strong>Solution:</strong> Incorporate relevant and high-quality images that align with brand messaging.<br>
+                    <strong>Actions:</strong>
+                    <ul>
+                      <li>Select images that resonate with the target audience.</li>
+                      <li>Ensure images are compressed for speed without quality loss.</li>
+                      <li>Align imagery with text for cohesive branding.</li>
+                    </ul>
+                    <strong>Estimated implementation time:</strong> 1 hour
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <div class="category-summary">
+              <span class="category-score-badge"><i class="fa fa-gauge-high"></i> Optimization <b>78%</b></span>
+              <span class="category-time-badge"><i class="fa fa-clock"></i> Implementation Time <b>30 minutes</b></span>
+            </div>
+          </div>
+
+          <!-- Technical & Mobile Optimization -->
+          <div class="report-section">
+            <div class="section-header">
+              <h4>Technical & Mobile Optimization</h4>
+            </div>
+            <ul class="accordion-list">
+              <li class="accordion-item">
+                <button class="accordion-element-toggle" aria-expanded="false">
+                  <i class="fa fa-chevron-down"></i> Page Speed
+                </button>
+                <div class="accordion-element-content">
+                  <div class="explanation">
+                    <strong>Problem:</strong> The page loads slower than optimal.<br>
+                    <strong>Solution:</strong> Compress images and minimize scripts.<br>
+                    <strong>Actions:</strong>
+                    <ul>
+                      <li>Optimize all images to reduce file size.</li>
+                      <li>Defer loading of non-critical scripts.</li>
+                      <li>Use a CDN for static assets.</li>
+                    </ul>
+                    <strong>Estimated implementation time:</strong> 40 minutes
+                  </div>
+                </div>
+              </li>
+              <li class="accordion-item">
+                <button class="accordion-element-toggle" aria-expanded="false">
+                  <i class="fa fa-chevron-down"></i> SEO Basics
+                </button>
+                <div class="accordion-element-content">
+                  <div class="explanation">
+                    <strong>Problem:</strong> Missing meta tags and alt attributes.<br>
+                    <strong>Solution:</strong> Add descriptive meta titles, descriptions, and alt text.<br>
+                    <strong>Actions:</strong>
+                    <ul>
+                      <li>Add a unique meta title and description for the page.</li>
+                      <li>Ensure all images have descriptive alt attributes.</li>
+                      <li>Implement structured data for enhanced search results.</li>
+                    </ul>
+                    <strong>Estimated implementation time:</strong> 20 minutes
+                  </div>
+                </div>
+              </li>
+              <li class="accordion-item">
+                <button class="accordion-element-toggle" aria-expanded="false">
+                  <i class="fa fa-chevron-down"></i> Form Functionality
+                </button>
+                <div class="accordion-element-content">
+                  <div class="explanation">
+                    <strong>Problem:</strong> The content does not address form interactivity or usability.<br>
+                    <strong>Solution:</strong> Enhance forms for better user experience and higher conversion rates.<br>
+                    <strong>Actions:</strong>
+                    <ul>
+                      <li>Test forms for ease of use across all devices.</li>
+                      <li>Ensure clear validation messages and feedback.</li>
+                      <li>Optimize form elements for faster completion without errors.</li>
+                    </ul>
+                    <strong>Estimated implementation time:</strong> 1 hour
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <div class="category-summary">
+              <span class="category-score-badge"><i class="fa fa-gauge-high"></i> Optimization <b>85%</b></span>
+              <span class="category-time-badge"><i class="fa fa-clock"></i> Implementation Time <b>50 minutes</b></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overall Optimization & Implementation Time at the end -->
+        <section class="final-summary-section" style="margin-top:40px;margin-bottom:32px;padding:36px 0 32px 0;background:#f8fbfd;border-radius:18px;box-shadow:0 4px 24px rgba(0,119,204,0.13);border:2.5px solid #0077cc;max-width:700px;margin-left:auto;margin-right:auto;text-align:center;">
+          <h3 style="font-size:1.45em;font-weight:800;color:#0077cc;margin-bottom:10px;letter-spacing:0.5px;">
+            <i class="fa fa-gauge-high"></i> Overall Optimization & Implementation Time
+          </h3>
+          <p style="color:#333;font-size:1.08em;margin-bottom:18px;">
+            This section summarizes your overall landing page optimization score and the estimated time required to implement all recommended improvements.
+          </p>
+          <div class="legend" style="text-align:center;margin-bottom:18px;">
+            <span style="display:inline-block;background:#e6f4ef;color:#0077cc;border-radius:12px;padding:4px 12px;font-size:0.98em;margin-right:8px;">
+              <i class="fa fa-gauge-high"></i> Optimization Score = Overall quality
+            </span>
+            <span style="display:inline-block;background:#e6f4ef;color:#0077cc;border-radius:12px;padding:4px 12px;font-size:0.98em;">
+              <i class="fa fa-clock"></i> Implementation Time = Estimated time to apply all suggestions
+            </span>
+          </div>
+          <div style="display:flex;justify-content:center;gap:40px;flex-wrap:wrap;">
+            <div class="report-summary" style="display:flex;justify-content:center;gap:40px;flex-wrap:wrap;background:none;box-shadow:none;border:none;padding:0;margin:0;">
+              <div class="report-summary-row">
+                <span class="report-summary-badge"><i class="fa fa-gauge-high"></i> Optimization <span class="score-number">82</span><span class="score-percent">%</span></span>
+                <span class="report-summary-badge"><i class="fa fa-clock"></i> Implementation Time <b>3 hours</b></span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <p class="report-intro">
+        <strong>This is a real example of the actionable, prioritized report you’ll receive from LandingFix AI.</strong><br>
+        Every suggestion is clear, practical, and includes a realistic time estimate—so you know exactly what to do next and how long it will take.
+      </p>
+    </div>
+  </section>
+
+  <!-- Footer Include -->
+  <div id="main-footer"></div>
+  <script>
+    fetch('footer.html')
+      .then(res => res.text())
+      .then(html => { document.getElementById('main-footer').innerHTML = html; });
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>

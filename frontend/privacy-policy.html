@@ -49,28 +49,21 @@ _iub.csConfiguration = {"siteId":4047297,"cookiePolicyId":80028888,"lang":"en","
 <!-- End Cookie Banner -->
 </head>
 <body>
-  <header class="main-header">
-  <a href="https://landingfixai.com/">
-    <img src="images/logo-header.png" alt="LandingFix AI Logo" class="header-logo">
-  </a>
-  <p class="sub">Boost your conversions with instant landing page insights powered by AI.</p>
-</header>
+  <div id="main-header"></div>
+<script>
+fetch('header.html')
+  .then(res => res.text())
+  .then(html => { document.getElementById('main-header').innerHTML = html; });
+</script>
+
   <a href="https://www.iubenda.com/privacy-policy/80028888" class="iubenda-white no-brand iubenda-noiframe iubenda-embed iubenda-noiframe iub-body-embed" title="Privacy Policy">Privacy Policy</a><script type="text/javascript">(function (w,d) {var loader = function () {var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0]; s.src="https://cdn.iubenda.com/iubenda.js"; tag.parentNode.insertBefore(s,tag);}; if(w.addEventListener){w.addEventListener("load", loader, false);}else if(w.attachEvent){w.attachEvent("onload", loader);}else{w.onload = loader;}})(window, document);</script>
-  <footer class="site-footer bg-white">
-    <div class="footer-inner">
-      <img src="images/logo-header.png" alt="LandingFix AI Logo" class="footer-logo">
-      <nav class="footer-menu">
-        <a href="index.html">Home</a>
-        <span>|</span>
-        <a href="privacy-policy.html">Privacy Policy</a>
-        <span>|</span>
-        <a href="cookie-policy.html">Cookie Policy</a>
-        <span>|</span>
-        <a href="terms-conditions.html">Terms &amp; Conditions</a>
-      </nav>
-      <p>Developed with ❤️ by <a href="https://digitalandmore.eu" target="_blank"><strong>DIGITAL&amp;MORE</strong></a></p>
-      <p class="footer-copyright">&copy; 2025 LandingFix AI. All rights reserved.</p>
-    </div>
-  </footer>
+  
+  <!-- Footer Include -->
+  <div id="main-footer"></div>
+  <script>
+    fetch('footer.html')
+      .then(res => res.text())
+      .then(html => { document.getElementById('main-footer').innerHTML = html; });
+  </script>
 </body>
 </html>

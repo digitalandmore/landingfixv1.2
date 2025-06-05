@@ -50,61 +50,81 @@ _iub.csConfiguration = {"siteId":4047297,"cookiePolicyId":80028888,"lang":"en","
 </script>
 </head>
 <body>
-<header class="main-header">
-  <a href="https://landingfixai.com/">
-    <img src="images/logo-header.png" alt="LandingFix AI Logo" class="header-logo">
-  </a>
-  <p class="sub">Boost your conversions with instant landing page insights powered by AI.</p>
-</header>
+<div id="main-header"></div>
+<script>
+fetch('header.html')
+  .then(res => res.text())
+  .then(html => { document.getElementById('main-header').innerHTML = html; });
+</script>
 
-<section class="section bg-light" id="how-works-perspectives">
-  <h2>🔍 How LandingFix AI Evaluates Your Page</h2>
-  <p class="section-intro">
-    Our analysis combines three expert perspectives to give you a holistic and actionable assessment. By evaluating your landing page like a real user, a skilled marketer, and a technical specialist, we ensure every element — from emotion to performance — is optimized for results.
-  </p>
-  <div class="card-grid">
-    <div class="card">
-      <i class="fas fa-user-circle"></i>
-      <h3>From a Visitor's View</h3>
-      <p>We simulate how a real user experiences your landing: clarity of message, trust signals, and ease of interaction.</p>
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="hero-content">
+    <h1>
+      <span class="hero-main-title">
+        Unlock Your Landing Page’s <span class="hero-gradient">Full Potential</span>
+      </span>
+    </h1>
+    <p class="hero-payoff">
+      <strong>AI-powered insights</strong> to <strong>boost conversions</strong>, <strong>trust</strong>, and <strong>clarity</strong>.<br>
+      Get your <strong>personalized landing page report</strong> in seconds.
+    </p>
+    <div class="hero-video-box">
+      <video id="hero-video" poster="images/hero-video-thumb.jpg" width="540" height="320">
+        <source src="video/intro.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <button class="hero-play-btn" aria-label="Play video">
+        <i class="fas fa-play"></i>
+      </button>
     </div>
-    <div class="card">
-      <i class="fas fa-bullseye"></i>
-      <h3>From a Marketer's Lens</h3>
-      <p>We evaluate your persuasive power, CTA effectiveness, conversion journey, and emotional appeal.</p>
-    </div>
-    <div class="card">
-      <i class="fas fa-code"></i>
-      <h3>From a Tech Standpoint</h3>
-      <p>Our system checks speed, responsiveness, structure, and SEO/UX compliance to ensure top performance.</p>
-    </div>
+    <a href="#analyze-section" class="hero-cta-btn">
+      Get Your Report <i class="fas fa-arrow-down"></i>
+    </a>
   </div>
+  <div class="hero-shape shape-1"></div>
+  <div class="hero-shape shape-2"></div>
 </section>
 
 <section class="section analyze-block" id="analyze-section">
-  <h2>🚀 Analyze Your Landing Page</h2>
-  <p class="analyze-description">
-    Get an instant, AI-powered evaluation of your landing page’s performance, structure, and persuasive impact.
-  </p>
+  <div class="analyze-content">
+    <h2>
+      🚀 <span class="analyze-title-main">Analyze Your <strong>Landing Page</strong></span>
+    </h2>
+    <p class="analyze-description">
+      Get an instant, <strong>AI-powered evaluation</strong> of your landing page’s <strong>performance</strong>, <strong>structure</strong>, and <strong>persuasive impact</strong>.
+    </p>
 
-  <form id="urlForm" class="centered-input" autocomplete="off">
-    <input type="url" id="urlInput" placeholder="Paste your landing page URL here..." required>
-    <button id="analyzeBtn" type="submit">Analyze</button>
-  </form>
-  <div id="extraFields"></div>
+    <form id="urlForm" class="centered-input" autocomplete="off">
+      <input id="urlInput" name="url" type="text" placeholder="Paste your landing page URL here..." required>
+      <button id="analyzeBtn" type="submit" class="analyze-btn">
+        Analyze <i class="fas fa-check"></i>
+      </button>
+    </form>
+    <div id="extraFields"></div>
 
-  <div class="analyze-features">
-    <div class="feature">
-      <i class="fas fa-check-circle" style="color: #2ecc71;"></i>
-      <p><strong>Instant Report</strong><br>Receive a full analysis in seconds</p>
-    </div>
-    <div class="feature">
-      <i class="fas fa-brain" style="color: #2ecc71;"></i>
-      <p><strong>Advanced AI Models</strong><br>Trained on top-converting pages</p>
-    </div>
-    <div class="feature">
-      <i class="fas fa-bolt" style="color: #2ecc71;"></i>
-      <p><strong>Actionable Insights</strong><br>Know exactly what to improve</p>
+    <div class="analyze-features">
+      <div class="feature">
+        <i class="fas fa-check-circle"></i>
+        <p>
+          <span class="feature-title"><strong>Instant Report</strong></span><br>
+          <span class="feature-desc">Receive a <strong>full analysis</strong> in seconds</span>
+        </p>
+      </div>
+      <div class="feature">
+        <i class="fas fa-brain"></i>
+        <p>
+          <span class="feature-title"><strong>Advanced AI Models</strong></span><br>
+          <span class="feature-desc">Trained on <strong>top-converting pages</strong></span>
+        </p>
+      </div>
+      <div class="feature">
+        <i class="fas fa-bolt"></i>
+        <p>
+          <span class="feature-title"><strong>Actionable Insights</strong></span><br>
+          <span class="feature-desc">Know exactly <strong>what to improve</strong></span>
+        </p>
+      </div>
     </div>
   </div>
 </section>
@@ -120,311 +140,122 @@ _iub.csConfiguration = {"siteId":4047297,"cookiePolicyId":80028888,"lang":"en","
 </div>
 
 
-<section class="section bg-white v1-announcement" style="max-width:900px;margin:40px auto 40px auto;padding:40px 28px 32px 28px;border-radius:16px;box-shadow:0 2px 16px rgba(0,0,0,0.04);">
-  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:32px;">
-    <div style="flex:1 1 320px;min-width:280px;">
-      <h2 style="font-size:2.2rem;margin-bottom:12px;color:#0070ba;">🚀 Introducing LandingFix AI V1.0</h2>
-      <p style="font-size:1.15rem;line-height:1.6;margin-bottom:18px;">
-        Welcome to the brand new <strong>LandingFix AI V1.0</strong>! This release is powered by <strong>ChatGPT-4 Turbo</strong>, one of the most advanced AI models available today. Our engine analyzes your landing page with the intelligence and nuance of a top-tier digital consultant—instantly.
-      </p>
-      <ul style="margin-bottom:18px;padding-left:20px;">
-        <li style="margin-bottom:8px;">
-          <strong>Advanced AI Analysis:</strong> ChatGPT-4 Turbo reviews your page’s messaging, technical structure, and user experience, providing actionable insights tailored to your goals.
-        </li>
-        <li style="margin-bottom:8px;">
-          <strong>Goal-Based Reporting:</strong> Select your main objectives (e.g., lead generation, sales, brand awareness) and receive a report focused on what matters most to you.
-        </li>
-        <li style="margin-bottom:8px;">
-          <strong>Problem–Solution–Action Framework:</strong> Each report section highlights the issue, explains a solution, and gives you clear, step-by-step implementation actions.
-        </li>
-        <li style="margin-bottom:8px;">
-          <strong>Full Report by Email:</strong> Instantly receive your complete, personalized report directly in your inbox.
-        </li>
-      </ul>
-      <p style="font-size:1.08rem;margin-bottom:22px;">
-        With LandingFix AI V1.0, you get expert-level recommendations to improve your communication, technical performance, and conversion strategy—all in one place.
-      </p>
-    </div>
-    <div style="flex:1 1 260px;min-width:220px;text-align:center;">
-      <img src="images/logo-social.png" alt="LandingFix AI V1.0" style="max-width:220px;width:90%;margin:0 auto 0 auto;display:block;">
-      <div style="margin-top:22px;">
-        <span style="font-weight:600;font-size:1.1rem;display:block;margin-bottom:14px;">
-          Follow our updates on Product Hunt:
-        </span>
-        <a href="https://www.producthunt.com/posts/landing-fix-ai?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-landing&#0045;fix&#0045;ai" target="_blank" style="display:inline-block;">
-          <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=970531&theme=light&t=1748338932499" alt="Landing Fix AI - Fix your landing page like a pro with AI insights | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" />
+<section class="section who-is-this-for-block" id="who-is-this-for">
+  <div class="who-content">
+    <h2>
+      👥 <span class="who-title-main">Who Is This <strong>For?</strong></span>
+    </h2>
+    <div class="card-grid">
+      <div class="card">
+        <i class="fas fa-bullhorn"></i>
+        <h3>Agencies & Marketers</h3>
+        <ul class="benefits-list">
+          <li>Deliver <strong>professional reports</strong> to clients in seconds</li>
+          <li>Boost <strong>conversion rates</strong> with actionable insights</li>
+          <li>Streamline <strong>client onboarding</strong> and reporting</li>
+          <li>Save time with <strong>AI-powered analysis</strong></li>
+        </ul>
+        <a href="#analyze-section" class="who-cta-btn">
+          Get Reports for Your Clients
+        </a>
+      </div>
+      <div class="card">
+        <i class="fas fa-users"></i>
+        <h3>Marketing Teams</h3>
+        <ul class="benefits-list">
+          <li>Align your team with <strong>data-driven feedback</strong></li>
+          <li>Quickly identify <strong>areas for improvement</strong></li>
+          <li>Enhance <strong>collaboration</strong> with clear, shared reports</li>
+          <li>Optimize <strong>campaign performance</strong> together</li>
+        </ul>
+        <a href="#analyze-section" class="who-cta-btn">
+          Empower Your Marketing Team
+        </a>
+      </div>
+      <div class="card">
+        <i class="fas fa-rocket"></i>
+        <h3>Startup Founders</h3>
+        <ul class="benefits-list">
+          <li>Validate your <strong>messaging</strong> and landing strategy instantly</li>
+          <li>Spot <strong>trust leaks</strong> and UX issues before launch</li>
+          <li>Get <strong>clear, prioritized feedback</strong> for improvements</li>
+          <li>Accelerate <strong>go-to-market</strong> with confidence</li>
+        </ul>
+        <a href="#analyze-section" class="who-cta-btn">
+          Validate Your Startup Idea
+        </a>
+      </div>
+      <div class="card">
+        <i class="fas fa-chart-line"></i>
+        <h3>Growth Hackers</h3>
+        <ul class="benefits-list">
+          <li>Optimize <strong>funnels</strong> and boost <strong>ROI</strong> with smart suggestions</li>
+          <li>Uncover <strong>hidden blockers</strong> to growth</li>
+          <li>Test and iterate <strong>faster</strong> with instant reports</li>
+          <li>Leverage <strong>AI-driven recommendations</strong> for every experiment</li>
+        </ul>
+        <a href="#analyze-section" class="who-cta-btn">
+          Unlock Growth Opportunities
         </a>
       </div>
     </div>
   </div>
 </section>
 
-<section class="section bg-white scoring-preview">
-  <h2>🎯 How Scoring Works</h2>
-  <div class="score-meter" id="scoreMeter" data-score="low">0</div>
-
-  <div class="score-buttons">
-    <button onclick="setScore('low')">Poor</button>
-    <button onclick="setScore('medium')">Average</button>
-    <button onclick="setScore('high')">Excellent</button>
-  </div>
-
-  <div class="score-legend">
-    <span class="low"><i></i> Poor</span>
-    <span class="medium"><i></i> Average</span>
-    <span class="high"><i></i> Excellent</span>
-  </div>
-
-  <div class="score-explanation" id="scoreExplanation">
-    Click on a rating to discover what it means and how to improve your landing page performance.
-  </div>
-
-  <div id="scoreDetails" class="score-details"></div>
-</section>
-
-<section class="section bg-light" id="who-is-this-for">
-  <h2>👥 Who Is This For?</h2>
-  <div class="card-grid">
-    <div class="card">
-      <i class="fas fa-bullhorn"></i>
-      <h3>Agencies & Marketers</h3>
-      <p>Gain better conversion rates and campaign results through expert-backed page reviews.</p>
-    </div>
-    <div class="card">
-      <i class="fas fa-rocket"></i>
-      <h3>Startup Founders</h3>
-      <p>Validate your messaging and landing strategy quickly with AI-powered analysis.</p>
-    </div>
-    <div class="card">
-      <i class="fas fa-chart-line"></i>
-      <h3>Growth Hackers</h3>
-      <p>Optimize funnels, refine performance, and boost ROI with smart feedback.</p>
-    </div>
-  </div>
-</section>
-
-<section class="section bg-white" id="benefits">
-  <h2>🎁 What You Get</h2>
-  <div class="report-preview">
-    <p class="report-intro">
-      Below is a <strong>preview example</strong> of the AI-generated report you’ll receive. The real report will offer even more detailed suggestions, structured feedback, and optimization priorities tailored to your page.
-    </p>
-  </section>
-
-    <!-- Report Example Section -->
-<section class="section bg-light" id="report-example">
-  <div class="container">
-    <h2>Example AI-Powered Landing Page Report</h2>
-    <div class="report-preview">
-
-      <h3>LandingFix AI – Professional Audit Snapshot</h3>
-
-      <div class="report-section">
-        <div class="section-header">
-          <h4>General Overview</h4>
+<section class="section how-it-works-block" id="how-it-works">
+  <div class="how-content">
+    <h2>
+      🧠 <span class="how-title-main">How <strong>LandingFix AI</strong> Works</span>
+    </h2>
+    <ol class="how-steps">
+      <li>
+        <div class="how-step-icon"><i class="fas fa-link"></i></div>
+        <div class="how-step-content">
+          <h3>1. Paste Your Landing Page URL</h3>
+          <p>Enter your landing page address in the form above to start your personalized analysis.</p>
         </div>
-        <ul>
-          <li>
-            <strong>Value Proposition Clarity</strong>
-            <div class="explanation">
-              <strong>Problem:</strong> The main value proposition is not immediately clear to new visitors.<br>
-              <strong>Solution:</strong> Refine the hero section to highlight your unique benefits in a single, bold statement.<br>
-              <strong>Actions:</strong>
-              <ul>
-                <li>Rewrite the headline to directly address your audience’s needs.</li>
-                <li>Add a concise subheadline that reinforces your promise.</li>
-                <li>Feature a prominent CTA above the fold.</li>
-              </ul>
-              <strong>Estimated implementation time:</strong> 30 minutes
-            </div>
-          </li>
-          <li>
-            <strong>First Impression</strong>
-            <div class="explanation">
-              <strong>Problem:</strong> The initial design feels generic and lacks trust signals.<br>
-              <strong>Solution:</strong> Incorporate testimonials, client logos, and a more distinctive visual style.<br>
-              <strong>Actions:</strong>
-              <ul>
-                <li>Add at least 2 client logos or testimonials near the top.</li>
-                <li>Use a unique color palette and custom icons.</li>
-                <li>Ensure your brand identity is visible on every screen size.</li>
-              </ul>
-              <strong>Estimated implementation time:</strong> 45 minutes
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <div class="report-section">
-        <div class="section-header">
-          <h4>Copywriting & Persuasion</h4>
+      </li>
+      <li>
+        <div class="how-step-icon"><i class="fas fa-brain"></i></div>
+        <div class="how-step-content">
+          <h3>2. AI-Powered Analysis</h3>
+          <p>Our advanced models review your copy, design, trust signals, and structure in seconds.</p>
         </div>
-        <ul>
-          <li>
-            <strong>Headline</strong>
-            <div class="explanation">
-              <strong>Problem:</strong> The headline lacks emotional appeal and specificity.<br>
-              <strong>Solution:</strong> Make the headline outcome-focused and benefit-driven.<br>
-              <strong>Actions:</strong>
-              <ul>
-                <li>Use action verbs and address a key pain point.</li>
-                <li>Test at least two headline variations with users.</li>
-                <li>Position the headline for maximum visibility.</li>
-              </ul>
-              <strong>Estimated implementation time:</strong> 20 minutes
-            </div>
-          </li>
-          <li>
-            <strong>Call to Action (CTA)</strong>
-            <div class="explanation">
-              <strong>Problem:</strong> The CTA button blends in and lacks urgency.<br>
-              <strong>Solution:</strong> Use a contrasting color and more compelling text.<br>
-              <strong>Actions:</strong>
-              <ul>
-                <li>Change the CTA color to stand out from the background.</li>
-                <li>Use first-person, benefit-focused text (e.g., "Get My Free Audit").</li>
-                <li>Place secondary CTAs after key sections.</li>
-              </ul>
-              <strong>Estimated implementation time:</strong> 15 minutes
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <div class="report-section">
-        <div class="section-header">
-          <h4>Design & User Experience</h4>
+      </li>
+      <li>
+        <div class="how-step-icon"><i class="fas fa-chart-bar"></i></div>
+        <div class="how-step-content">
+          <h3>3. Get Your Actionable Report</h3>
+          <p>Receive a detailed, step-by-step report with scores and practical suggestions to boost your results.</p>
         </div>
-        <ul>
-          <li>
-            <strong>Visual Hierarchy</strong>
-            <div class="explanation">
-              <strong>Problem:</strong> Important information is not visually prioritized.<br>
-              <strong>Solution:</strong> Use size, color, and spacing to guide the user’s eye.<br>
-              <strong>Actions:</strong>
-              <ul>
-                <li>Increase font size for section titles and CTAs.</li>
-                <li>Add more whitespace between sections.</li>
-                <li>Highlight key benefits with icons or badges.</li>
-              </ul>
-              <strong>Estimated implementation time:</strong> 25 minutes
-            </div>
-          </li>
-          <li>
-            <strong>Mobile Responsiveness</strong>
-            <div class="explanation">
-              <strong>Problem:</strong> Some elements are hard to read or interact with on mobile.<br>
-              <strong>Solution:</strong> Optimize all layouts and buttons for smaller screens.<br>
-              <strong>Actions:</strong>
-              <ul>
-                <li>Test the page on multiple devices and browsers.</li>
-                <li>Increase button sizes and spacing for touch.</li>
-                <li>Ensure text remains legible at all breakpoints.</li>
-              </ul>
-              <strong>Estimated implementation time:</strong> 30 minutes
-            </div>
-          </li>
-        </ul>
+      </li>
+    </ol>
+    <div class="how-cta-row">
+      <div class="how-cta-col">
+        <a href="features.html" class="how-cta-btn">
+          Explore All Features <i class="fas fa-arrow-right"></i>
+        </a>
       </div>
-
-      <div class="report-section">
-        <div class="section-header">
-          <h4>Technical & Mobile Optimization</h4>
+      <div class="how-cta-col">
+        <div class="how-cta-desc">
+          <strong>What's New?</strong>
+          <p>We regularly update LandingFix AI with new models and features to ensure you always get the best possible results.</p>
         </div>
-        <ul>
-          <li>
-            <strong>Page Speed</strong>
-            <div class="explanation">
-              <strong>Problem:</strong> The page loads slower than optimal.<br>
-              <strong>Solution:</strong> Compress images and minimize scripts.<br>
-              <strong>Actions:</strong>
-              <ul>
-                <li>Optimize all images to reduce file size.</li>
-                <li>Defer loading of non-critical scripts.</li>
-                <li>Use a CDN for static assets.</li>
-              </ul>
-              <strong>Estimated implementation time:</strong> 40 minutes
-            </div>
-          </li>
-          <li>
-            <strong>SEO Basics</strong>
-            <div class="explanation">
-              <strong>Problem:</strong> Missing meta tags and alt attributes.<br>
-              <strong>Solution:</strong> Add descriptive meta titles, descriptions, and alt text.<br>
-              <strong>Actions:</strong>
-              <ul>
-                <li>Add a unique meta title and description for the page.</li>
-                <li>Ensure all images have descriptive alt attributes.</li>
-                <li>Implement structured data for enhanced search results.</li>
-              </ul>
-              <strong>Estimated implementation time:</strong> 20 minutes
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <div class="report-score">
-        <span>Overall Score: <strong class="score-number">7.5 / 10</strong></span>
-        <p class="score-note">
-          This audit highlights your biggest opportunities for improvement. By acting on these prioritized, expert-backed suggestions, you can boost conversions, trust, and user satisfaction—fast.
-        </p>
-        <p class="score-note" style="font-weight:600;">
-          <i class="fa fa-clock" style="color:#0070ba;"></i>
-          <span style="margin-left:6px;">Total estimated implementation time: <strong>2 hours 40 minutes</strong></span>
-        </p>
-      </div>
-    </div>
-    <p class="report-intro">
-      <strong>This is a real example of the actionable, prioritized report you’ll receive from LandingFix AI.</strong><br>
-      Every suggestion is clear, practical, and includes a realistic time estimate—so you know exactly what to do next and how long it will take.
-    </p>
-  </div>
-</section>
-
-<!-- How It Works Section -->
-<section class="section" id="how-it-works">
-  <div class="container">
-    <h2>🧠 How LandingFix AI Works</h2>
-    <div class="card-grid">
-      <div class="card">
-        <i class="fas fa-magic"></i>
-        <h3>Copy Intelligence</h3>
-        <p>We analyze tone, clarity, flow, and persuasive copy elements using AI language models.</p>
-      </div>
-      <div class="card">
-        <i class="fas fa-eye"></i>
-        <h3>Trust & UX</h3>
-        <p>Evaluate visual hierarchy, layout consistency, trust icons, and call-to-action visibility.</p>
-      </div>
-      <div class="card">
-        <i class="fas fa-star"></i>
-        <h3>Smart Scoring</h3>
-        <p>Receive a 0–10 score backed by real-time explanations and step-by-step optimization tips.</p>
+        <a href="version.html" class="how-cta-btn secondary">
+          See What's New <i class="fas fa-bolt"></i>
+        </a>
       </div>
     </div>
   </div>
 </section>
 
-<footer class="site-footer bg-white">
-  <div class="footer-inner">
-    <!-- Logo -->
-    <img src="images/logo-header.png" alt="LandingFix AI Logo" class="footer-logo">
-    
-    <!-- Menu -->
-    <nav class="footer-menu">
-      <a href="index.html">Home</a>
-      <span>|</span>
-      <a href="privacy-policy.html">Privacy Policy</a>
-      <span>|</span>
-      <a href="cookie-policy.html">Cookie Policy</a>
-      <span>|</span>
-      <a href="terms-conditions.html">Terms &amp; Conditions</a>
-    </nav>
-    
-    <p>Developed with ❤️ by <a href="https://digitalandmore.eu" target="_blank"><strong>DIGITAL&amp;MORE</strong></a></p>
-    <p class="footer-copyright">&copy; 2025 LandingFix AI. All rights reserved.</p>
-  </div>
-</footer>
+ <!-- Footer Include -->
+  <div id="main-footer"></div>
+  <script>
+    fetch('footer.html')
+      .then(res => res.text())
+      .then(html => { document.getElementById('main-footer').innerHTML = html; });
+  </script>
     <script src="script.js"></script>
 </body>
 </html>

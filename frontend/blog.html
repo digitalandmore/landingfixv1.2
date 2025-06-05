@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LandingFix AI</title>
+  <link rel="icon" type="image/png" href="images/favicon.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N428QVWSBX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N428QVWSBX');
+</script>
+</script>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '979745484240414');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=979745484240414&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=979745484240414&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+ <!-- Cookie Banner -->
+  <script type="text/javascript">
+var _iub = _iub || [];
+_iub.csConfiguration = {"siteId":4047297,"cookiePolicyId":80028888,"lang":"en","storage":{"useSiteId":true}};
+</script>
+<script type="text/javascript" src="https://cs.iubenda.com/autoblocking/4047297.js"></script>
+<script type="text/javascript" src="//cdn.iubenda.com/cs/gpp/stub.js"></script>
+<script type="text/javascript" src="//cdn.iubenda.com/cs/iubenda_cs.js" charset="UTF-8" async></script>
+<!-- End Cookie Banner -->
+</script>
+</head>
+<body>
+  <!-- Header Include -->
+  <div id="main-header"></div>
+  <script>
+    fetch('header.html')
+      .then(res => res.text())
+      .then(html => { document.getElementById('main-header').innerHTML = html; });
+  </script>
+
+  <!-- Blog Section -->
+<section class="section bg-white" id="blog">
+  <div class="container" style="max-width:1100px;margin:40px auto;">
+    <h1 style="font-size:2.2rem;margin-bottom:18px;color:#0070ba;">📝 LandingFix AI Blog</h1>
+    <p style="font-size:1.15rem;line-height:1.6;margin-bottom:32px;">
+      Tips, news, and insights on <strong>AI</strong>, <strong>Digital Marketing Optimization</strong>, <strong>SEO First</strong> strategies, and <strong>Product Updates</strong>.
+    </p>
+    <!-- Tabs -->
+    <div class="blog-tabs" id="blogTabs">
+      <div class="blog-tab active" data-category="all"><i class="fas fa-th-large"></i> All</div>
+      <div class="blog-tab" data-category="updates"><i class="fas fa-bolt"></i> Updates</div>
+    </div>
+    <!-- Blog Posts Grid -->
+    <div class="blog-posts-grid" id="blogPostsGrid">
+      <!-- Updates -->
+      <div class="blog-post-card" data-category="updates">
+        <img src="blog/images/blog-update-v1-1.jpg" alt="LandingFix AI V1.1" class="blog-post-image">
+        <div class="blog-post-content">
+          <div class="blog-meta">June 5, 2025 • Updates</div>
+          <a href="blog/landingfix-ai-v1-1-update.html" class="blog-post-title">LandingFix AI V1.1 Released: New AI Models & Features</a>
+          <div class="blog-post-desc">
+            Discover what's new in LandingFix AI V1.1: improved scoring, smarter suggestions, and the latest AI models for even better landing page optimization.
+          </div>
+          <a href="blog/landingfix-ai-v1-1-update.html" class="read-more">Read more &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <!-- Footer Include -->
+  <div id="main-footer"></div>
+  <script>
+    fetch('footer.html')
+      .then(res => res.text())
+      .then(html => { document.getElementById('main-footer').innerHTML = html; });
+  </script>
+  <script>
+    // Tab filtering logic
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabs = document.querySelectorAll('.blog-tab');
+      const posts = document.querySelectorAll('.blog-post-card');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          tabs.forEach(t => t.classList.remove('active'));
+          this.classList.add('active');
+          const cat = this.getAttribute('data-category');
+          posts.forEach(post => {
+            if (cat === 'all' || post.getAttribute('data-category').includes(cat)) {
+              post.style.display = '';
+            } else {
+              post.style.display = 'none';
+            }
+          });
+        });
+      });
+    });
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>
