@@ -241,7 +241,7 @@ document.addEventListener('submit', async function(e) {
     };
 
     try {
-      const res = await fetch('https://landingfix-com.onrender.com/api/subscribe', {
+      const res = await fetch('https://landingfixv1-1.onrender.com/api/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
