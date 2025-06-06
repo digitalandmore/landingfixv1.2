@@ -50,13 +50,16 @@ _iub.csConfiguration = {"siteId":4047297,"cookiePolicyId":80028888,"lang":"en","
 </script>
 </head>
 <body>
-  <!-- Header Include -->
-  <div id="main-header"></div>
-  <script>
-    fetch('header.html')
-      .then(res => res.text())
-      .then(html => { document.getElementById('main-header').innerHTML = html; });
-  </script>
+<div id="main-header"></div>
+<script src="script.js"></script>
+<script>
+fetch('header.html')
+  .then(res => res.text())
+  .then(html => {
+    document.getElementById('main-header').innerHTML = html;
+    setupHamburgerMenu();
+  });
+</script>
 
   <!-- Blog Section -->
 <section class="section bg-white" id="blog">
@@ -116,6 +119,5 @@ _iub.csConfiguration = {"siteId":4047297,"cookiePolicyId":80028888,"lang":"en","
       });
     });
   </script>
-  <script src="script.js"></script>
 </body>
 </html>

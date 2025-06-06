@@ -10,13 +10,16 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
-  <!-- Header Include -->
-  <div id="main-header"></div>
-  <script>
-    fetch('header.html')
-      .then(res => res.text())
-      .then(html => { document.getElementById('main-header').innerHTML = html; });
-  </script>
+<div id="main-header"></div>
+<script src="script.js"></script>
+<script>
+fetch('header.html')
+  .then(res => res.text())
+  .then(html => {
+    document.getElementById('main-header').innerHTML = html;
+    setupHamburgerMenu();
+  });
+</script>
 
   <!-- How It Works Perspectives Section -->
   <section class="section bg-light" id="how-works-perspectives">
@@ -380,6 +383,5 @@
       .then(res => res.text())
       .then(html => { document.getElementById('main-footer').innerHTML = html; });
   </script>
-  <script src="script.js"></script>
 </body>
 </html>

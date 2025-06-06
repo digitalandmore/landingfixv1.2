@@ -88,13 +88,16 @@
   </script>
 </head>
 <body>
-  <!-- Header Include -->
-  <div id="main-header"></div>
-  <script>
-    fetch('../header.html')
-      .then(res => res.text())
-      .then(html => { document.getElementById('main-header').innerHTML = html; });
-  </script>
+<div id="main-header"></div>
+<script src="../script.js"></script>
+<script>
+fetch('../header.html')
+  .then(res => res.text())
+  .then(html => {
+    document.getElementById('main-header').innerHTML = html;
+    setupHamburgerMenu();
+  });
+</script>
 
   <main>
     <article class="blog-article" itemscope itemtype="https://schema.org/Article">

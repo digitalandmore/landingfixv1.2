@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Hamburger menu toggle and CTA visibility
-document.addEventListener('DOMContentLoaded', function() {
+function setupHamburgerMenu() {
   const hamburger = document.getElementById('hamburger-btn');
   const nav = document.getElementById('main-nav');
   const cta = document.querySelector('.header-cta-btn');
@@ -377,7 +377,8 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('resize', updateCTAVisibility);
     updateCTAVisibility();
   }
-});
+}
+window.setupHamburgerMenu = setupHamburgerMenu;
 
 // Hero video play button logic
 document.addEventListener('DOMContentLoaded', function() {

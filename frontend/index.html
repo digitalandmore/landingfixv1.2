@@ -51,10 +51,14 @@ _iub.csConfiguration = {"siteId":4047297,"cookiePolicyId":80028888,"lang":"en","
 </head>
 <body>
 <div id="main-header"></div>
+<script src="script.js"></script>
 <script>
 fetch('header.html')
   .then(res => res.text())
-  .then(html => { document.getElementById('main-header').innerHTML = html; });
+  .then(html => {
+    document.getElementById('main-header').innerHTML = html;
+    setupHamburgerMenu();
+  });
 </script>
 
 <!-- Hero Section -->
@@ -256,6 +260,5 @@ fetch('header.html')
       .then(res => res.text())
       .then(html => { document.getElementById('main-footer').innerHTML = html; });
   </script>
-    <script src="script.js"></script>
 </body>
 </html>

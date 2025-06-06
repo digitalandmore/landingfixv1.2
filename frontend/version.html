@@ -11,13 +11,16 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
-  <!-- Header Include -->
-  <div id="main-header"></div>
-  <script>
-    fetch('header.html')
-      .then(res => res.text())
-      .then(html => { document.getElementById('main-header').innerHTML = html; });
-  </script>
+<div id="main-header"></div>
+<script src="script.js"></script>
+<script>
+fetch('header.html')
+  .then(res => res.text())
+  .then(html => {
+    document.getElementById('main-header').innerHTML = html;
+    setupHamburgerMenu();
+  });
+</script>
 
   <!-- v1 Announcement Timeline Section -->
   <section class="section bg-white v1-announcement-timeline" style="max-width:900px;margin:40px auto;padding:40px 28px 32px 28px;border-radius:16px;box-shadow:0 2px 16px rgba(0,0,0,0.04);">
