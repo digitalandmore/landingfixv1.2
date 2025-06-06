@@ -301,29 +301,6 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
-// Issue and success contact form
-document.addEventListener('DOMContentLoaded', function() {
-  const contactForm = document.querySelector('.contact-form');
-  if (contactForm) {
-    contactForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      const name = contactForm.querySelector('[name="name"]').value.trim();
-      const email = contactForm.querySelector('[name="email"]').value.trim();
-      const type = contactForm.querySelector('[name="type"]').value;
-      const message = contactForm.querySelector('[name="message"]').value.trim();
-
-      const subject = encodeURIComponent('LandingFix AI Contact: ' + type);
-      const body = encodeURIComponent(
-        `Name: ${name}\nEmail: ${email}\nType: ${type}\n\nMessage:\n${message}`
-      );
-
-      window.location.href = `mailto:support@landingfixai.com?subject=${subject}&body=${body}`;
-
-      contactForm.innerHTML = '<div class="form-success">Your email client should now open. If not, please email us at <a href="mailto:support@landingfixai.com">support@landingfixai.com</a>.</div>';
-    });
-  }
-});
 
 // Hamburger menu toggle and CTA visibility
 function setupHamburgerMenu() {

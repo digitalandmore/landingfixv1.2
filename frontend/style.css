@@ -325,10 +325,23 @@ body {
 }
 
 /* --- Responsive --- */
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   #how-works-perspectives .card-grid {
+    display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    gap: 24px;
+  }
+  #how-works-perspectives .card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
   }
 }
 
@@ -480,8 +493,8 @@ body {
   .analyze-features {
     flex-direction: column;
     align-items: center;
-    gap: 14px;
-    margin-top: 16px;
+    gap: 12px;
+    margin-top: 6px;
   }
   .analyze-features .feature {
     max-width: 98vw;
@@ -1226,24 +1239,91 @@ body {
 }
 
 /* --- Responsive --- */
-@media (max-width: 768px) {
+@media (max-width: 600px) {
+  #report-example {
+    padding: 24px 0;
+  }
+  #report-example .container {
+    padding: 0 4vw;
+  }
   .report-preview {
-    padding: 24px;
+    padding: 14px 4vw;
+    border-radius: 10px;
   }
-
-  #report-example h2 {
-    font-size: 24px;
+  .report-section {
+    padding: 16px 6px 10px 6px;
+    border-radius: 10px;
+    max-width: 99vw;
   }
-
-  .report-section h4 {
-    font-size: 16px;
+  .accordion-element-toggle {
+    padding: 10px 8px;
+    font-size: 1em;
   }
-
-  .report-section li {
-    font-size: 14px;
+  .accordion-element-content {
+    padding: 0 8px 10px 18px;
+  }
+  .final-summary-section {
+    padding: 18px 0 14px 0;
+    border-radius: 10px;
+    max-width: 99vw;
   }
 }
 
+@media (max-width: 600px) {
+  .category-summary {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .category-score-badge,
+  .category-time-badge {
+    margin-right: 0;
+    margin-bottom: 4px;
+    width: 100%;
+    text-align: left;
+  }
+}
+.report-summary-outer {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.report-summary {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  background: none;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.report-summary-row {
+  display: flex;
+  gap: 24px;
+}
+
+@media (max-width: 600px) {
+  .report-summary-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .report-summary-badge {
+    width: 100%;
+    text-align: left;
+    margin-right: 0;
+    margin-bottom: 4px;
+    word-break: break-word;
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+}
 /* =========================
    HOW IT WORKS - STEPS LAYOUT
    ========================= */
@@ -2337,8 +2417,8 @@ body {
 @media (max-width: 600px) {
   .hero-section {
     min-height: 70vh;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding-top: 50px;
+    padding-bottom: 50px;
   }
   .hero-content {
     padding: 0 1vw;
