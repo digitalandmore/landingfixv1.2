@@ -71,88 +71,8 @@
       <div id="coupon-msg" style="font-size:0.9em;margin-top:8px;display:none;"></div>
     </div>
 
-      <!-- Billing Information Form -->
-    <div id="billing-section" style="display:none;margin-bottom:24px;opacity:0;transition:all 0.5s ease-in-out;">
-      <h3 style="font-size:1.1em;color:#1a202c;margin-bottom:16px;font-weight:600;">
-        <i class="fa fa-user" style="margin-right:8px;color:#667eea;"></i>Billing Information
-      </h3>
-      
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;">
-        <div>
-          <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">First Name *</label>
-          <input id="billing-first-name" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
-        </div>
-        <div>
-          <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Last Name *</label>
-          <input id="billing-last-name" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
-        </div>
-      </div>
-      
-      <div style="margin-bottom:14px;">
-        <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Email Address *</label>
-        <input id="billing-email" type="email" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
-      </div>
-      
-      <div style="margin-bottom:14px;">
-        <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Company (Optional)</label>
-        <input id="billing-company" type="text" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
-      </div>
-      
-      <div style="margin-bottom:14px;">
-        <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Address Line 1 *</label>
-        <input id="billing-address" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';" placeholder="Street address">
-      </div>
-      
-      <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:14px;">
-        <div>
-          <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">City *</label>
-          <input id="billing-city" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
-        </div>
-        <div>
-          <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">ZIP/Postal Code *</label>
-          <input id="billing-postal" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';" placeholder="12345">
-        </div>
-      </div>
-      
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;">
-        <div>
-          <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Country *</label>
-          <select id="billing-country" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;background:white;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
-            <option value="">Select Country</option>
-            <option value="US">United States</option>
-            <option value="IT">Italy</option>
-            <option value="GB">United Kingdom</option>
-            <option value="DE">Germany</option>
-            <option value="FR">France</option>
-            <option value="ES">Spain</option>
-            <option value="NL">Netherlands</option>
-            <option value="CA">Canada</option>
-            <option value="AU">Australia</option>
-            <option value="BE">Belgium</option>
-            <option value="CH">Switzerland</option>
-            <option value="AT">Austria</option>
-            <option value="SE">Sweden</option>
-            <option value="DK">Denmark</option>
-            <option value="NO">Norway</option>
-            <option value="FI">Finland</option>
-            <option value="PT">Portugal</option>
-            <option value="IE">Ireland</option>
-            <option value="LU">Luxembourg</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">State/Province</label>
-          <input id="billing-state" type="text" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';" placeholder="Optional">
-        </div>
-      </div>
-      
-      <div style="margin-bottom:14px;">
-        <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Phone Number (Optional)</label>
-        <input id="billing-phone" type="tel" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';" placeholder="+1 234 567 8900">
-      </div>
-    </div>
 
-    <!-- Payment Methods -->
+        <!-- Payment Methods -->
     <div id="payment-section">
       <!-- Payment Method Switcher -->
       <div style="margin-bottom:20px;">
@@ -170,10 +90,76 @@
       <div id="stripe-payment" class="payment-method active">
         <div id="stripe-card-element" style="padding:16px;border:2px solid #e2e8f0;border-radius:10px;background:white;margin-bottom:16px;"></div>
         
+        <!-- 🎯 BILLING SECTION QUI SOTTO LA CARTA -->
+        <div id="billing-section" style="display:none;margin-bottom:16px;opacity:0;transition:all 0.5s ease-in-out;">
+          <h3 style="font-size:1.1em;color:#1a202c;margin-bottom:16px;font-weight:600;">
+            <i class="fa fa-user" style="margin-right:8px;color:#667eea;"></i>Billing Information
+          </h3>
+          
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;">
+            <div>
+              <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">First Name *</label>
+              <input id="billing-first-name" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+            </div>
+            <div>
+              <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Last Name *</label>
+              <input id="billing-last-name" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+            </div>
+          </div>
+          
+          <div style="margin-bottom:14px;">
+            <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Email Address *</label>
+            <input id="billing-email" type="email" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+          </div>
+          
+          <div style="margin-bottom:14px;">
+            <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Company (Optional)</label>
+            <input id="billing-company" type="text" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+          </div>
+          
+          <div style="margin-bottom:14px;">
+            <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Address Line 1 *</label>
+            <input id="billing-address" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';" placeholder="Street address">
+          </div>
+          
+          <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:14px;">
+            <div>
+              <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">City *</label>
+              <input id="billing-city" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+            </div>
+            <div>
+              <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">ZIP/Postal Code *</label>
+              <input id="billing-postal" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';" placeholder="12345">
+            </div>
+          </div>
+          
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;">
+            <div>
+              <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Country *</label>
+              <input id="billing-country" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';" placeholder="e.g., United States, Italy, Germany">
+            </div>
+            <div>
+              <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">State/Province</label>
+              <input id="billing-state" type="text" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';" placeholder="Optional">
+            </div>
+          </div>
+          
+          <div style="margin-bottom:14px;">
+            <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Phone Number (Optional)</label>
+            <input id="billing-phone" type="tel" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';" placeholder="+1 234 567 8900">
+          </div>
+        </div>
+        
         <button id="stripe-submit" type="button" style="width:100%;padding:16px;background:linear-gradient(135deg,#667eea 0%, #764ba2 100%);color:white;border:none;border-radius:12px;font-size:1.1em;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 12px rgba(102,126,234,0.3);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(102,126,234,0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(102,126,234,0.3)';">
           <span id="stripe-submit-text">Complete Payment</span>
         </button>
       </div>
+
+      <!-- PayPal Payment -->
+      <div id="paypal-payment" class="payment-method" style="display:none;">
+        <div id="paypal-button-container" style="min-height:48px;"></div>
+      </div>
+    </div>
 
       <!-- PayPal Payment -->
       <div id="paypal-payment" class="payment-method" style="display:none;">

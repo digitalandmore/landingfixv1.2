@@ -52,7 +52,7 @@ function setupCheckout() {
     }, 5000);
   }
 
-    function getBillingData() {
+      function getBillingData() {
     return {
       firstName: document.getElementById('billing-first-name')?.value?.trim() || '',
       lastName: document.getElementById('billing-last-name')?.value?.trim() || '',
@@ -61,7 +61,7 @@ function setupCheckout() {
       address: document.getElementById('billing-address')?.value?.trim() || '',
       city: document.getElementById('billing-city')?.value?.trim() || '',
       postal: document.getElementById('billing-postal')?.value?.trim() || '',
-      country: document.getElementById('billing-country')?.value || '',
+      country: document.getElementById('billing-country')?.value?.trim() || '',
       state: document.getElementById('billing-state')?.value?.trim() || '',
       phone: document.getElementById('billing-phone')?.value?.trim() || ''
     };
