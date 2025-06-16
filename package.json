@@ -1,23 +1,21 @@
 {
-  "name": "landingfix-ai",
+  "name": "landingfix-ai-backend",
   "version": "1.2.0",
-  "description": "AI-powered landing page analyzer",
+  "description": "LandingFix AI Backend Server",
   "main": "backend/openai-proxy.js",
   "scripts": {
     "start": "node backend/openai-proxy.js",
-    "dev": "node backend/openai-proxy.js"
+    "build": "npm install --production"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.4",
     "jsdom": "^22.1.0",
+    "puppeteer": "^21.11.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
-    "puppeteer-core": "^21.11.0",
-    "puppeteer": "^21.11.0",
     "@mozilla/readability": "^0.4.4",
     "stripe": "^12.18.0",
     "paypal-rest-sdk": "^1.8.1"
