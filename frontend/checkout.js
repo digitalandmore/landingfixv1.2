@@ -244,7 +244,6 @@ function showBillingNotification() {
   }, 8000);
 }
 
-// ✅ AGGIORNA LA VALIDAZIONE PER GESTIRE I CAMPI NASCOSTI
 function validateBillingInfo() {
   const billingSection = document.getElementById('billing-section');
   
