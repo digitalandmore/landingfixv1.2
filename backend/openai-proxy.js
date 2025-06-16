@@ -899,21 +899,12 @@ app.post('/api/subscribe', async (req, res) => {
   
   const { name, email, company, url, goals, focus, industry } = req.body;
   const apiKey = process.env.BREVO_API_KEY;
+  const listId = 38; // Il tuo list ID
 
   console.log('📧 Environment check:', {
     hasApiKey: !!apiKey,
     apiKeyLength: apiKey?.length || 0,
-    apiKeyPreview: apiKey ? `${apiKey.slice(0, 8)}...${apiKey.slice(-4)}` : 'NOT_SET'
-  });
-
-  console.log('📧 Extracted fields:', {
-    name: name,
-    email: email,
-    company: company,
-    url: url,
-    goals: goals,
-    focus: focus,
-    industry: industry
+    listId: listId
   });
 
   if (!apiKey) {
@@ -926,18 +917,28 @@ app.post('/api/subscribe', async (req, res) => {
     return res.status(400).json({ error: 'Email is required' });
   }
 
-  // ✅ USA GLI ATTRIBUTI CORRETTI CHE HAI CONFIGURATO IN BREVO
+  // ✅ FORMATO CORRETTO SECONDO DOCUMENTAZIONE BREVO
   const data = {
-    email,
+    email: email, // Email principale
     attributes: {
-      NOME: name || 'LandingFix User',           // ✅ Corretto
-      AZIENDA: company || '',                    // ✅ Corretto  
-      WEBSITE: url || ''                         // ✅ Corretto
-      // ❌ RIMOSSI goals, focus, industry se non hai creato questi attributi in Brevo
+      NOME: name || '', // Attributo personalizzato NOME
+      AZIENDA: company || '', // Attributo personalizzato AZIENDA  
+      WEBSITE: url || '' // Attributo personalizzato WEBSITE
     },
-    listIds: [38],
-    updateEnabled: true
+    listIds: [listId], // Array di list IDs
+    updateEnabled: true // Aggiorna se il contatto esiste già
   };
+
+  // ✅ AGGIUNGI ATTRIBUTI OPZIONALI SE ESISTONO IN BREVO
+  if (goals && Array.isArray(goals) && goals.length > 0) {
+    data.attributes.GOALS = goals.join(', '); // Solo se hai creato questo attributo
+  }
+  if (focus) {
+    data.attributes.FOCUS = focus; // Solo se hai creato questo attributo
+  }
+  if (industry) {
+    data.attributes.INDUSTRY = industry; // Solo se hai creato questo attributo
+  }
 
   console.log('📧 Sending to Brevo:', JSON.stringify(data, null, 2));
 
@@ -952,42 +953,66 @@ app.post('/api/subscribe', async (req, res) => {
       body: JSON.stringify(data)
     });
     
-    console.log('📧 Brevo raw response:', {
-      status: response.status,
-      statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries())
-    });
+    console.log('📧 Brevo response status:', response.status);
+    console.log('📧 Brevo response headers:', Object.fromEntries(response.headers.entries()));
 
-    // ✅ GESTIONE MIGLIORATA DELLA RISPOSTA
     const responseText = await response.text();
-    console.log('📧 Brevo response text:', responseText);
+    console.log('📧 Brevo raw response:', responseText);
     
     let result;
     try {
       result = responseText ? JSON.parse(responseText) : {};
     } catch (parseError) {
       console.error('📧 JSON parse error:', parseError);
-      console.error('📧 Raw response text:', responseText);
-      result = { error: 'Invalid JSON response from Brevo', rawResponse: responseText };
+      result = { 
+        error: 'Invalid JSON response from Brevo', 
+        rawResponse: responseText,
+        status: response.status 
+      };
     }
     
-    console.log('📧 Brevo parsed result:', JSON.stringify(result, null, 2));
-    
-    if (response.ok) {
+    // ✅ GESTIONE MIGLIORATA DEGLI STATUS CODES
+    if (response.ok || response.status === 201) {
       console.log('✅ Successfully subscribed to Brevo:', email);
+      res.status(200).json({ 
+        success: true, 
+        message: 'Successfully subscribed',
+        contact: result 
+      });
+    } else if (response.status === 400) {
+      console.warn('⚠️ Brevo validation error (400):', result);
+      res.status(400).json({ 
+        success: false,
+        error: 'Validation error', 
+        details: result 
+      });
+    } else if (response.status === 409) {
+      console.log('ℹ️ Contact already exists in Brevo (409):', email);
+      res.status(200).json({ 
+        success: true, 
+        message: 'Contact already exists and was updated',
+        contact: result 
+      });
     } else {
       console.error('❌ Brevo subscription failed:', {
         status: response.status,
         statusText: response.statusText,
         result: result
       });
+      res.status(response.status).json({ 
+        success: false,
+        error: `Brevo API error: ${response.status}`,
+        details: result 
+      });
     }
     
-    res.status(response.status).json(result);
   } catch (err) {
-    console.error('❌ Brevo API error:', err);
-    console.error('❌ Error stack:', err.stack);
-    res.status(500).json({ error: 'Server error: ' + err.message });
+    console.error('❌ Brevo API network error:', err);
+    res.status(500).json({ 
+      success: false,
+      error: 'Network error connecting to Brevo',
+      message: err.message 
+    });
   }
 });
 
