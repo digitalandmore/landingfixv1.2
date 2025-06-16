@@ -16,6 +16,8 @@
     "jsdom": "^22.1.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "puppeteer-core": "^21.11.0",
+    "puppeteer": "^21.11.0",
     "@mozilla/readability": "^0.4.4",
     "stripe": "^12.18.0",
     "paypal-rest-sdk": "^1.8.1"

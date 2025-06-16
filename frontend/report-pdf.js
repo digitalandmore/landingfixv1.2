@@ -237,17 +237,14 @@ function setupPdfEventHandlers() {
 }
 
 // FIXED: Enhanced PDF generation with better error handling and debugging
+
 async function handlePdfGeneration(e) {
   e.preventDefault();
   
   console.log('📄 PDF generation started');
   
-  // FIXED: Simple unlock check
+  // Check unlock status
   const isUnlocked = localStorage.getItem('landingfix_unlocked') === 'true';
-  
-  console.log('📄 PDF generation - UNLOCK CHECK:', {
-    isUnlocked: isUnlocked
-  });
   
   if (!isUnlocked) {
     console.log('📄 PDF generation blocked - report not unlocked');
@@ -266,16 +263,8 @@ async function handlePdfGeneration(e) {
   const name = nameInput?.value?.trim();
   const company = companyInput?.value?.trim();
   
-  console.log('📄 Form data extracted:', { email, name, company });
-  
   // Validate email
-  if (!email) {
-    alert('Please enter your email address.');
-    emailInput?.focus();
-    return;
-  }
-  
-  if (!email.includes('@') || !email.includes('.')) {
+  if (!email || !email.includes('@')) {
     alert('Please enter a valid email address.');
     emailInput?.focus();
     return;
@@ -288,239 +277,197 @@ async function handlePdfGeneration(e) {
   try {
     // Show loading state
     if (submitBtn) submitBtn.disabled = true;
-    if (submitText) submitText.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Generating and sending PDF...';
+    if (submitText) submitText.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Generating and sending...';
     
-    console.log('📄 Getting report data...');
-    
-    // Get report data and scores
+    // Get report data
     const reportData = getReportData();
     const scores = getCurrentScores();
     
-    console.log('📄 Report data retrieved:', { 
-      url: reportData.url, 
-      hasData: !!reportData,
-      scores: scores 
-    });
-    
     if (!reportData || !reportData.url) {
-      throw new Error('No valid report data found');
+      throw new Error('No valid report data found. Please refresh the page and try again.');
     }
     
-    console.log('📄 Generating PDF content...');
+    // FIXED: Generate optimized content with size limits
+    console.log('📄 Generating optimized PDF content...');
     
-    // Generate PDF content for backend processing
-    const pdfContent = generatePdfHTML(reportData, scores, email, name, company);
+    // Generate lightweight content instead of full HTML
+    const lightweightContent = generateLightweightReportContent(reportData, scores);
+    const emailTemplate = generateOptimizedEmailTemplate(reportData, scores, email, name, company);
     
-    console.log('📄 PDF content generated, length:', pdfContent.length);
-    
-    // Generate email template
-    const emailTemplate = generatePdfEmailTemplate(reportData, scores, email, name, company);
-    
-    console.log('📄 Email template generated, length:', emailTemplate.length);
-    
-    // Send PDF email request to backend
+    // FIXED: Simplified request payload with size limits
     const requestData = {
       url: reportData.url,
       name: name || null,
       company: company || null,
       email: email,
       isPdfEmail: true,
-      pdfContent: pdfContent,
-      htmlTemplate: emailTemplate
+      pdfContent: lightweightContent, // Much smaller content
+      htmlTemplate: emailTemplate.substring(0, 50000) // Limit to 50KB
     };
     
-    console.log('📄 Sending request to backend:', {
+    console.log('📄 Sending optimized request to backend:', {
       url: requestData.url,
       email: requestData.email,
-      isPdfEmail: requestData.isPdfEmail,
-      hasPdfContent: !!requestData.pdfContent,
-      hasHtmlTemplate: !!requestData.htmlTemplate,
-      requestDataSize: JSON.stringify(requestData).length
+      contentSize: requestData.pdfContent?.length || 0,
+      templateSize: requestData.htmlTemplate?.length || 0
     });
     
     const response = await fetch('https://landingfixv1-2.onrender.com/api/send-report', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
       body: JSON.stringify(requestData)
     });
     
-    console.log('📄 Response received:', {
-      ok: response.ok,
-      status: response.status,
-      statusText: response.statusText
-    });
+    console.log('📄 Response status:', response.status);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('📄 PDF email send error response:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorText: errorText
-      });
-      throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+      console.error('📄 Server error:', errorText);
+      throw new Error(`Server error (${response.status}): ${errorText}`);
     }
     
     const result = await response.json();
     
-    console.log('📄 Response parsed:', result);
-    
     if (result.success) {
       console.log('📄 PDF sent successfully');
-      // Show success message
       showPdfSuccess(email);
       
-      // Track PDF generation
+      // Track success
       if (typeof gtag === 'function') {
-        gtag('event', 'pdf_download', {
-          email: email
-        });
+        gtag('event', 'pdf_download', { email: email });
       }
     } else {
-      throw new Error('PDF email sending failed: ' + (result.error || 'Unknown error'));
+      throw new Error(result.error || 'Unknown error occurred');
     }
     
   } catch (error) {
-    console.error('📄 PDF generation failed:', {
-      error: error.message,
-      stack: error.stack,
-      name: error.name
-    });
+    console.error('📄 PDF generation failed:', error);
     
-    // More specific error messages
     let errorMessage = 'Failed to generate and send PDF report. ';
     
     if (error.message.includes('fetch')) {
-      errorMessage += 'Connection error - please check your internet connection.';
-    } else if (error.message.includes('HTTP 500')) {
-      errorMessage += 'Server error - please try again in a few moments.';
-    } else if (error.message.includes('No valid report data')) {
-      errorMessage += 'Report data is missing - please refresh the page.';
+      errorMessage += 'Please check your internet connection and try again.';
+    } else if (error.message.includes('Server error (500)')) {
+      errorMessage += 'The server is experiencing issues. Please try again in a few moments.';
+    } else if (error.message.includes('timeout')) {
+      errorMessage += 'Request timed out. Please try again.';
     } else {
-      errorMessage += 'Please try again. Error: ' + error.message;
+      errorMessage += error.message;
     }
     
     alert(errorMessage);
   } finally {
-    // Reset button state
+    // Reset button
     if (submitBtn) submitBtn.disabled = false;
     if (submitText) submitText.textContent = originalText;
   }
 }
 
-// NEW: Generate email template for PDF notification with better error handling
-function generatePdfEmailTemplate(reportData, scores, email, name, company) {
+// FIXED: Generate lightweight report content
+function generateLightweightReportContent(reportData, scores) {
   try {
-    const now = new Date().toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
+    const reportContainer = document.getElementById('report-content');
+    if (!reportContainer) {
+      return '<p>No report content available.</p>';
+    }
 
-    return `
+    // Extract only essential information
+    const categories = reportContainer.querySelectorAll('.report-category');
+    let content = '';
+    
+    categories.forEach((category, index) => {
+      if (category.classList.contains('locked')) return;
+      
+      const categoryName = category.querySelector('.category-name')?.textContent?.trim() || `Category ${index + 1}`;
+      const elements = category.querySelectorAll('.report-element');
+      
+      content += `<h3>${categoryName}</h3>`;
+      
+      elements.forEach((element, elementIndex) => {
+        const elementTitle = element.querySelector('.element-title')?.textContent?.trim() || `Element ${elementIndex + 1}`;
+        const problemContent = element.querySelector('.problem .block-content')?.textContent?.trim() || '';
+        const solutionContent = element.querySelector('.solution .block-content')?.textContent?.trim() || '';
+        
+        if (problemContent || solutionContent) {
+          content += `<h4>${elementTitle}</h4>`;
+          if (problemContent) content += `<p><strong>Issue:</strong> ${problemContent.substring(0, 200)}...</p>`;
+          if (solutionContent) content += `<p><strong>Solution:</strong> ${solutionContent.substring(0, 200)}...</p>`;
+        }
+      });
+    });
+    
+    return content.substring(0, 10000); // Limit to 10KB
+    
+  } catch (error) {
+    console.error('Error generating lightweight content:', error);
+    return '<p>Error processing report content.</p>';
+  }
+}
+
+// FIXED: Generate optimized email template
+function generateOptimizedEmailTemplate(reportData, scores, email, name, company) {
+  const now = new Date().toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+
+  return `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your LandingFix AI PDF Report</title>
+  <title>Your LandingFix AI Report</title>
 </head>
-<body style="margin:0;padding:0;background-color:#f8fafc;font-family:Arial,sans-serif;">
-  <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.1);">
-    
-    <!-- Header -->
-    <div style="background:linear-gradient(135deg,#dc3545,#c82333);padding:40px 24px;text-align:center;color:white;">
-      <h1 style="margin:0;font-size:28px;font-weight:700;">📄 Your PDF Report is Ready!</h1>
-      <p style="margin:12px 0 0 0;font-size:16px;opacity:0.9;">Your complete LandingFix AI analysis as a professional PDF</p>
-    </div>
-
-    <!-- Content -->
-    <div style="padding:32px 24px;">
-      <h2 style="margin:0 0 20px 0;font-size:20px;color:#2d3748;">Report Details</h2>
-      
-      <div style="background:#f8fafc;padding:20px;border-radius:8px;margin-bottom:24px;">
-        <p style="margin:0 0 8px 0;"><strong>Website:</strong> ${reportData.url || 'Unknown'}</p>
-        <p style="margin:0 0 8px 0;"><strong>Generated for:</strong> ${name || 'LandingFix AI User'}</p>
-        ${company ? `<p style="margin:0 0 8px 0;"><strong>Company:</strong> ${company}</p>` : ''}
-        <p style="margin:0;"><strong>Date:</strong> ${now}</p>
-      </div>
-
-      <!-- FIXED: Performance Overview con allineamento al centro e migliore spaziatura -->
-      <div style="margin-bottom:24px;">
-        <h3 style="margin:0 0 20px 0;color:#2d3748;text-align:center;">Performance Overview</h3>
-        
-        <!-- FIXED: Tre card allineate al centro con spaziatura migliore -->
-        <table style="width:100%;border-collapse:collapse;margin:0 auto;">
-          <tr>
-            <td style="text-align:center;padding:0 8px;">
-              <div style="background:#3182ce;color:white;padding:20px 16px;border-radius:12px;text-align:center;box-shadow:0 4px 12px rgba(49,130,206,0.3);">
-                <div style="font-size:32px;font-weight:bold;margin-bottom:8px;">${scores.optimization || '–'}%</div>
-                <div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:0.9;">Current Score</div>
-              </div>
-            </td>
-            <td style="text-align:center;padding:0 8px;">
-              <div style="background:#38a169;color:white;padding:20px 16px;border-radius:12px;text-align:center;box-shadow:0 4px 12px rgba(56,161,105,0.3);">
-                <div style="font-size:32px;font-weight:bold;margin-bottom:8px;">+${scores.impact || '–'}%</div>
-                <div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:0.9;">Impact Potential</div>
-              </div>
-            </td>
-            <td style="text-align:center;padding:0 8px;">
-              <div style="background:#805ad5;color:white;padding:20px 16px;border-radius:12px;text-align:center;box-shadow:0 4px 12px rgba(128,90,213,0.3);">
-                <div style="font-size:28px;font-weight:bold;margin-bottom:8px;">${scores.timing || '–'}</div>
-                <div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:0.9;">Implementation</div>
-              </div>
-            </td>
-          </tr>
-        </table>
-      </div>
-
-      <div style="background:#d4edda;padding:16px;border-radius:8px;border:1px solid #c3e6cb;text-align:center;">
-        <p style="margin:0;color:#155724;">
-          <strong>📎 PDF Report Attached</strong><br>
-          Your complete analysis has been attached to this email as a PDF file.
-        </p>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div style="padding:24px;background:#2d3748;color:#a0aec0;text-align:center;">
-      <p style="margin:0 0 16px 0;">Thank you for using LandingFix AI!</p>
-      <a href="https://landingfixai.com" style="color:#667eea;text-decoration:none;">Visit our website</a>
-    </div>
-    
-  </div>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
   
-  <!-- Enhanced Mobile-Specific Styles -->
-  <style>
-    @media only screen and (max-width: 600px) {
-      .performance-table { width: 100% !important; }
-      .performance-table td { 
-        display: block !important; 
-        width: 100% !important; 
-        padding: 8px 0 !important; 
-        text-align: center !important; 
-      }
-      .performance-card { 
-        margin-bottom: 12px !important; 
-        padding: 16px !important; 
-      }
-    }
-  </style>
+  <div style="text-align: center; margin-bottom: 30px;">
+    <h1 style="color: #333;">📄 Your LandingFix AI Report</h1>
+    <p style="color: #666;">Professional Landing Page Analysis</p>
+  </div>
+
+  <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+    <h2 style="color: #333; margin-top: 0;">Report Details</h2>
+    <p><strong>Website:</strong> ${reportData.url || 'Unknown'}</p>
+    <p><strong>Generated for:</strong> ${name || 'LandingFix AI User'}</p>
+    ${company ? `<p><strong>Company:</strong> ${company}</p>` : ''}
+    <p><strong>Date:</strong> ${now}</p>
+  </div>
+
+  <div style="margin-bottom: 30px;">
+    <h3 style="text-align: center; color: #333;">Performance Summary</h3>
+    <div style="display: flex; justify-content: space-around; text-align: center;">
+      <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; flex: 1; margin: 0 5px;">
+        <div style="font-size: 24px; font-weight: bold; color: #1976d2;">${scores.optimization || '–'}%</div>
+        <div style="font-size: 12px; color: #666;">Current Score</div>
+      </div>
+      <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; flex: 1; margin: 0 5px;">
+        <div style="font-size: 24px; font-weight: bold; color: #388e3c;">+${scores.impact || '–'}%</div>
+        <div style="font-size: 12px; color: #666;">Impact Potential</div>
+      </div>
+      <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; flex: 1; margin: 0 5px;">
+        <div style="font-size: 20px; font-weight: bold; color: #7b1fa2;">${scores.timing || '–'}</div>
+        <div style="font-size: 12px; color: #666;">Implementation</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align: center; padding: 20px; background: #e8f4fd; border-radius: 8px;">
+    <p><strong>Your complete report with detailed recommendations has been processed!</strong></p>
+    <p>Visit <a href="https://landingfixai.com" style="color: #007bff; text-decoration: none;">LandingFix AI</a> for more analysis tools.</p>
+  </div>
+
+  <div style="margin-top: 30px; text-align: center; color: #666; font-size: 12px;">
+    <p>Thank you for using LandingFix AI!</p>
+    <p>© 2025 LandingFix AI. All rights reserved.</p>
+  </div>
+
 </body>
 </html>
-    `;
-  } catch (error) {
-    console.error('Error generating PDF email template:', error);
-    return `
-      <html><body>
-        <h1>LandingFix AI PDF Report</h1>
-        <p>Your PDF report is attached to this email.</p>
-        <p>Report for: ${reportData?.url || 'Unknown website'}</p>
-        <p>Generated on: ${new Date().toLocaleDateString()}</p>
-      </body></html>
-    `;
-  }
+  `;
 }
 
 // FIXED: Generate PDF-optimized HTML with simplified layout focused on content visibility
