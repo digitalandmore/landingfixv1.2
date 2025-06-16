@@ -900,6 +900,12 @@ app.post('/api/subscribe', async (req, res) => {
   const { name, email, company, url, goals, focus, industry } = req.body;
   const apiKey = process.env.BREVO_API_KEY;
 
+  console.log('📧 Environment check:', {
+    hasApiKey: !!apiKey,
+    apiKeyLength: apiKey?.length || 0,
+    apiKeyPreview: apiKey ? `${apiKey.slice(0, 8)}...${apiKey.slice(-4)}` : 'NOT_SET'
+  });
+
   console.log('📧 Extracted fields:', {
     name: name,
     email: email,
@@ -907,8 +913,7 @@ app.post('/api/subscribe', async (req, res) => {
     url: url,
     goals: goals,
     focus: focus,
-    industry: industry,
-    hasApiKey: !!apiKey
+    industry: industry
   });
 
   if (!apiKey) {
@@ -921,15 +926,14 @@ app.post('/api/subscribe', async (req, res) => {
     return res.status(400).json({ error: 'Email is required' });
   }
 
+  // ✅ USA GLI ATTRIBUTI CORRETTI CHE HAI CONFIGURATO IN BREVO
   const data = {
     email,
     attributes: {
-      FIRSTNAME: name || 'LandingFix User',
-      COMPANY: company || '',
-      LANDING_URL: url || '',
-      GOALS: Array.isArray(goals) ? goals.join(', ') : (goals || ''),
-      FOCUS: focus || '',
-      INDUSTRY: industry || ''
+      NOME: name || 'LandingFix User',           // ✅ Corretto
+      AZIENDA: company || '',                    // ✅ Corretto  
+      WEBSITE: url || ''                         // ✅ Corretto
+      // ❌ RIMOSSI goals, focus, industry se non hai creato questi attributi in Brevo
     },
     listIds: [38],
     updateEnabled: true
@@ -948,20 +952,41 @@ app.post('/api/subscribe', async (req, res) => {
       body: JSON.stringify(data)
     });
     
-    const result = await response.json();
+    console.log('📧 Brevo raw response:', {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries())
+    });
+
+    // ✅ GESTIONE MIGLIORATA DELLA RISPOSTA
+    const responseText = await response.text();
+    console.log('📧 Brevo response text:', responseText);
     
-    console.log('📧 Brevo response status:', response.status);
-    console.log('📧 Brevo response body:', JSON.stringify(result, null, 2));
+    let result;
+    try {
+      result = responseText ? JSON.parse(responseText) : {};
+    } catch (parseError) {
+      console.error('📧 JSON parse error:', parseError);
+      console.error('📧 Raw response text:', responseText);
+      result = { error: 'Invalid JSON response from Brevo', rawResponse: responseText };
+    }
+    
+    console.log('📧 Brevo parsed result:', JSON.stringify(result, null, 2));
     
     if (response.ok) {
       console.log('✅ Successfully subscribed to Brevo:', email);
     } else {
-      console.error('❌ Brevo subscription failed:', result);
+      console.error('❌ Brevo subscription failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        result: result
+      });
     }
     
     res.status(response.status).json(result);
   } catch (err) {
     console.error('❌ Brevo API error:', err);
+    console.error('❌ Error stack:', err.stack);
     res.status(500).json({ error: 'Server error: ' + err.message });
   }
 });
