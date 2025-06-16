@@ -238,20 +238,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
           }
 
-          // Send to Brevo
-          const listId = 38; // <-- Replace with your Brevo list ID
-          const data = {
+         // Send to Brevo
+          const listId = 38;
+          
+          const subscribeData = {
+            name: name,          
             email: email,
-            attributes: {
-              FIRSTNAME: name,
-              COMPANY: company,
-              LANDING_URL: url,
-              GOALS: goals.join(', '),
-              FOCUS: focus,
-              INDUSTRY: industry
-            },
-            listIds: [listId],
-            updateEnabled: true
+            company: company,
+            url: url,
+            goals: goals,
+            focus: focus,
+            industry: industry
           };
 
           async function sendToBrevo() {
@@ -261,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                   'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(subscribeData)  // ✅ USA IL NUOVO OGGETTO
               });
               const result = await res.json();
               console.log('Subscribe API result:', result);

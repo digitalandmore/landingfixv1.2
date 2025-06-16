@@ -1597,27 +1597,11 @@
 }
 
 /* === HIDE PDF BUTTONS === */
-/* Hide main PDF button */
-#save-as-pdf {
+
+.report-action-buttons .action-btn.outline {
   display: none !important;
 }
 
-/* Hide any PDF buttons in action groups */
-.action-btn.outline[id*="pdf"],
-.action-btn[id*="pdf"],
-button[id*="pdf"] {
-  display: none !important;
-}
-
-/* Hide PDF buttons by class name */
-.pdf-btn,
-.summary-action-btn.outline,
-button[class*="pdf"] {
-  display: none !important;
-}
-
-/* Hide download/save buttons that might be PDF related */
-button[onclick*="pdf" i],
-button[onclick*="download" i]:not([onclick*="report" i]) {
-  display: none !important;
+.final-summary-actions .action-btn.outline {
+  display: none;
 }

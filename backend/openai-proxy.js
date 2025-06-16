@@ -893,26 +893,49 @@ app.get('/api/test', (req, res) => {
 });
 
 // --- ROUTE FOR BREVO ---
-// Subscribes a user to the Brevo (Sendinblue) mailing list with custom attributes.
 app.post('/api/subscribe', async (req, res) => {
-  const { name, email, company, url, goals } = req.body;
+  console.log('📧 Brevo subscription request received');
+  console.log('📧 Request body:', JSON.stringify(req.body, null, 2));
+  
+  const { name, email, company, url, goals, focus, industry } = req.body;
   const apiKey = process.env.BREVO_API_KEY;
 
+  console.log('📧 Extracted fields:', {
+    name: name,
+    email: email,
+    company: company,
+    url: url,
+    goals: goals,
+    focus: focus,
+    industry: industry,
+    hasApiKey: !!apiKey
+  });
+
   if (!apiKey) {
+    console.error('📧 BREVO_API_KEY missing from environment');
     return res.status(500).json({ error: 'BREVO_API_KEY missing' });
+  }
+
+  if (!email) {
+    console.error('📧 Email is required but not provided');
+    return res.status(400).json({ error: 'Email is required' });
   }
 
   const data = {
     email,
     attributes: {
-      FIRSTNAME: name,
-      COMPANY: company,
-      LANDING_URL: url,
-      GOALS: Array.isArray(goals) ? goals.join(', ') : (goals || '')
+      FIRSTNAME: name || 'LandingFix User',
+      COMPANY: company || '',
+      LANDING_URL: url || '',
+      GOALS: Array.isArray(goals) ? goals.join(', ') : (goals || ''),
+      FOCUS: focus || '',
+      INDUSTRY: industry || ''
     },
     listIds: [38],
     updateEnabled: true
   };
+
+  console.log('📧 Sending to Brevo:', JSON.stringify(data, null, 2));
 
   try {
     const response = await fetch('https://api.brevo.com/v3/contacts', {
@@ -924,10 +947,22 @@ app.post('/api/subscribe', async (req, res) => {
       },
       body: JSON.stringify(data)
     });
+    
     const result = await response.json();
+    
+    console.log('📧 Brevo response status:', response.status);
+    console.log('📧 Brevo response body:', JSON.stringify(result, null, 2));
+    
+    if (response.ok) {
+      console.log('✅ Successfully subscribed to Brevo:', email);
+    } else {
+      console.error('❌ Brevo subscription failed:', result);
+    }
+    
     res.status(response.status).json(result);
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    console.error('❌ Brevo API error:', err);
+    res.status(500).json({ error: 'Server error: ' + err.message });
   }
 });
 
