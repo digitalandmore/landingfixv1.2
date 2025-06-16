@@ -30,9 +30,11 @@ const { generateAdvancedPrompt, generateSpecificActions } = require('./prompt.js
 // Import categories from external file
 const { focusCategories, getExpectedElementsForFocus, getFocusDebugInfo } = require('./categories.js');
 
+const app = express();
+
 app.use(cors({ 
   origin: [
-    'https://landingfixai.com',           // ✅ Aggiungi questo dominio
+    'https://landingfixai.com',           
     'https://landingfixv1-2.onrender.com', 
     'http://localhost:5500',
     'http://localhost:3000',
@@ -42,6 +44,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.get('/tools.json', (req, res) => {
   const allTools = [
