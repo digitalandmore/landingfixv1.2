@@ -31,7 +31,12 @@ const { generateAdvancedPrompt, generateSpecificActions } = require('./prompt.js
 const { focusCategories, getExpectedElementsForFocus, getFocusDebugInfo } = require('./categories.js');
 
 const app = express(); 
-app.use(cors({ origin: 'https://landingfixv1-2.onrender.com' }));
+app.use(cors({ 
+  origin: ['https://landingfixai.com', 'https://landingfixv1-2.onrender.com'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 app.use(express.json());
 
 app.get('/tools.json', (req, res) => {
