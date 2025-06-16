@@ -1,16 +1,16 @@
 {
   "name": "landingfix-ai-backend",
   "version": "1.2.0",
-  "description": "LandingFix AI Backend Server - Professional Landing Page Analysis Platform",
+  "description": "LandingFix AI Backend Server - Professional Landing Page Analysis Platform (Production Optimized)",
   "main": "backend/openai-proxy.js",
   "scripts": {
     "start": "node backend/openai-proxy.js",
     "dev": "nodemon backend/openai-proxy.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "echo \"No build step required for Node.js backend\"",
-    "postinstall": "echo \"Dependencies installed successfully\"",
-    "lint": "echo \"Linting not configured\"",
-    "production": "NODE_ENV=production node backend/openai-proxy.js"
+    "build": "echo \"Build completed - no build step required for Node.js backend\"",
+    "postinstall": "echo \"Dependencies installed successfully - $(date)\"",
+    "production": "NODE_ENV=production node backend/openai-proxy.js",
+    "health": "curl -f http://localhost:10000/health || exit 1"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -21,13 +21,7 @@
     "jsdom": "^22.1.0",
     "@mozilla/readability": "^0.4.4",
     "stripe": "^13.11.0",
-    "paypal-rest-sdk": "^1.8.1",
-    "puppeteer-core": "^21.5.2",
-    "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
-  },
-  "optionalDependencies": {
-    "puppeteer": "^21.5.2"
+    "paypal-rest-sdk": "^1.8.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
@@ -38,11 +32,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/landingfix-ai.git"
+    "url": "https://github.com/digitalandmore/landingfixv1.2.git"
   },
   "homepage": "https://landingfixai.com",
   "bugs": {
-    "url": "https://github.com/your-username/landingfix-ai/issues"
+    "url": "https://github.com/digitalandmore/landingfixv1.2/issues"
   },
   "keywords": [
     "landing-page",
@@ -56,7 +50,9 @@
     "mobile-optimization",
     "cta-optimization",
     "web-analytics",
-    "business-intelligence"
+    "business-intelligence",
+    "production-ready",
+    "lightweight"
   ],
   "author": {
     "name": "LandingFix AI",
@@ -64,17 +60,5 @@
     "url": "https://landingfixai.com"
   },
   "license": "ISC",
-  "private": true,
-  "config": {
-    "unsafe-perm": true
-  },
-  "os": [
-    "linux",
-    "darwin",
-    "win32"
-  ],
-  "cpu": [
-    "x64",
-    "arm64"
-  ]
+  "private": true
 }

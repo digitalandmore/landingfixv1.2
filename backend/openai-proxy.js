@@ -6,31 +6,6 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 const nodemailer = require('nodemailer');
 const { JSDOM } = require('jsdom');
 const { Readability } = require('@mozilla/readability');
-const jsdom = require('jsdom');
-
-// ENHANCED: Conditional puppeteer loading with better error handling
-const USE_PUPPETEER = process.env.USE_PUPPETEER !== 'false';
-let puppeteer = null;
-let StealthPlugin = null;
-
-// ENHANCED: Try to load puppeteer with graceful fallback
-if (USE_PUPPETEER) {
-  try {
-    const puppeteerCore = require('puppeteer-core');
-    const puppeteerExtra = require('puppeteer-extra');
-    StealthPlugin = require('puppeteer-extra-plugin-stealth');
-    
-    if (StealthPlugin) {
-      puppeteerExtra.use(StealthPlugin());
-    }
-    
-    puppeteer = puppeteerExtra;
-    console.log('✅ Puppeteer loaded successfully');
-  } catch (error) {
-    console.warn('⚠️ Puppeteer not available:', error.message);
-    console.warn('📄 PDF generation will use HTML-to-email fallback');
-  }
-}
 
 const tools = require('./tools.js');
 
@@ -53,6 +28,11 @@ const { focusCategories, getExpectedElementsForFocus, getFocusDebugInfo } = requ
 
 // Initialize Express app
 const app = express();
+
+// SIMPLIFIED: No Puppeteer - using only fetch and JSDOM
+console.log('🔄 Running in production mode without Puppeteer');
+console.log('📄 Using enhanced fetch + JSDOM for content extraction');
+console.log('📧 Email generation will use optimized HTML templates');
 
 // ENHANCED: More comprehensive CORS configuration
 const allowedOrigins = [
@@ -113,7 +93,6 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     version: '1.2.0',
     services: {
-      puppeteer: !!puppeteer,
       email: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS),
       openai: !!process.env.OPENAI_API_KEY,
       stripe: !!process.env.STRIPE_SECRET_KEY,
@@ -218,128 +197,32 @@ function normalizeFocusKey(focus) {
   return 'copywriting';
 }
 
-// Utility function: fetches rendered HTML and CSS using Puppeteer Stealth
-async function fetchRenderedHtmlAndCss(url) {
-  const maxRetries = 2;
-  let attempt = 0;
-  
-  while (attempt < maxRetries) {
-    attempt++;
-    
-    try {
-      console.log(`🔍 Fetching content (attempt ${attempt}/${maxRetries}): ${url}`);
-      
-      if (!USE_PUPPETEER || !puppeteer) {
-        console.log('🔄 Using basic HTML fetch');
-        return await fetchBasicHtml(url);
-      }
-      
-      const browser = await puppeteer.launch({
-        headless: "new",
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-extensions',
-          '--disable-gpu',
-          '--disable-background-timer-throttling',
-          '--disable-backgrounding-occluded-windows',
-          '--disable-renderer-backgrounding',
-          '--disable-features=TranslateUI',
-          '--disable-ipc-flooding-protection',
-          '--memory-pressure-off'
-        ],
-        timeout: 45000
-      });
-      
-      const page = await browser.newPage();
-      
-      // ENHANCED: Better page configuration
-      await page.setViewport({ width: 1366, height: 768 });
-      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-      
-      // ENHANCED: Set extra HTTP headers
-      await page.setExtraHTTPHeaders({
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'gzip, deflate, br'
-      });
-      
-      // ENHANCED: Navigate with better error handling
-      const response = await page.goto(url, { 
-        waitUntil: ['networkidle2', 'domcontentloaded'],
-        timeout: 30000 
-      });
-      
-      if (!response || !response.ok()) {
-        throw new Error(`HTTP ${response?.status() || 'unknown'}: Failed to load page`);
-      }
-      
-      // ENHANCED: Wait for dynamic content
-      await page.waitForTimeout(5000);
-      
-      // ENHANCED: Better content extraction
-      const [html, css] = await Promise.all([
-        page.content(),
-        page.evaluate(() => {
-          try {
-            const styles = Array.from(document.styleSheets);
-            return styles.map(sheet => {
-              try {
-                return Array.from(sheet.cssRules || []).map(rule => rule.cssText).join('\n');
-              } catch (e) {
-                return '';
-              }
-            }).join('\n');
-          } catch (e) {
-            return '';
-          }
-        })
-      ]);
-      
-      await browser.close();
-      
-      return { 
-        html, 
-        css: css.substring(0, 8000), // Limit CSS size
-        error: null,
-        method: 'puppeteer',
-        attempt
-      };
-      
-    } catch (error) {
-      console.error(`❌ Attempt ${attempt} failed:`, error.message);
-      
-      if (attempt >= maxRetries) {
-        console.log('🔄 All attempts failed, falling back to basic HTML fetch');
-        return await fetchBasicHtml(url);
-      }
-      
-      // Wait before retry
-      await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
-    }
-  }
-}
-
-// ENHANCED: Better basic HTML fetching with retry
-async function fetchBasicHtml(url) {
+// ENHANCED: Advanced HTML fetching without Puppeteer
+async function fetchHtmlContent(url) {
   const maxRetries = 3;
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`🔍 Basic fetch attempt ${attempt}/${maxRetries}: ${url}`);
+      console.log(`🔍 Enhanced fetch attempt ${attempt}/${maxRetries}: ${url}`);
       
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 20000);
+      const timeout = setTimeout(() => controller.abort(), 30000);
       
       const response = await fetch(url, {
         headers: {
+          // ENHANCED: Comprehensive headers to simulate real browser
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.5',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
           'Accept-Encoding': 'gzip, deflate, br',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'none',
+          'Upgrade-Insecure-Requests': '1',
           'DNT': '1',
-          'Connection': 'keep-alive',
-          'Upgrade-Insecure-Requests': '1'
+          'Connection': 'keep-alive'
         },
         signal: controller.signal
       });
@@ -352,16 +235,19 @@ async function fetchBasicHtml(url) {
       
       const html = await response.text();
       
+      console.log(`✅ Successfully fetched ${html.length} characters from ${url}`);
+      
       return { 
         html, 
-        css: '', 
+        css: '', // No CSS extraction without Puppeteer
         error: null,
-        method: 'basic_fetch',
-        attempt
+        method: 'enhanced_fetch',
+        attempt,
+        contentLength: html.length
       };
       
     } catch (error) {
-      console.error(`❌ Basic fetch attempt ${attempt} failed:`, error.message);
+      console.error(`❌ Fetch attempt ${attempt} failed:`, error.message);
       
       if (attempt === maxRetries) {
         return { 
@@ -373,101 +259,119 @@ async function fetchBasicHtml(url) {
         };
       }
       
-      // Wait before retry
-      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
     }
   }
 }
 
-app.get('/tools.json', (req, res) => {
-  const allTools = [
-    ...tools.abTesting,
-    ...tools.copywriting,
-    ...tools.testimonials,
-    ...tools.feedback
-  ];
-  res.json(allTools);
-});
-
-// Add tools endpoint
-app.get('/api/tools', (req, res) => {
+// ENHANCED: Comprehensive content extraction using JSDOM only
+async function extractComprehensiveContent(url) {
   try {
-    const tools = require('./tools');
-    res.json(tools);
-    console.log('Tools data served to frontend');
-  } catch (error) {
-    console.error('Error loading tools:', error);
-    res.status(500).json({ error: 'Failed to load tools data' });
-  }
-});
-
-// FIXED: Remove puppeteer stealth initialization that was causing error
-// puppeteer.use(StealthPlugin()); // This line was causing the error
-
-// ENHANCED: Better content extraction with fallback strategies
-async function extractVisibleContent(url) {
-  try {
-    console.log(`🔍 Extracting visible content from: ${url}`);
+    console.log(`🔍 Extracting comprehensive content from: ${url}`);
     
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20000);
+    const fetchResult = await fetchHtmlContent(url);
     
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      },
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeout);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    if (!fetchResult.html) {
+      throw new Error(`Failed to fetch content: ${fetchResult.error}`);
     }
     
-    const html = await response.text();
-    const dom = new JSDOM(html, { url });
+    const dom = new JSDOM(fetchResult.html, { 
+      url,
+      pretendToBeVisual: true,
+      resources: 'usable'
+    });
+    
     const document = dom.window.document;
     
-    // ENHANCED: Better content cleaning
-    const elementsToRemove = ['script', 'style', 'noscript', 'iframe', 'object', 'embed'];
-    elementsToRemove.forEach(tag => {
-      const elements = document.querySelectorAll(tag);
+    // ENHANCED: Remove unwanted elements
+    const elementsToRemove = [
+      'script', 'style', 'noscript', 'iframe', 'object', 'embed', 
+      'svg', 'canvas', 'audio', 'video', 'link[rel="stylesheet"]'
+    ];
+    
+    elementsToRemove.forEach(selector => {
+      const elements = document.querySelectorAll(selector);
       elements.forEach(el => el.remove());
     });
     
     // ENHANCED: Extract structured content
     const title = document.title || '';
     const metaDescription = document.querySelector('meta[name="description"]')?.content || '';
-    const h1Elements = Array.from(document.querySelectorAll('h1')).map(el => el.textContent?.trim()).filter(Boolean);
-    const h2Elements = Array.from(document.querySelectorAll('h2')).map(el => el.textContent?.trim()).filter(Boolean);
     
-    const visibleText = document.body?.textContent || '';
+    // Extract headings with hierarchy
+    const headings = {
+      h1: Array.from(document.querySelectorAll('h1')).map(el => el.textContent?.trim()).filter(Boolean),
+      h2: Array.from(document.querySelectorAll('h2')).map(el => el.textContent?.trim()).filter(Boolean),
+      h3: Array.from(document.querySelectorAll('h3')).map(el => el.textContent?.trim()).filter(Boolean)
+    };
     
-    // ENHANCED: Use Readability with better error handling
+    // Get main content using Readability
     let mainContent = '';
     try {
       const reader = new Readability(document.cloneNode(true));
       const article = reader.parse();
-      mainContent = article?.textContent || visibleText.slice(0, 3000);
+      
+      if (article) {
+        mainContent = article.textContent || '';
+      }
     } catch (readabilityError) {
       console.warn('Readability parsing failed:', readabilityError.message);
-      mainContent = visibleText.slice(0, 3000);
+      mainContent = document.body?.textContent || '';
     }
+    
+    // Get visible text - FIXED: Remove jsdom reference
+    const visibleText = document.body?.textContent || '';
+    
+    console.log('📊 Content extraction summary:', {
+      title: title.length,
+      metaDescription: metaDescription.length,
+      headings: Object.values(headings).flat().length,
+      mainContentWords: mainContent.split(/\s+/).length,
+      method: fetchResult.method
+    });
     
     return {
       title: title.slice(0, 200),
       metaDescription: metaDescription.slice(0, 300),
-      h1Elements: h1Elements.slice(0, 5),
-      h2Elements: h2Elements.slice(0, 10),
-      visibleText: visibleText.slice(0, 6000),
-      mainContent: mainContent.slice(0, 3000)
+      headings,
+      visibleText: visibleText.slice(0, 8000),
+      mainContent: mainContent.slice(0, 4000),
+      fetchMethod: fetchResult.method
     };
     
   } catch (error) {
-    console.error('Error extracting visible content:', error);
-    throw error;
+    console.error('Error extracting comprehensive content:', error);
+    
+    return {
+      title: '',
+      metaDescription: '',
+      headings: { h1: [], h2: [], h3: [] },
+      visibleText: '',
+      mainContent: '',
+      fetchMethod: 'failed',
+      error: error.message
+    };
   }
+}
+
+// UPDATED: Use new fetchHtmlContent instead of fetchRenderedHtmlAndCss
+async function fetchRenderedHtmlAndCss(url) {
+  console.log('🔄 Using enhanced fetch method (no Puppeteer)');
+  return await fetchHtmlContent(url);
+}
+
+// UPDATED: Use extractComprehensiveContent instead of extractVisibleContent
+async function extractVisibleContent(url) {
+  const comprehensiveData = await extractComprehensiveContent(url);
+  
+  return {
+    title: comprehensiveData.title,
+    metaDescription: comprehensiveData.metaDescription,
+    h1Elements: comprehensiveData.headings.h1,
+    h2Elements: comprehensiveData.headings.h2,
+    visibleText: comprehensiveData.visibleText,
+    mainContent: comprehensiveData.mainContent
+  };
 }
 
 // --- GENERATE REPORT ---
@@ -534,8 +438,8 @@ app.post('/api/generate-report', async (req, res) => {
       });
     } catch (contentError) {
       console.warn('Content extraction failed, using HTML fallback:', contentError.message);
-      // Fallback to HTML text extraction
-      const dom = new jsdom.JSDOM(landingHtml, { url });
+      // FIXED: Use JSDOM correctly
+      const dom = new JSDOM(landingHtml, { url });
       contentData.visibleText = dom.window.document.body?.textContent?.slice(0, 4000) || '';
       contentData.mainContent = landingHtml.slice(0, 2000);
     }
@@ -858,11 +762,11 @@ app.post('/api/generate-report', async (req, res) => {
 // --- SEND REPORT VIA EMAIL ---
 app.post('/api/send-report', async (req, res) => {
   try {
-    console.log('📄 Enhanced PDF generation request received');
+    console.log('📧 Enhanced email generation request received');
     
     const { url, name, company, email, isPdfEmail, pdfContent, htmlTemplate } = req.body;
     
-    // ENHANCED: Better validation
+    // Validation
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({
         success: false,
@@ -877,55 +781,42 @@ app.post('/api/send-report', async (req, res) => {
       });
     }
     
-    console.log('📄 Processing request:', { email, url, isPdfEmail: !!isPdfEmail });
+    console.log('📧 Processing request:', { email, url, hasContent: !!pdfContent });
     
-    // ENHANCED: Check email configuration
-    const requiredEnvVars = ['EMAIL_USER', 'EMAIL_PASS', 'EMAIL_HOST'];
-    const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-    
-    if (missingVars.length > 0) {
-      console.error('📧 Missing email configuration:', missingVars);
+    // Check email configuration
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.error('📧 Missing email configuration');
       return res.status(500).json({
         success: false,
-        error: 'Email service not properly configured'
+        error: 'Email service not configured'
       });
     }
     
-    // ENHANCED: Create transporter with better configuration
+    // ENHANCED: Create transporter with correct method name
     const transporter = nodemailer.createTransporter({
-      host: process.env.EMAIL_HOST,
-      port: parseInt(process.env.EMAIL_PORT) || 587,
-      secure: process.env.EMAIL_SECURE === 'true',
+      service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
       },
-      connectionTimeout: 60000,
-      greetingTimeout: 30000,
-      socketTimeout: 60000,
       tls: {
         rejectUnauthorized: false
       }
     });
     
-    // ENHANCED: Verify transporter with timeout
+    // Verify transporter
     try {
-      await Promise.race([
-        transporter.verify(),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Email verification timeout')), 10000)
-        )
-      ]);
-      console.log('📧 Email transporter verified successfully');
+      await transporter.verify();
+      console.log('📧 Email service verified successfully');
     } catch (verifyError) {
       console.error('📧 Email verification failed:', verifyError.message);
       return res.status(500).json({
         success: false,
-        error: 'Email service verification failed: ' + verifyError.message
+        error: 'Email service verification failed'
       });
     }
     
-    // ENHANCED: Generate better email content
+    // Generate email content
     const now = new Date();
     const timestamp = now.toLocaleDateString('en-US', { 
       year: 'numeric', 
@@ -937,9 +828,9 @@ app.post('/api/send-report', async (req, res) => {
     
     const emailSubject = `🚀 Your LandingFix AI Report - ${new URL(url).hostname}`;
     
-    // ENHANCED: Better HTML email template
-    const enhancedHtmlContent = htmlTemplate || generateEnhancedEmailTemplate({
-      url, name, company, email, timestamp, pdfContent
+    // Create comprehensive HTML email
+    const enhancedHtmlContent = generateComprehensiveEmailReport({
+      url, name, company, email, timestamp, pdfContent, htmlTemplate
     });
     
     const mailOptions = {
@@ -949,93 +840,49 @@ app.post('/api/send-report', async (req, res) => {
       html: enhancedHtmlContent,
       headers: {
         'X-Mailer': 'LandingFix AI v1.2',
-        'X-Priority': '1',
-        'Importance': 'high'
+        'X-Priority': '1'
       }
     };
     
-    // ENHANCED: Add PDF attachment if content is provided
-    if (pdfContent && pdfContent.length > 1000) {
-      try {
-        console.log('📄 Attempting to create PDF attachment');
-        
-        // ENHANCED: Try to create actual PDF if possible
-        if (puppeteer) {
-          const pdfBuffer = await generatePdfFromHtml(pdfContent, {
-            url, name, company, email, timestamp
-          });
-          
-          if (pdfBuffer) {
-            mailOptions.attachments = [{
-              filename: `LandingFix-AI-Report-${new URL(url).hostname}-${Date.now()}.pdf`,
-              content: pdfBuffer,
-              contentType: 'application/pdf'
-            }];
-            console.log('📄 PDF attachment created successfully');
-          }
-        } else {
-          console.log('📄 Puppeteer not available, sending HTML content only');
-        }
-      } catch (pdfError) {
-        console.warn('📄 PDF generation failed, sending HTML only:', pdfError.message);
-      }
-    }
-    
-    // ENHANCED: Send email with retry logic
-    const maxEmailRetries = 3;
+    // Send email with retry logic
+    const maxRetries = 3;
     let emailSent = false;
     
-    for (let attempt = 1; attempt <= maxEmailRetries && !emailSent; attempt++) {
+    for (let attempt = 1; attempt <= maxRetries && !emailSent; attempt++) {
       try {
-        console.log(`📧 Sending email attempt ${attempt}/${maxEmailRetries}`);
+        console.log(`📧 Sending email attempt ${attempt}/${maxRetries}`);
         
-        await Promise.race([
-          transporter.sendMail(mailOptions),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Email send timeout')), 45000)
-          )
-        ]);
-        
+        await transporter.sendMail(mailOptions);
         emailSent = true;
         console.log('📧 Email sent successfully to:', email);
         
       } catch (emailError) {
         console.error(`📧 Email attempt ${attempt} failed:`, emailError.message);
         
-        if (attempt === maxEmailRetries) {
+        if (attempt === maxRetries) {
           throw emailError;
         }
         
-        // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
       }
     }
     
     return res.json({
       success: true,
-      message: 'Report sent successfully via email',
-      attachmentIncluded: !!mailOptions.attachments,
-      timestamp: timestamp
+      message: 'Report sent successfully via email (HTML format)',
+      timestamp: timestamp,
+      method: 'comprehensive_html_email'
     });
     
   } catch (error) {
-    console.error('📄 Email sending error:', {
-      message: error.message,
-      stack: error.stack?.substring(0, 500),
-      code: error.code
-    });
+    console.error('📧 Email sending error:', error.message);
     
-    // ENHANCED: More specific error messages
     let errorMessage = 'Failed to send report email';
     
-    if (error.message.includes('timeout')) {
-      errorMessage = 'Email service timeout - please try again';
-    } else if (error.message.includes('authentication') || error.code === 'EAUTH') {
+    if (error.message.includes('authentication')) {
       errorMessage = 'Email authentication error';
-    } else if (error.message.includes('ENOTFOUND') || error.message.includes('ECONNREFUSED')) {
+    } else if (error.message.includes('ENOTFOUND')) {
       errorMessage = 'Email server connection error';
-    } else if (error.code === 'EMESSAGE') {
-      errorMessage = 'Email content error - please try again';
     }
     
     return res.status(500).json({
@@ -1045,196 +892,130 @@ app.post('/api/send-report', async (req, res) => {
   }
 });
 
-// ENHANCED: Generate PDF from HTML using Puppeteer
-async function generatePdfFromHtml(htmlContent, metadata) {
-  if (!puppeteer) {
-    console.warn('📄 Puppeteer not available for PDF generation');
-    return null;
-  }
-  
-  let browser;
-  
+// ENHANCED: Generate comprehensive email with embedded report
+function generateComprehensiveEmailReport({ url, name, company, email, timestamp, pdfContent, htmlTemplate }) {
   try {
-    console.log('📄 Generating PDF from HTML content');
+    const domain = new URL(url).hostname;
     
-    browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-extensions',
-        '--disable-gpu'
-      ]
-    });
+    // Use provided template or generate comprehensive one
+    if (htmlTemplate && htmlTemplate.length > 1000) {
+      return htmlTemplate;
+    }
     
-    const page = await browser.newPage();
-    
-    // ENHANCED: Set page content with metadata
-    const fullHtml = `
+    return `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="UTF-8">
-        <title>LandingFix AI Report - ${metadata.url}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Your LandingFix AI Analysis Report</title>
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #007bff; padding-bottom: 20px; }
-          .metadata { background: #f8f9fa; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
-          .content { margin: 20px 0; }
-          @media print { * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background: #f8fafc; }
+          .container { max-width: 800px; margin: 0 auto; background: white; }
+          .header { background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 40px 20px; text-align: center; }
+          .header h1 { font-size: 28px; margin-bottom: 10px; }
+          .content { padding: 30px; }
+          .info-box { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .report-section { margin: 30px 0; padding: 20px; border: 1px solid #dee2e6; border-radius: 8px; }
+          .cta-button { display: inline-block; background: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; margin: 20px 0; }
+          .footer { background: #2d3748; color: #a0aec0; padding: 20px; text-align: center; }
+          @media (max-width: 600px) { .container { margin: 0; } .content { padding: 20px; } }
         </style>
       </head>
       <body>
-        <div class="header">
-          <h1>LandingFix AI Analysis Report</h1>
-          <p>Generated on ${metadata.timestamp}</p>
-        </div>
-        <div class="metadata">
-          <h3>Report Details</h3>
-          <p><strong>Website:</strong> ${metadata.url}</p>
-          <p><strong>Generated for:</strong> ${metadata.name || 'LandingFix AI User'}</p>
-          ${metadata.company ? `<p><strong>Company:</strong> ${metadata.company}</p>` : ''}
-        </div>
-        <div class="content">
-          ${htmlContent}
+        <div class="container">
+          <!-- Header -->
+          <div class="header">
+            <h1>🚀 Your LandingFix AI Analysis Report</h1>
+            <p>Complete optimization insights for ${domain}</p>
+          </div>
+          
+          <!-- Content -->
+          <div class="content">
+            <!-- Report Info -->
+            <div class="info-box">
+              <h3>Report Details</h3>
+              <p><strong>Website:</strong> ${url}</p>
+              <p><strong>Generated for:</strong> ${name || 'LandingFix AI User'}</p>
+              ${company ? `<p><strong>Company:</strong> ${company}</p>` : ''}
+              <p><strong>Date:</strong> ${timestamp}</p>
+              <p><strong>Email:</strong> ${email}</p>
+            </div>
+            
+            <!-- Key Benefits -->
+            <div class="report-section">
+              <h3>📊 What's Included in Your Analysis</h3>
+              <ul style="padding-left: 20px; margin: 15px 0;">
+                <li>Comprehensive landing page performance analysis</li>
+                <li>Specific optimization recommendations by category</li>
+                <li>Implementation timelines and priorities</li>
+                <li>Industry-specific best practices</li>
+                <li>Actionable steps to improve conversions</li>
+                <li>Professional insights from AI-powered analysis</li>
+              </ul>
+            </div>
+            
+            ${pdfContent ? `
+            <!-- Report Content -->
+            <div class="report-section">
+              <h3>📋 Your Complete Analysis</h3>
+              <div style="border: 2px solid #007bff; border-radius: 8px; padding: 20px; background: #f8f9ff;">
+                ${pdfContent}
+              </div>
+            </div>
+            ` : ''}
+            
+            <!-- Implementation Guide -->
+            <div class="report-section">
+              <h3>🎯 Implementation Roadmap</h3>
+              <div style="margin: 20px 0;">
+                <div style="padding: 15px; background: #e8f5e8; border-radius: 6px; margin-bottom: 15px;">
+                  <strong>Phase 1: Quick Wins (Week 1-2)</strong>
+                  <p>Implement high-impact, low-effort improvements to see immediate results.</p>
+                </div>
+                <div style="padding: 15px; background: #fff3cd; border-radius: 6px; margin-bottom: 15px;">
+                  <strong>Phase 2: Strategic Changes (Week 3-6)</strong>
+                  <p>Execute major optimizations that require planning and testing.</p>
+                </div>
+                <div style="padding: 15px; background: #d4edda; border-radius: 6px;">
+                  <strong>Phase 3: Continuous Optimization (Ongoing)</strong>
+                  <p>Regular testing, monitoring, and refinement of all improvements.</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Next Steps -->
+            <div class="report-section" style="background: #f0f8ff; border-color: #007bff;">
+              <h3>🚀 Ready to Optimize Your Landing Page?</h3>
+              <p>Use this analysis to improve your conversion rates and grow your business.</p>
+              <a href="https://landingfixai.com" class="cta-button">Get Another Analysis</a>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div class="footer">
+            <p>Thank you for using LandingFix AI!</p>
+            <p style="margin-top: 10px;">
+              <a href="https://landingfixai.com" style="color: #667eea;">Visit our website</a> | 
+              <a href="mailto:support@landingfixai.com" style="color: #667eea;">Contact Support</a>
+            </p>
+          </div>
         </div>
       </body>
       </html>
     `;
-    
-    await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
-    
-    // ENHANCED: Generate PDF with better options
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '20mm',
-        right: '15mm',
-        bottom: '20mm',
-        left: '15mm'
-      },
-      displayHeaderFooter: true,
-      headerTemplate: '<div></div>',
-      footerTemplate: `
-        <div style="font-size: 10px; text-align: center; width: 100%; color: #666;">
-          LandingFix AI Report - Page <span class="pageNumber"></span> of <span class="totalPages"></span>
-        </div>
-      `
-    });
-    
-    await browser.close();
-    console.log('📄 PDF generated successfully, size:', pdfBuffer.length, 'bytes');
-    
-    return pdfBuffer;
-    
   } catch (error) {
-    console.error('📄 PDF generation error:', error.message);
-    
-    if (browser) {
-      try {
-        await browser.close();
-      } catch (closeError) {
-        console.error('📄 Error closing browser:', closeError.message);
-      }
-    }
-    
-    return null;
+    console.error('Error generating email template:', error);
+    return `
+      <html><body>
+        <h1>LandingFix AI Report</h1>
+        <p>Your analysis report is ready!</p>
+        <p>Website: ${url}</p>
+        <p>Generated on: ${timestamp}</p>
+      </body></html>
+    `;
   }
-}
-
-// ENHANCED: Generate enhanced email template
-function generateEnhancedEmailTemplate({ url, name, company, email, timestamp, pdfContent }) {
-  const domain = new URL(url).hostname;
-  
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Your LandingFix AI Report</title>
-    </head>
-    <body style="margin:0;padding:0;background-color:#f8fafc;font-family:Arial,sans-serif;">
-      <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.1);">
-        
-        <!-- Header -->
-        <div style="background:linear-gradient(135deg,#007bff,#0056b3);padding:40px 24px;text-align:center;color:white;">
-          <h1 style="margin:0;font-size:28px;font-weight:700;">🚀 Your Landing Page Analysis is Ready!</h1>
-          <p style="margin:12px 0 0 0;font-size:16px;opacity:0.9;">Comprehensive optimization insights for ${domain}</p>
-        </div>
-
-        <!-- Content -->
-        <div style="padding:32px 24px;">
-          <h2 style="margin:0 0 20px 0;font-size:20px;color:#2d3748;">Report Summary</h2>
-          
-          <div style="background:#f8fafc;padding:20px;border-radius:8px;margin-bottom:24px;">
-            <p style="margin:0 0 8px 0;"><strong>Website Analyzed:</strong> ${url}</p>
-            <p style="margin:0 0 8px 0;"><strong>Report Generated For:</strong> ${name || 'LandingFix AI User'}</p>
-            ${company ? `<p style="margin:0 0 8px 0;"><strong>Company:</strong> ${company}</p>` : ''}
-            <p style="margin:0 0 8px 0;"><strong>Analysis Date:</strong> ${timestamp}</p>
-            <p style="margin:0;"><strong>Email:</strong> ${email}</p>
-          </div>
-
-          <!-- Key Benefits -->
-          <div style="margin-bottom:24px;">
-            <h3 style="margin:0 0 16px 0;color:#2d3748;">What's Included in Your Report</h3>
-            <ul style="margin:0;padding-left:20px;color:#4a5568;">
-              <li style="margin-bottom:8px;">Detailed analysis of your landing page performance</li>
-              <li style="margin-bottom:8px;">Specific optimization recommendations</li>
-              <li style="margin-bottom:8px;">Implementation timelines and priorities</li>
-              <li style="margin-bottom:8px;">Industry-specific best practices</li>
-              <li style="margin-bottom:8px;">Actionable steps to improve conversions</li>
-            </ul>
-          </div>
-
-          ${pdfContent ? `
-          <!-- Report Content Preview -->
-          <div style="background:#f0f8ff;padding:20px;border-radius:8px;border:2px solid #007bff;margin-bottom:24px;">
-            <h3 style="margin:0 0 16px 0;color:#007bff;">📊 Your Analysis Preview</h3>
-            <div style="max-height:300px;overflow:hidden;color:#333;font-size:14px;line-height:1.6;">
-              ${pdfContent.substring(0, 1000)}...
-            </div>
-            <p style="margin:16px 0 0 0;font-style:italic;color:#666;font-size:12px;">
-              This is a preview - the complete analysis ${pdfContent.length > 10000 ? 'is attached as a PDF' : 'is included above'}
-            </p>
-          </div>
-          ` : ''}
-
-          <!-- Next Steps -->
-          <div style="background:#e8f5e8;padding:20px;border-radius:8px;border:1px solid #28a745;margin-bottom:24px;">
-            <h3 style="margin:0 0 16px 0;color:#28a745;">🎯 Next Steps</h3>
-            <ol style="margin:0;padding-left:20px;color:#2d3748;">
-              <li style="margin-bottom:8px;">Review the detailed recommendations</li>
-              <li style="margin-bottom:8px;">Prioritize high-impact, quick-win optimizations</li>
-              <li style="margin-bottom:8px;">Implement changes incrementally</li>
-              <li style="margin-bottom:8px;">Monitor conversion improvements</li>
-              <li>Return to LandingFix AI for follow-up analysis</li>
-            </ol>
-          </div>
-
-          <!-- CTA -->
-          <div style="text-align:center;margin:32px 0;">
-            <a href="https://landingfixai.com" 
-               style="display:inline-block;background:linear-gradient(135deg,#007bff,#0056b3);color:white;padding:16px 32px;text-decoration:none;border-radius:8px;font-weight:600;font-size:16px;box-shadow:0 4px 12px rgba(0,123,255,0.3);">
-              Generate Another Report
-            </a>
-          </div>
-        </div>
-
-        <!-- Footer -->
-        <div style="padding:24px;background:#2d3748;color:#a0aec0;text-align:center;">
-          <p style="margin:0 0 16px 0;">Thank you for using LandingFix AI!</p>
-          <p style="margin:0;font-size:14px;">
-            <a href="https://landingfixai.com" style="color:#667eea;text-decoration:none;">Visit our website</a> | 
-            <a href="mailto:support@landingfixai.com" style="color:#667eea;text-decoration:none;">Contact Support</a>
-          </p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
 }
 
 // --- TEST ROUTE ---
@@ -1946,18 +1727,15 @@ function enhanceActionsWithTools(actions, element, industry) {
 
 const port = process.env.PORT || 10000;
 
-// ENHANCED: Start server with better error handling
 app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 LandingFix AI Server v1.2 running on port ${port}`);
   console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 CORS origins configured: ${allowedOrigins.length} domains`);
   console.log(`🤖 Services status:`);
-  console.log(`   - Puppeteer: ${USE_PUPPETEER && puppeteer ? '✅ Available' : '❌ Disabled'}`);
+  console.log(`   - Content Fetching: ✅ Enhanced Fetch + JSDOM`);
+  console.log(`   - Email Reports: ✅ HTML Email Templates`);
   console.log(`   - Email: ${process.env.EMAIL_USER ? '✅ Configured' : '❌ Missing'}`);
   console.log(`   - OpenAI: ${process.env.OPENAI_API_KEY ? '✅ Configured' : '❌ Missing'}`);
-  console.log(`   - Stripe: ${process.env.STRIPE_SECRET_KEY ? '✅ Configured' : '❌ Missing'}`);
-  console.log(`   - PayPal: ${process.env.PAYPAL_CLIENT_ID ? '✅ Configured' : '❌ Missing'}`);
-  console.log(`📊 Health check available at: http://localhost:${port}/health`);
+  console.log(`📊 Health check: http://localhost:${port}/health`);
 }).on('error', (error) => {
   console.error('🚨 Server startup error:', error);
   process.exit(1);
