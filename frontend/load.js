@@ -606,67 +606,56 @@ class ReportLoader {
   }
 
   // Enhanced fetch and update with progressive steps and continuous progress
-  async fetchAndUpdateReport() {
-    try {
-      this.isLoading = true;
-      
-      // Step 1: Start fetching (20%)
-      this.updateProgress(1, 20, 'Fetching page content and structure...');
-      await window.delay(200);
-      
-      // Start continuous progress simulation during API call
-      this.startContinuousProgress(20, 35);
-      
-      const response = await fetch("https://landingfixv1-2.onrender.com/api/generate-report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url: this.data.url,
-          focus: this.data.focus,
-          industry: this.data.industry,
-          goals: this.data.goals || []
-        })
-      });
+async fetchAndUpdateReport() {
+  try {
+    this.isLoading = true;
+    
+    // Step 1: Start fetching (20%)
+    this.updateProgress(1, 20, 'Fetching page content and structure...');
+    await window.delay(200);
+    
+    // Start continuous progress simulation during API call
+    this.startContinuousProgress(20, 35);
+    
+    const response = await fetch("https://landingfixv1-2.onrender.com/api/generate-report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: this.data.url,
+        focus: this.data.focus,
+        industry: this.data.industry,
+        goals: this.data.goals || []
+      })
+    });
 
-      // Stop continuous progress and jump to next step
-      this.stopContinuousProgress();
+    // Stop continuous progress and jump to next step
+    this.stopContinuousProgress();
+    
+    // Step 2: AI Analysis (35%)
+    this.updateProgress(2, 35, 'Processing content with AI algorithms...');
+    await window.delay(300);
+    
+    // ✅ NEW: Handle blocked sites (403 response)
+    if (response.status === 403) {
+      console.log('🚫 Received 403 status, checking for blocked site');
       
-      // Step 2: AI Analysis (35%)
-      this.updateProgress(2, 35, 'Processing content with AI algorithms...');
-      await window.delay(300);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      // Step 3: UX Evaluation (50%)
-      this.updateProgress(3, 50, 'Evaluating user experience patterns...');
-      await window.delay(250);
-      
-      // Start continuous progress for JSON parsing
-      this.startContinuousProgress(50, 70);
-      
-      const result = await response.json();
-      
-      // Stop continuous progress
-      this.stopContinuousProgress();
-      
-      if (result.error) {
-        // FIXED: Direct DOM manipulation instead of window.showErrorMessage
-        const reportContent = document.getElementById('report-content');
-        if (reportContent) {
-          reportContent.innerHTML = `
-            <div style="text-align: center; padding: 48px 24px; color: #dc2626;">
-              <h3>Report Generation Error</h3>
-              <p>${result.error}</p>
-              <button onclick="window.location.reload()" style="padding: 12px 24px; background: #dc2626; color: white; border: none; border-radius: 8px; cursor: pointer;">
-                Try Again
-              </button>
-            </div>
-          `;
+      try {
+        const errorData = await response.json();
+        console.log('🚫 Blocked site data:', errorData);
+        
+        if (errorData.blockedSite || errorData.error === 'SITE_BLOCKED') {
+          console.log('🚫 Confirmed blocked site, showing message');
+          this.showBlockedSiteMessage(errorData);
+          return;
         }
-        return;
+      } catch (jsonError) {
+        console.error('Error parsing 403 response:', jsonError);
       }
+    }
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
       // Step 4: Score Calculation (70%)
       this.updateProgress(4, 70, 'Computing optimization metrics...');
@@ -1179,76 +1168,288 @@ class ReportLoader {
     alert('Please refresh the page and try again, or contact support if the issue persists.');
   }
 
-  // Setup overlay behaviors
+    // Setup overlay behaviors
   setupOverlayBehaviors() {
-    // FIXED: Listen for unlock events to update UI dynamically
-    const checkUnlockStatus = () => {
-      const isUnlocked = localStorage.getItem('landingfix_unlocked') === 'true';
-      
-      // Hide unlock button in header
-      const unlockBtn = document.getElementById('unlock-full-report');
-      if (isUnlocked && unlockBtn) {
-        unlockBtn.style.display = 'none';
-        console.log('🔓 Report unlocked - hiding unlock button');
-      }
-      
-      // FIXED: Hide unlock buttons in final summary section
-      const summaryUnlockBtns = document.querySelectorAll('.summary-action-btn.primary');
-      summaryUnlockBtns.forEach(btn => {
-        if (isUnlocked && (btn.textContent.includes('Unlock') || btn.innerHTML.includes('unlock'))) {
-          btn.style.display = 'none';
-          console.log('🔓 Report unlocked - hiding summary unlock button');
-        }
-      });
-      
-      // FIXED: Update all unlock buttons in the report
-      const allUnlockBtns = document.querySelectorAll('button[onclick*="openCheckout"], .unlock-btn');
-      allUnlockBtns.forEach(btn => {
-        if (isUnlocked) {
-          btn.style.display = 'none';
-          console.log('🔓 Report unlocked - hiding unlock button:', btn.id || btn.className);
-        }
-      });
-    };
-    
-    // Check initially
-    checkUnlockStatus();
-    
-    // FIXED: Listen for storage changes (when unlock happens in popup)
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'landingfix_unlocked' && e.newValue === 'true') {
-        console.log('🔓 Unlock detected via storage event');
-        checkUnlockStatus();
-        
-        // FIXED: Re-setup buttons with new unlock status
-        setTimeout(() => {
-          this.setupButtonsAfterScores();
-        }, 500);
+    const overlay = document.getElementById('report-overlay');
+    if (!overlay) return;
+
+    // Handle clicks on the overlay background (outside the content)
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        // Click was on the overlay background, not the content
+        console.log('🔒 Overlay background clicked - showing unlock prompt');
+        this.showCheckoutForFeature('full-report');
       }
     });
-    
-    // FIXED: Also check periodically for unlock status changes
-    const unlockCheckInterval = setInterval(() => {
-      const wasUnlocked = this._lastUnlockStatus;
-      const isUnlocked = localStorage.getItem('landingfix_unlocked') === 'true';
-      
-      if (wasUnlocked !== isUnlocked && isUnlocked) {
-        console.log('🔓 Unlock detected via periodic check');
-        checkUnlockStatus();
-        
-        // FIXED: Re-setup buttons with new unlock status
-        setTimeout(() => {
-          this.setupButtonsAfterScores();
-        }, 500);
-        
-        clearInterval(unlockCheckInterval); // Stop checking once unlocked
-      }
-      
-      this._lastUnlockStatus = isUnlocked;
-    }, 1000);
-    
+
+    // Prevent event bubbling on overlay content
+    const overlayContent = overlay.querySelector('.overlay-content');
+    if (overlayContent) {
+      overlayContent.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+    }
+
+    // Monitor scroll attempts on blurred content
+    const reportContent = document.getElementById('report-content');
+    if (reportContent) {
+      reportContent.addEventListener('scroll', (e) => {
+        const isBlurred = reportContent.classList.contains('blurred');
+        if (isBlurred) {
+          console.log('🔒 Scroll attempt on locked content - showing unlock prompt');
+          e.preventDefault();
+          this.showCheckoutForFeature('full-report');
+        }
+      });
+    }
+
     console.log('✅ Overlay behaviors set up with unlock monitoring');
   }
+
+  // ✅ NEW: Show blocked site message
+  showBlockedSiteMessage(blockData) {
+    console.log('🚫 Showing blocked site message for:', blockData.domain);
+    
+    const reportContent = document.getElementById('report-content');
+    if (!reportContent) return;
+
+    this.stopContinuousProgress();
+    
+    reportContent.innerHTML = `
+      <div class="blocked-site-container">
+        <div class="blocked-site-card">
+          <div class="blocked-site-header">
+            <div class="blocked-site-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <h2 class="blocked-site-title">${blockData.title}</h2>
+            <p class="blocked-site-subtitle">${blockData.message}</p>
+          </div>
+
+          <div class="blocked-site-explanation">
+            <div class="explanation-box">
+              <h3><i class="fas fa-info-circle"></i> Why is this happening?</h3>
+              <p>${blockData.explanation}</p>
+            </div>
+          </div>
+
+          <div class="blocked-site-solutions">
+            <h3><i class="fas fa-lightbulb"></i> What you can do</h3>
+            <ul class="solutions-list">
+              ${blockData.solutions.map(solution => `<li>${solution}</li>`).join('')}
+            </ul>
+          </div>
+
+          <div class="blocked-site-actions">
+            <a href="${blockData.actionUrl}" class="btn-primary-large">
+              <i class="fas fa-rocket"></i>
+              ${blockData.actionText}
+            </a>
+            
+            <button class="btn-secondary" onclick="window.showTechnicalDetails()">
+              <i class="fas fa-cog"></i>
+              Technical Details
+            </button>
+          </div>
+
+          <div class="technical-details" id="technical-details" style="display: none;">
+            <h4>Technical Information</h4>
+            <div class="technical-info">
+              <p><strong>Domain:</strong> ${blockData.domain}</p>
+              <p><strong>Block Type:</strong> ${blockData.reason}</p>
+              <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+              <pre>${JSON.stringify(blockData.technicalDetails, null, 2)}</pre>
+            </div>
+          </div>
+
+          <div class="blocked-site-footer">
+            <p class="help-text">
+              <i class="fas fa-question-circle"></i>
+              Need help? <a href="mailto:${blockData.supportEmail}">Contact support</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.addBlockedSiteStyles();
+    this.setupBlockedSiteHandlers();
+  }
+
+  // ✅ NEW: Add CSS styles for blocked site interface
+  addBlockedSiteStyles() {
+    if (document.getElementById('blocked-site-styles')) return;
+
+    const styles = document.createElement('style');
+    styles.id = 'blocked-site-styles';
+    styles.textContent = `
+      .blocked-site-container {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      }
+
+      .blocked-site-card {
+        max-width: 600px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        padding: 3rem;
+        text-align: center;
+        animation: slideIn 0.6s ease-out;
+      }
+
+      .blocked-site-icon {
+        font-size: 4rem;
+        color: #ff6b6b;
+        margin-bottom: 1rem;
+      }
+
+      .blocked-site-title {
+        font-size: 1.8rem;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        font-weight: 700;
+      }
+
+      .blocked-site-subtitle {
+        font-size: 1.1rem;
+        color: #7f8c8d;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+      }
+
+      .explanation-box {
+        background: #f8f9fa;
+        border-left: 4px solid #3498db;
+        padding: 1.5rem;
+        border-radius: 0 10px 10px 0;
+        text-align: left;
+        margin: 2rem 0;
+      }
+
+      .explanation-box h3 {
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+      }
+
+      .blocked-site-solutions {
+        margin: 2rem 0;
+        text-align: left;
+      }
+
+      .solutions-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      .solutions-list li {
+        background: #fff5f5;
+        border-left: 3px solid #e74c3c;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0 8px 8px 0;
+        color: #2c3e50;
+      }
+
+      .blocked-site-actions {
+        margin: 2rem 0;
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn-primary-large {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .btn-primary-large:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        color: white;
+        text-decoration: none;
+      }
+
+      .btn-secondary {
+        background: #f8f9fa;
+        color: #6c757d;
+        border: 1px solid #dee2e6;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .technical-details {
+        margin-top: 2rem;
+        text-align: left;
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+      }
+
+      .technical-info pre {
+        background: #e9ecef;
+        padding: 1rem;
+        border-radius: 5px;
+        font-size: 0.8rem;
+        overflow-x: auto;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .blocked-site-card {
+          margin: 1rem;
+          padding: 2rem;
+        }
+        .blocked-site-actions {
+          flex-direction: column;
+        }
+      }
+    `;
+
+    document.head.appendChild(styles);
+  }
+
+  // ✅ NEW: Setup event handlers for blocked site interface
+  setupBlockedSiteHandlers() {
+    window.showTechnicalDetails = () => {
+      const details = document.getElementById('technical-details');
+      if (details) {
+        details.style.display = details.style.display === 'none' ? 'block' : 'none';
+      }
+    };
+  }
+
 }
 
 // Initialize when DOM is ready

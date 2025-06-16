@@ -12,6 +12,11 @@ function checkIfSiteBlocked(errorMessage, url) {
     const urlObj = new URL(url);
     const domain = urlObj.hostname.replace('www.', '');
     
+    console.log('🔍 Checking if site is blocked:', {
+      domain: domain,
+      errorMessage: errorMessage.substring(0, 200)
+    });
+    
     // Known blocking patterns in error messages
     const blockingIndicators = [
       'cloudflare',
@@ -32,13 +37,18 @@ function checkIfSiteBlocked(errorMessage, url) {
       'rate limit',
       'ddos protection',
       'challenge',
-      'verification'
+      'verification',
+      'protection mode',
+      'security service',
+      'browser check'
     ];
     
     const errorLower = errorMessage.toLowerCase();
-    const hasBlockingIndicator = blockingIndicators.some(indicator => 
+    const foundIndicators = blockingIndicators.filter(indicator => 
       errorLower.includes(indicator)
     );
+    
+    const hasBlockingIndicator = foundIndicators.length > 0;
     
     // Known problematic domains that typically block bots
     const problematicDomains = [
@@ -60,10 +70,20 @@ function checkIfSiteBlocked(errorMessage, url) {
       'wordpress.com',
       'cloudflare.com',
       'shopify.dev',
-      'myshopify.com'
+      'myshopify.com',
+      'bigcommerce.com',
+      'salesforce.com',
+      'hubspot.com'
     ];
     
     const isProblematicDomain = problematicDomains.some(pd => domain.includes(pd));
+    
+    console.log('🔍 Blocking check results:', {
+      hasBlockingIndicator: hasBlockingIndicator,
+      foundIndicators: foundIndicators,
+      isProblematicDomain: isProblematicDomain,
+      domain: domain
+    });
     
     if (hasBlockingIndicator || isProblematicDomain) {
       return {
@@ -72,7 +92,7 @@ function checkIfSiteBlocked(errorMessage, url) {
         reason: hasBlockingIndicator ? 'anti_bot_protection' : 'problematic_domain',
         details: {
           errorMessage: errorMessage,
-          foundIndicators: blockingIndicators.filter(indicator => errorLower.includes(indicator)),
+          foundIndicators: foundIndicators,
           isKnownProblematic: isProblematicDomain,
           suggestedAction: isProblematicDomain ? 'try_different_site' : 'check_site_settings',
           timestamp: new Date().toISOString()
@@ -96,8 +116,32 @@ function checkIfSiteBlocked(errorMessage, url) {
  */
 function checkHtmlForBlocking(html, url) {
   try {
+    console.log('🔍 Checking HTML for blocking indicators:', {
+      url: url,
+      htmlLength: html?.length || 0,
+      htmlPreview: html?.substring(0, 200) || 'EMPTY'
+    });
+    
     if (!html || html.length < 100) {
-      return { blocked: false };
+      console.log('⚠️ HTML too short, considering as blocked:', {
+        length: html?.length || 0,
+        content: html || 'NULL'
+      });
+      
+      const urlObj = new URL(url);
+      const domain = urlObj.hostname.replace('www.', '');
+      
+      return {
+        blocked: true,
+        domain: domain,
+        reason: 'insufficient_content',
+        details: {
+          contentLength: html?.length || 0,
+          actualContent: html || 'NULL',
+          suggestedAction: 'check_url_accessibility',
+          timestamp: new Date().toISOString()
+        }
+      };
     }
     
     const urlObj = new URL(url);
@@ -123,12 +167,23 @@ function checkHtmlForBlocking(html, url) {
       'browser integrity check',
       'security challenge',
       'verify you are human',
-      'anti-robot verification'
+      'anti-robot verification',
+      'checking if the site connection is secure',
+      'enable cookies',
+      'cf-browser-verification',
+      'challenge-platform'
     ];
     
     const foundIndicators = contentBlockingIndicators.filter(indicator => 
       htmlLower.includes(indicator)
     );
+    
+    console.log('🔍 HTML content analysis:', {
+      foundIndicators: foundIndicators,
+      contentLength: html.length,
+      hasTitle: html.includes('<title>'),
+      hasBody: html.includes('<body>')
+    });
     
     if (foundIndicators.length > 0) {
       return {
@@ -146,12 +201,15 @@ function checkHtmlForBlocking(html, url) {
     
     // Check if HTML is suspiciously short for a real page
     if (html.length < 500 && !html.includes('<title>') && !html.includes('<h1')) {
+      console.log('⚠️ HTML appears to be incomplete or blocked');
       return {
         blocked: true,
         domain: domain,
         reason: 'insufficient_content',
         details: {
           contentLength: html.length,
+          hasTitle: html.includes('<title>'),
+          hasH1: html.includes('<h1'),
           suggestedAction: 'check_url_accessibility',
           timestamp: new Date().toISOString()
         }
@@ -168,20 +226,24 @@ function checkHtmlForBlocking(html, url) {
       'forbidden',
       'server error',
       'internal server error',
-      '500 error'
+      '500 error',
+      'service unavailable',
+      'bad gateway',
+      'gateway timeout'
     ];
     
-    const hasErrorIndicator = errorPageIndicators.some(indicator => 
+    const foundErrors = errorPageIndicators.filter(indicator => 
       htmlLower.includes(indicator)
     );
     
-    if (hasErrorIndicator) {
+    if (foundErrors.length > 0) {
+      console.log('⚠️ Error page detected:', foundErrors);
       return {
         blocked: true,
         domain: domain,
         reason: 'error_page_detected',
         details: {
-          foundErrors: errorPageIndicators.filter(indicator => htmlLower.includes(indicator)),
+          foundErrors: foundErrors,
           contentLength: html.length,
           suggestedAction: 'check_url_validity',
           timestamp: new Date().toISOString()
@@ -189,6 +251,7 @@ function checkHtmlForBlocking(html, url) {
       };
     }
     
+    console.log('✅ HTML appears to be valid and accessible');
     return { blocked: false };
     
   } catch (err) {
@@ -204,6 +267,12 @@ function checkHtmlForBlocking(html, url) {
  */
 function generateBlockedSiteResponse(blockData) {
   const { domain, reason, details } = blockData;
+  
+  console.log('📝 Generating blocked site response:', {
+    domain: domain,
+    reason: reason,
+    detailsKeys: Object.keys(details || {})
+  });
   
   const messageTemplates = {
     anti_bot_protection: {
@@ -251,7 +320,7 @@ function generateBlockedSiteResponse(blockData) {
     insufficient_content: {
       title: "Insufficient Content for Analysis",
       message: `The provided URL doesn't return adequate content for complete analysis.`,
-      explanation: "The page appears to be empty, not fully loaded, or might be an error page.",
+      explanation: "The page appears to be empty, not fully loaded, or might be an error page. This often happens when sites block automated access.",
       solutions: [
         "Verify that the URL is correct and complete (including https://)",
         "Check that the page loads normally in your browser",
@@ -279,7 +348,7 @@ function generateBlockedSiteResponse(blockData) {
   
   const messageData = messageTemplates[reason] || messageTemplates.anti_bot_protection;
   
-  return {
+  const response = {
     error: 'SITE_BLOCKED',
     blockedSite: true,
     domain: domain,
@@ -289,6 +358,14 @@ function generateBlockedSiteResponse(blockData) {
     timestamp: new Date().toISOString(),
     supportEmail: 'support@landingfixai.com'
   };
+  
+  console.log('✅ Blocked site response generated:', {
+    domain: response.domain,
+    reason: response.reason,
+    title: response.title
+  });
+  
+  return response;
 }
 
 /**
@@ -321,11 +398,19 @@ function isKnownProblematicDomain(url) {
       'zara.com', 'amazon.com', 'nike.com', 'adidas.com', 'apple.com',
       'netflix.com', 'spotify.com', 'facebook.com', 'instagram.com',
       'twitter.com', 'linkedin.com', 'youtube.com', 'shopify.com',
-      'squarespace.com', 'wix.com', 'wordpress.com'
+      'squarespace.com', 'wix.com', 'wordpress.com', 'bigcommerce.com',
+      'salesforce.com', 'hubspot.com'
     ];
     
-    return problematicDomains.some(pd => domain.includes(pd));
+    const isProblematic = problematicDomains.some(pd => domain.includes(pd));
+    
+    if (isProblematic) {
+      console.log('⚠️ Known problematic domain detected:', domain);
+    }
+    
+    return isProblematic;
   } catch (err) {
+    console.error('Error checking problematic domain:', err);
     return false;
   }
 }
@@ -338,21 +423,99 @@ function isKnownProblematicDomain(url) {
  * @returns {Object|null} Blocking response or null if not blocked
  */
 function checkSiteBlocking(errorMessage, html, url) {
-  // First check error message
-  const errorCheck = checkIfSiteBlocked(errorMessage, url);
-  if (errorCheck.blocked) {
-    return generateBlockedSiteResponse(errorCheck);
+  console.log('🔍 Starting comprehensive site blocking check:', {
+    url: url,
+    hasErrorMessage: !!errorMessage,
+    hasHtml: !!html,
+    htmlLength: html?.length || 0
+  });
+  
+  // First check error message if provided
+  if (errorMessage) {
+    const errorCheck = checkIfSiteBlocked(errorMessage, url);
+    if (errorCheck.blocked) {
+      console.log('🚫 Site blocked detected via error message');
+      return generateBlockedSiteResponse(errorCheck);
+    }
   }
   
   // Then check HTML content if available
   if (html) {
     const htmlCheck = checkHtmlForBlocking(html, url);
     if (htmlCheck.blocked) {
+      console.log('🚫 Site blocked detected via HTML analysis');
       return generateBlockedSiteResponse(htmlCheck);
     }
   }
   
+  console.log('✅ No blocking detected, site appears accessible');
   return null; // Not blocked
+}
+
+/**
+ * Test function to validate a URL's accessibility
+ * @param {string} url - The URL to test
+ * @returns {Object} Test results
+ */
+async function testUrlAccessibility(url) {
+  console.log('🧪 Testing URL accessibility:', url);
+  
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
+      }
+    });
+    
+    clearTimeout(timeoutId);
+    
+    console.log('🧪 URL accessibility test result:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    });
+    
+    if (!response.ok) {
+      return {
+        accessible: false,
+        blocked: true,
+        status: response.status,
+        statusText: response.statusText,
+        error: `HTTP ${response.status}: ${response.statusText}`
+      };
+    }
+    
+    const content = await response.text();
+    
+    // Check for blocking indicators in response
+    const blockingCheck = checkHtmlForBlocking(content, url);
+    
+    return {
+      accessible: !blockingCheck.blocked,
+      blocked: blockingCheck.blocked,
+      status: response.status,
+      contentLength: content.length,
+      blockingReason: blockingCheck.reason || null,
+      content: content.substring(0, 500)
+    };
+    
+  } catch (error) {
+    console.error('🧪 URL accessibility test failed:', error.message);
+    return {
+      accessible: false,
+      blocked: true,
+      error: error.message,
+      errorType: error.name
+    };
+  }
 }
 
 module.exports = {
@@ -361,5 +524,6 @@ module.exports = {
   generateBlockedSiteResponse,
   getBlockTypeDescription,
   isKnownProblematicDomain,
-  checkSiteBlocking
+  checkSiteBlocking,
+  testUrlAccessibility
 };
