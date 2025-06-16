@@ -1,14 +1,16 @@
-// Import required modules
+ // Import required modules
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const nodemailer = require('nodemailer');
 const { JSDOM } = require('jsdom');
-const puppeteer = require('puppeteer-extra');
 const { Readability } = require('@mozilla/readability');
 const jsdom = require('jsdom');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+
+// DISABLED PUPPETEER FOR RENDER DEPLOYMENT
+const USE_PUPPETEER = false;
+
 const tools = require('./tools.js');
 
 // Import scoring and prompt modules
@@ -56,11 +58,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Configure Puppeteer stealth plugin
-puppeteer.use(StealthPlugin());
 
-// Determine if Puppeteer should be used based on environment
-const USE_PUPPETEER = process.env.NODE_ENV !== 'production';
 
 // --- BENCHMARK CHECKLIST BY INDUSTRY ---
 // Maps each industry to a list of objective checklist items and their detection logic.
