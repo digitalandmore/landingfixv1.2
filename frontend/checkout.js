@@ -22,29 +22,6 @@ function setupCheckout() {
     document.getElementById('checkout-url').textContent = url;
   }
 
-  // --- Validation Functions ---
-  function validateBillingInfo() {
-    const firstName = document.getElementById('billing-first-name').value.trim();
-    const lastName = document.getElementById('billing-last-name').value.trim();
-    const email = document.getElementById('billing-email').value.trim();
-    const country = document.getElementById('billing-country').value;
-
-    if (!firstName || !lastName || !email || !country) {
-      showError('Please fill in all required billing information.');
-      return false;
-    }
-
-    if (!isValidEmail(email)) {
-      showError('Please enter a valid email address.');
-      return false;
-    }
-
-    return true;
-  }
-
-  function isValidEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }
 
   function showError(message) {
     // Remove any existing error
@@ -86,6 +63,10 @@ function setupCheckout() {
     };
   }
 
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
   // --- Update Prices with Payment Method Visibility ---
   function updatePrices() {
     document.getElementById('checkout-eur').textContent = `€${currentEur.toFixed(2)}`;
@@ -106,77 +87,237 @@ function setupCheckout() {
     }
   }
 
-  // --- Load Stripe with Elements ---
-  async function loadStripe() {
-    if (stripe && cardElement) return stripe;
+// --- Load Stripe with Elements and Card Detection ---
+async function loadStripe() {
+  if (stripe && cardElement) return stripe;
+  
+  try {
+    const response = await fetch('https://landingfixv1-2.onrender.com/api/stripe-public-key');
+    const data = await response.json();
     
-    try {
-      const response = await fetch('https://landingfixv1-2.onrender.com/api/stripe-public-key');
-      const data = await response.json();
-      
-      if (!data.publicKey) {
-        console.error('Stripe public key not found');
-        return null;
-      }
-      
-      if (!window.Stripe) {
-        const script = document.createElement('script');
-        script.src = 'https://js.stripe.com/v3/';
-        document.head.appendChild(script);
-        
-        await new Promise(resolve => {
-          script.onload = resolve;
-        });
-      }
-      
-      stripe = Stripe(data.publicKey);
-      
-      const elements = stripe.elements({
-        appearance: {
-          theme: 'stripe',
-          variables: {
-            colorPrimary: '#667eea',
-            colorBackground: '#ffffff',
-            colorText: '#1a202c',
-            colorDanger: '#e53e3e',
-            fontFamily: 'Inter, system-ui, sans-serif',
-            spacingUnit: '4px',
-            borderRadius: '8px'
-          }
-        }
-      });
-      
-      cardElement = elements.create('card', {
-        style: {
-          base: {
-            fontSize: '16px',
-            color: '#1a202c',
-            '::placeholder': {
-              color: '#6c757d',
-            },
-          },
-        },
-      });
-      
-      cardElement.mount('#stripe-card-element');
-      
-      cardElement.on('change', ({error}) => {
-        const cardErrors = document.getElementById('card-errors');
-        if (error) {
-          if (cardErrors) cardErrors.textContent = error.message;
-        } else {
-          if (cardErrors) cardErrors.textContent = '';
-        }
-      });
-      
-      console.log('Stripe Elements loaded successfully');
-      return stripe;
-      
-    } catch (error) {
-      console.error('Failed to load Stripe:', error);
+    if (!data.publicKey) {
+      console.error('Stripe public key not found');
       return null;
     }
+    
+    if (!window.Stripe) {
+      const script = document.createElement('script');
+      script.src = 'https://js.stripe.com/v3/';
+      document.head.appendChild(script);
+      
+      await new Promise(resolve => {
+        script.onload = resolve;
+      });
+    }
+    
+    stripe = Stripe(data.publicKey);
+    
+    const elements = stripe.elements({
+      appearance: {
+        theme: 'stripe',
+        variables: {
+          colorPrimary: '#667eea',
+          colorBackground: '#ffffff',
+          colorText: '#1a202c',
+          colorDanger: '#e53e3e',
+          fontFamily: 'Inter, system-ui, sans-serif',
+          spacingUnit: '4px',
+          borderRadius: '8px'
+        }
+      }
+    });
+    
+    cardElement = elements.create('card', {
+      style: {
+        base: {
+          fontSize: '16px',
+          color: '#1a202c',
+          '::placeholder': {
+            color: '#6c757d',
+          },
+        },
+      },
+    });
+    
+    cardElement.mount('#stripe-card-element');
+    
+    // ✅ AGGIUNGI QUI LA LOGICA PER MOSTRARE I CAMPI DI FATTURAZIONE
+    cardElement.on('change', ({error, complete, elementType}) => {
+      const cardErrors = document.getElementById('card-errors');
+      if (error) {
+        if (cardErrors) cardErrors.textContent = error.message;
+      } else {
+        if (cardErrors) cardErrors.textContent = '';
+      }
+      
+      // 🎯 MOSTRA I CAMPI DI FATTURAZIONE QUANDO L'UTENTE INIZIA A DIGITARE
+      showBillingFieldsOnCardInput();
+    });
+    
+    // Anche quando l'elemento ottiene il focus
+    cardElement.on('focus', () => {
+      showBillingFieldsOnCardInput();
+    });
+    
+    console.log('Stripe Elements loaded successfully');
+    return stripe;
+    
+  } catch (error) {
+    console.error('Failed to load Stripe:', error);
+    return null;
   }
+}
+
+// ✅ NUOVA FUNZIONE PER MOSTRARE I CAMPI DI FATTURAZIONE
+function showBillingFieldsOnCardInput() {
+  const billingSection = document.getElementById('billing-section');
+  if (!billingSection) return;
+  
+  // Se già visibili, non fare nulla
+  if (billingSection.style.display === 'block') return;
+  
+  console.log('🎯 Card input detected - showing billing fields');
+  
+  // Mostra la sezione con animazione smooth
+  billingSection.style.display = 'block';
+  
+  // Forza reflow per garantire che la transizione funzioni
+  billingSection.offsetHeight;
+  
+  // Applica l'animazione di fade-in
+  billingSection.style.opacity = '1';
+  billingSection.style.transform = 'translateY(0)';
+  
+  // Scroll smooth verso i campi di fatturazione
+  setTimeout(() => {
+    billingSection.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'center' 
+    });
+  }, 100);
+  
+  // Aggiungi una notifica gentile
+  showBillingNotification();
+}
+
+// ✅ NOTIFICA GENTILE PER GUIDARE L'UTENTE
+function showBillingNotification() {
+  // Evita di mostrare più volte
+  if (document.querySelector('.billing-notification')) return;
+  
+  const notification = document.createElement('div');
+  notification.className = 'billing-notification';
+  notification.style.cssText = `
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 0.9em;
+    animation: slideInFromTop 0.5s ease-out;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 20px rgba(102,126,234,0.3);
+  `;
+  
+  notification.innerHTML = `
+    <i class="fa fa-info-circle" style="font-size: 1.1em;"></i>
+    <span>Please fill in your billing information below to complete the purchase.</span>
+  `;
+  
+  // Inserisci prima del primo campo
+  const billingSection = document.getElementById('billing-section');
+  const firstField = billingSection.querySelector('div');
+  billingSection.insertBefore(notification, firstField);
+  
+  // Rimuovi dopo 8 secondi
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.style.animation = 'slideOutToTop 0.3s ease-in';
+      setTimeout(() => notification.remove(), 300);
+    }
+  }, 8000);
+}
+
+// ✅ AGGIORNA LA VALIDAZIONE PER GESTIRE I CAMPI NASCOSTI
+function validateBillingInfo() {
+  const billingSection = document.getElementById('billing-section');
+  
+  // Se i campi non sono ancora visibili, non validare
+  if (!billingSection || billingSection.style.display === 'none') {
+    showError('Please enter your card information first.');
+    return false;
+  }
+  
+  const fields = [
+    { id: 'billing-first-name', label: 'First Name' },
+    { id: 'billing-last-name', label: 'Last Name' },
+    { id: 'billing-email', label: 'Email Address' },
+    { id: 'billing-country', label: 'Country' }
+  ];
+
+  let isValid = true;
+  const missingFields = [];
+
+  // Reset all field styles
+  fields.forEach(field => {
+    const element = document.getElementById(field.id);
+    if (element) {
+      element.style.borderColor = '#e2e8f0';
+      element.style.boxShadow = 'none';
+    }
+  });
+
+  // Check each required field
+  fields.forEach(field => {
+    const element = document.getElementById(field.id);
+    const value = element?.value?.trim() || '';
+    
+    if (!value) {
+      isValid = false;
+      missingFields.push(field.label);
+      
+      // Highlight missing field
+      if (element) {
+        element.style.borderColor = '#e53e3e';
+        element.style.boxShadow = '0 0 0 3px rgba(229,62,62,0.1)';
+        
+        // Add shake animation
+        element.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => {
+          if (element) element.style.animation = '';
+        }, 500);
+      }
+    }
+  });
+
+  // Check email format
+  const emailField = document.getElementById('billing-email');
+  const email = emailField?.value?.trim() || '';
+  if (email && !isValidEmail(email)) {
+    isValid = false;
+    emailField.style.borderColor = '#e53e3e';
+    emailField.style.boxShadow = '0 0 0 3px rgba(229,62,62,0.1)';
+    showError('Please enter a valid email address.');
+    return false;
+  }
+
+  if (!isValid) {
+    showError(`Please fill in the following required fields: ${missingFields.join(', ')}`);
+    
+    // Scroll to billing section
+    const billingSection = document.getElementById('billing-section');
+    if (billingSection) {
+      billingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    return false;
+  }
+
+  return true;
+}
+
 
   // --- Payment Method Switcher ---
   function setupPaymentSwitcher() {
