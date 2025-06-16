@@ -20,7 +20,7 @@ class ReportLoader {
 
     // Load tools data
     try {
-      const toolsResponse = await fetch('http://localhost:3002/tools.json');
+      const toolsResponse = await fetch('https://landingfixv1-2.onrender.com/tools.json');
       this.toolsList = await toolsResponse.json();
     } catch (error) {
       console.warn('Failed to load tools:', error);
@@ -617,7 +617,7 @@ class ReportLoader {
       // Start continuous progress simulation during API call
       this.startContinuousProgress(20, 35);
       
-      const response = await fetch("http://localhost:3002/api/generate-report", {
+      const response = await fetch("https://landingfixv1-2.onrender.com/api/generate-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

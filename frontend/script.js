@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           async function sendToBrevo() {
             try {
-              const res = await fetch('http://localhost:3002/api/subscribe', {
+              const res = await fetch('https://landingfixv1-2.onrender.com/api/subscribe', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'

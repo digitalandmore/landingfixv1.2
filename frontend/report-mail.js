@@ -599,7 +599,7 @@ async function handleEmailSending(e) {
     console.log('📧 Sending email request with generated template');
     
     // Send email
-    const response = await fetch('http://localhost:3002/api/send-report', {
+    const response = await fetch('https://landingfixv1-2.onrender.com/api/send-report', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

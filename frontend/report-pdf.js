@@ -338,7 +338,7 @@ async function handlePdfGeneration(e) {
       requestDataSize: JSON.stringify(requestData).length
     });
     
-    const response = await fetch('http://localhost:3002/api/send-report', {
+    const response = await fetch('https://landingfixv1-2.onrender.com/api/send-report', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

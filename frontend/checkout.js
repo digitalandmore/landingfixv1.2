@@ -49,7 +49,7 @@ function setupCheckout() {
     if (stripe && cardElement) return stripe;
     
     try {
-      const response = await fetch('http://localhost:3002/api/stripe-public-key');
+      const response = await fetch('https://landingfixv1-2.onrender.com/api/stripe-public-key');
       const data = await response.json();
       
       if (!data.publicKey) {
@@ -173,7 +173,7 @@ function setupCheckout() {
 
     try {
       // Create payment intent
-      const response = await fetch('http://localhost:3002/api/create-payment-intent', {
+      const response = await fetch('https://landingfixv1-2.onrender.com/api/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -465,7 +465,7 @@ function setupCheckout() {
     
     console.log('Loading PayPal SDK...');
     
-    fetch('http://localhost:3002/api/paypal-client-id')
+    fetch('https://landingfixv1-2.onrender.com/api/paypal-client-id')
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
         return res.json();

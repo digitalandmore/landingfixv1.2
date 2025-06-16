@@ -1223,7 +1223,7 @@ class ReportBuilder {
     console.log('🔄 Loading tools data from backend...');
     
     // Try to fetch tools from backend
-    return fetch('/api/tools')
+    return fetch('https://landingfixv1-2.onrender.com/api/tools')
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
