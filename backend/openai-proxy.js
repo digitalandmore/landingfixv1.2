@@ -30,8 +30,10 @@ const { generateAdvancedPrompt, generateSpecificActions } = require('./prompt.js
 // Import categories from external file
 const { focusCategories, getExpectedElementsForFocus, getFocusDebugInfo } = require('./categories.js');
 
-const app = express(); 
-app.use(cors({ origin: 'http://localhost:5500' }));
+app.use(cors({ 
+  origin: ['https://landingfixv1-2.onrender.com', 'http://localhost:5500'],
+  credentials: true 
+}));
 app.use(express.json());
 
 app.get('/tools.json', (req, res) => {
@@ -59,9 +61,10 @@ app.get('/api/tools', (req, res) => {
 // --- Puppeteer stealth initialization ---
 puppeteer.use(StealthPlugin());
 
-const PORT = process.env.PORT || 3002;
-app.listen(PORT, () => {
-  console.log(`OpenAI proxy server running on port ${PORT}`);
+const port = process.env.PORT || 10000;
+app.listen(port, '0.0.0.0', () => {
+  console.log(`🚀 LandingFix AI Server running on port ${port}`);
+  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 // --- BENCHMARK CHECKLIST BY INDUSTRY ---
