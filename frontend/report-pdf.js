@@ -470,7 +470,7 @@ function generateOptimizedEmailTemplate(reportData, scores, email, name, company
   `;
 }
 
-// FIXED: Generate PDF-optimized HTML with simplified layout focused on content visibility
+// FIXED: Generate PDF-optimized HTML with proper report structure extraction
 function generatePdfHTML(reportData, scores, email, name, company) {
   const now = new Date().toLocaleDateString('en-US', { 
     year: 'numeric', 
@@ -478,27 +478,24 @@ function generatePdfHTML(reportData, scores, email, name, company) {
     day: 'numeric' 
   });
   
-  // Get report content from DOM and process it for PDF
-  const reportContent = extractAndProcessReportContent();
+  // Get actual report content from DOM
+  const reportContent = extractActualReportContent();
   
-  // FIXED: Ensure scores are properly formatted and visible with color logic
+  // FIXED: Ensure scores are properly formatted
   const displayScores = {
     optimization: scores.optimization && scores.optimization !== '–' ? scores.optimization : '0',
     impact: scores.impact && scores.impact !== '–' ? scores.impact : '0',
     timing: scores.timing && scores.timing !== '–' ? scores.timing : 'Not calculated'
   };
   
-  // FIXED: Color logic for optimization score based on value
   const getOptimizationColor = (score) => {
     const numScore = parseInt(score) || 0;
-    if (numScore >= 70) return '#28a745'; // Green
-    if (numScore >= 40) return '#ffc107'; // Orange
-    return '#dc3545'; // Red
+    if (numScore >= 70) return '#28a745';
+    if (numScore >= 40) return '#ffc107';
+    return '#dc3545';
   };
   
   const optimizationColor = getOptimizationColor(displayScores.optimization);
-  
-  console.log('📄 PDF Generation - Display scores:', displayScores);
   
   return `
 <!DOCTYPE html>
@@ -507,7 +504,7 @@ function generatePdfHTML(reportData, scores, email, name, company) {
   <meta charset="UTF-8">
   <title>LandingFix AI Report - ${reportData.url}</title>
   <style>
-    /* SIMPLIFIED PDF styles focused on visibility and content */
+    /* PDF styles optimized for actual report structure */
     * {
       margin: 0;
       padding: 0;
@@ -515,186 +512,189 @@ function generatePdfHTML(reportData, scores, email, name, company) {
     }
     
     body { 
-      font-family: Arial, sans-serif; 
-      line-height: 1.4;
-      color: #333;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.5;
+      color: #2d3748;
       background: white;
       padding: 20px;
     }
     
     .pdf-container { 
-      max-width: 750px; 
+      max-width: 800px; 
       margin: 0 auto;
       background: white;
     }
     
-    /* ENHANCED HEADER with logo - Simple and clear */
     .pdf-header { 
       text-align: center; 
-      margin-bottom: 30px; 
-      padding: 20px;
-      border-bottom: 2px solid #0066cc;
-      background: #ffffff;
+      margin-bottom: 40px; 
+      padding: 30px;
+      border-bottom: 3px solid #667eea;
+      background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+      border-radius: 12px 12px 0 0;
     }
     
     .pdf-logo {
       width: 200px;
       height: auto;
       margin-bottom: 20px;
-      padding: 10px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       display: block;
       margin-left: auto;
       margin-right: auto;
     }
     
     .pdf-title { 
-      font-size: 24px; 
-      font-weight: bold; 
-      color: #333; 
+      font-size: 28px; 
+      font-weight: 700; 
+      color: #2d3748; 
       margin-bottom: 8px;
     }
     
     .pdf-subtitle { 
       font-size: 16px; 
-      color: #666;
+      color: #718096;
+      font-weight: 500;
     }
     
-    /* INFO SECTION - Clear layout */
     .pdf-info { 
-      background: #f5f5f5; 
-      padding: 20px; 
-      margin-bottom: 25px;
-      border: 1px solid #ddd;
+      background: #f7fafc; 
+      padding: 24px; 
+      margin-bottom: 30px;
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
     }
     
     .pdf-info h3 {
       font-size: 18px;
-      margin-bottom: 15px;
-      color: #333;
-      border-bottom: 1px solid #ccc;
-      padding-bottom: 5px;
+      margin-bottom: 16px;
+      color: #2d3748;
+      font-weight: 600;
+    }
+    
+    .pdf-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
     
     .pdf-info-row { 
       margin-bottom: 8px; 
       font-size: 14px;
+      line-height: 1.4;
     }
     
     .pdf-info strong { 
-      display: inline-block;
-      width: 120px;
-      color: #333; 
+      color: #4a5568; 
+      font-weight: 600;
     }
     
-    /* SCORES SECTION - Simplified table layout for guaranteed visibility */
     .pdf-scores-section {
-      margin-bottom: 30px;
+      margin-bottom: 40px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
     
     .pdf-scores-title {
-      font-size: 20px;
-      font-weight: bold;
+      font-size: 22px;
+      font-weight: 700;
       text-align: center;
-      margin-bottom: 20px;
-      color: #333;
-      border-bottom: 2px solid #0066cc;
-      padding-bottom: 10px;
-    }
-    
-    .pdf-scores-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-    }
-    
-    .pdf-scores-table th {
-      background: #0066cc;
+      margin-bottom: 24px;
+      color: #2d3748;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 15px 10px;
+      margin-bottom: 0;
+    }
+    
+    .pdf-scores-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+    }
+    
+    .pdf-score-card {
+      padding: 30px 20px;
       text-align: center;
+      border-right: 1px solid #e2e8f0;
+      background: #f7fafc;
+    }
+    
+    .pdf-score-card:last-child {
+      border-right: none;
+    }
+    
+    .pdf-score-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+    
+    .pdf-score-label {
       font-size: 14px;
-      font-weight: bold;
+      color: #718096;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
     }
     
-    .pdf-scores-table td {
-      padding: 20px 10px;
-      text-align: center;
-      border: 1px solid #ddd;
-      font-size: 24px;
-      font-weight: bold;
-      color: #333;
-      vertical-align: top;
-    }
-    
-    .optimization-score { 
-      background: #fff !important; 
-      color: ${optimizationColor} !important; 
-      border-left: 5px solid ${optimizationColor} !important;
-    }
-    .impact-score { 
-      background: #fff !important; 
-      color: #28a745 !important; 
-      border-left: 5px solid #28a745 !important;
-    }
-    .timing-score { 
-      background: #fff !important; 
-      color: #007bff !important; 
-      border-left: 5px solid #007bff !important;
-    }
-    
-    .score-description {
+    .pdf-score-description {
       font-size: 12px;
-      font-weight: normal;
-      margin-top: 8px;
+      color: #a0aec0;
       line-height: 1.3;
-      opacity: 0.8;
     }
     
-    /* CONTENT SECTIONS - Clear hierarchy */
+    .optimization-score .pdf-score-value { color: ${optimizationColor}; }
+    .impact-score .pdf-score-value { color: #48bb78; }
+    .timing-score .pdf-score-value { color: #805ad5; }
+    
     .pdf-content {
-      margin-top: 30px;
+      margin-top: 40px;
     }
     
-    .pdf-content h2 {
-      font-size: 18px;
-      margin: 25px 0 15px 0;
-      color: #333;
-      border-bottom: 1px solid #0066cc;
-      padding-bottom: 5px;
+    .pdf-section-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e2e8f0;
     }
     
-    /* CATEGORIES - Simple and readable */
     .pdf-category {
-      margin-bottom: 30px;
-      border: 1px solid #ddd;
+      margin-bottom: 40px;
       background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
     }
     
     .pdf-category-header {
-      background: #f5f5f5;
-      padding: 15px;
-      border-bottom: 1px solid #ddd;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px 24px;
     }
     
     .pdf-category-title {
-      font-size: 16px;
-      font-weight: bold;
-      color: #333;
+      font-size: 20px;
+      font-weight: 600;
       margin-bottom: 8px;
     }
     
     .pdf-category-metrics {
-      font-size: 12px;
-      color: #666;
+      font-size: 14px;
+      opacity: 0.9;
+      display: flex;
+      gap: 20px;
     }
     
-    /* ELEMENTS - Clear content blocks */
     .pdf-element {
-      padding: 15px;
-      border-bottom: 1px solid #eee;
+      padding: 24px;
+      border-bottom: 1px solid #f1f5f9;
     }
     
     .pdf-element:last-child {
@@ -702,233 +702,203 @@ function generatePdfHTML(reportData, scores, email, name, company) {
     }
     
     .pdf-element-title {
-      font-size: 14px;
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 15px;
-      padding-bottom: 5px;
-      border-bottom: 1px solid #ddd;
+      font-size: 18px;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e2e8f0;
     }
     
-    /* ELEMENT BLOCKS - Distinct and readable */
-    .pdf-element-block {
-      margin-bottom: 12px;
-      padding: 12px;
-      border-left: 4px solid #ccc;
-      background: #f9f9f9;
+    .pdf-element-content {
+      display: grid;
+      gap: 16px;
     }
     
-    .pdf-site-text-block {
-      border-left-color: #2196f3;
-      background: #e3f2fd;
+    .pdf-content-block {
+      padding: 16px;
+      border-radius: 8px;
+      border-left: 4px solid #cbd5e0;
     }
     
-    .pdf-problem-block {
-      border-left-color: #f44336;
-      background: #ffebee;
+    .pdf-current-text {
+      background: #ebf8ff;
+      border-left-color: #3182ce;
     }
     
-    .pdf-solution-block {
-      border-left-color: #4caf50;
-      background: #e8f5e8;
+    .pdf-problem {
+      background: #fed7d7;
+      border-left-color: #e53e3e;
     }
     
-    .pdf-actions-block {
-      border-left-color: #ff9800;
-      background: #fff3e0;
+    .pdf-solution {
+      background: #c6f6d5;
+      border-left-color: #38a169;
+    }
+    
+    .pdf-actions {
+      background: #feebc8;
+      border-left-color: #dd6b20;
     }
     
     .pdf-block-label {
       font-size: 12px;
-      font-weight: bold;
-      margin-bottom: 8px;
+      font-weight: 600;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      opacity: 0.8;
     }
     
-    .pdf-site-text-block .pdf-block-label { color: #1976d2; }
-    .pdf-problem-block .pdf-block-label { color: #d32f2f; }
-    .pdf-solution-block .pdf-block-label { color: #388e3c; }
-    .pdf-actions-block .pdf-block-label { color: #f57c00; }
-    
     .pdf-block-content {
-      font-size: 13px;
-      line-height: 1.4;
-      color: #333;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #4a5568;
     }
     
     .pdf-actions-list {
+      list-style: none;
+      padding: 0;
       margin: 0;
-      padding-left: 18px;
     }
     
     .pdf-actions-list li {
-      margin-bottom: 5px;
-      font-size: 13px;
+      margin-bottom: 8px;
+      padding-left: 20px;
+      position: relative;
+      font-size: 14px;
+      line-height: 1.5;
     }
     
-    /* ENHANCED: Element metrics styling with better separation and design */
-    .pdf-element-metrics {
-      display: flex;
-      gap: 12px;
-      margin-top: 16px;
-      padding: 16px;
-      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    
-    .pdf-element-metric {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 12px 16px;
-      text-align: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      min-width: 120px;
-      flex: 1;
-    }
-    
-    .pdf-metric-optimization {
-      border-left: 4px solid #3182ce;
-    }
-    
-    .pdf-metric-impact {
-      border-left: 4px solid #38a169;
-    }
-    
-    .pdf-metric-timing {
-      border-left: 4px solid #805ad5;
-    }
-    
-    .pdf-metric-label {
-      font-size: 10px;
+    .pdf-actions-list li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: #dd6b20;
       font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #666;
-      margin-bottom: 4px;
+    }
+    
+    .pdf-element-metrics {
+      margin-top: 20px;
+      padding: 16px;
+      background: #f7fafc;
+      border-radius: 8px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    
+    .pdf-metric-item {
+      text-align: center;
+      padding: 12px;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
     }
     
     .pdf-metric-value {
       font-size: 18px;
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 2px;
+      font-weight: 600;
+      margin-bottom: 4px;
     }
     
-    .pdf-metric-optimization .pdf-metric-value { color: #3182ce; }
-    .pdf-metric-impact .pdf-metric-value { color: #38a169; }
-    .pdf-metric-timing .pdf-metric-value { color: #805ad5; }
-    
-    .pdf-metric-description {
-      font-size: 9px;
-      color: #666;
-      line-height: 1.2;
+    .pdf-metric-label {
+      font-size: 12px;
+      color: #718096;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     
-    /* PRINT OPTIMIZATIONS */
+    .pdf-footer {
+      margin-top: 60px;
+      text-align: center;
+      padding: 30px 20px;
+      border-top: 2px solid #e2e8f0;
+      background: #f7fafc;
+      border-radius: 12px;
+    }
+    
+    .footer-logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 16px;
+    }
+    
+    .pdf-footer-text {
+      font-size: 14px;
+      color: #718096;
+      line-height: 1.5;
+    }
+    
+    /* Print optimizations */
     @media print {
       body { margin: 0; padding: 10px; }
       .pdf-container { max-width: none; }
-      .pdf-scores-table { page-break-inside: avoid; }
       .pdf-category { page-break-inside: avoid; }
       .pdf-element { page-break-inside: avoid; }
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      
-      /* Logo print optimization */
-      .pdf-logo { 
-        width: 180px !important; 
-        box-shadow: none !important; 
-        border: 1px solid #ddd !important;
-      }
-      .footer-logo { 
-        width: 120px !important; 
-        box-shadow: none !important; 
-        border: 1px solid #ddd !important;
-      }
     }
   </style>
 </head>
 <body>
   <div class="pdf-container">
     
-    <!-- ENHANCED HEADER with logo -->
     <div class="pdf-header">
       <img src="https://landingfixai.com/images/logo-header.png" 
            alt="LandingFix AI" 
-           class="pdf-logo"
-           style="width: 200px; height: auto; margin-bottom: 20px; padding: 10px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: block; margin-left: auto; margin-right: auto;" />
+           class="pdf-logo" />
       <div class="pdf-title">LandingFix AI Analysis Report</div>
       <div class="pdf-subtitle">Professional Landing Page Optimization Analysis</div>
     </div>
     
-    <!-- USER INFO -->
     <div class="pdf-info">
-      <h3>Report Information</h3>
-      <div class="pdf-info-row"><strong>Website:</strong> ${reportData.url}</div>
-      <div class="pdf-info-row"><strong>Generated for:</strong> ${name || 'LandingFix AI User'}</div>
-      <div class="pdf-info-row"><strong>Email:</strong> ${email}</div>
-      ${company ? `<div class="pdf-info-row"><strong>Company:</strong> ${company}</div>` : ''}
-      <div class="pdf-info-row"><strong>Analysis Focus:</strong> ${reportData.focus || 'General'}</div>
-      <div class="pdf-info-row"><strong>Industry:</strong> ${reportData.industryName || reportData.industry || 'Not specified'}</div>
-      <div class="pdf-info-row"><strong>Generated:</strong> ${now}</div>
+      <h3>Report Details</h3>
+      <div class="pdf-info-grid">
+        <div class="pdf-info-row"><strong>Website:</strong> ${reportData.url}</div>
+        <div class="pdf-info-row"><strong>Generated for:</strong> ${name || 'LandingFix AI User'}</div>
+        <div class="pdf-info-row"><strong>Email:</strong> ${email}</div>
+        ${company ? `<div class="pdf-info-row"><strong>Company:</strong> ${company}</div>` : ''}
+        <div class="pdf-info-row"><strong>Focus:</strong> ${reportData.focus || 'General'}</div>
+        <div class="pdf-info-row"><strong>Industry:</strong> ${reportData.industryName || reportData.industry || 'Not specified'}</div>
+        <div class="pdf-info-row" style="grid-column: 1 / 3;"><strong>Generated:</strong> ${now}</div>
+      </div>
     </div>
     
-    <!-- FIXED: Enhanced scores section with colors and descriptions -->
     <div class="pdf-scores-section">
       <div class="pdf-scores-title">Performance Overview</div>
-      <table class="pdf-scores-table">
-        <thead>
-          <tr>
-            <th>Current Optimization</th>
-            <th>Impact Potential</th>
-            <th>Implementation Time</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="optimization-score">
-              ${displayScores.optimization}%
-              <div class="score-description">
-                Current state of your<br>
-                landing page optimization
-              </div>
-            </td>
-            <td class="impact-score">
-              +${displayScores.impact}%
-              <div class="score-description">
-                Potential improvement from<br>
-                recommended changes
-              </div>
-            </td>
-            <td class="timing-score">
-              ${displayScores.timing}
-              <div class="score-description">
-                Estimated time to complete<br>
-                all improvements
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="pdf-scores-grid">
+        <div class="pdf-score-card optimization-score">
+          <div class="pdf-score-label">Current Score</div>
+          <div class="pdf-score-value">${displayScores.optimization}%</div>
+          <div class="pdf-score-description">Current optimization level</div>
+        </div>
+        <div class="pdf-score-card impact-score">
+          <div class="pdf-score-label">Impact Potential</div>
+          <div class="pdf-score-value">+${displayScores.impact}%</div>
+          <div class="pdf-score-description">Improvement opportunity</div>
+        </div>
+        <div class="pdf-score-card timing-score">
+          <div class="pdf-score-label">Implementation</div>
+          <div class="pdf-score-value">${displayScores.timing}</div>
+          <div class="pdf-score-description">Estimated time needed</div>
+        </div>
+      </div>
     </div>
     
-    <!-- REPORT CONTENT -->
     <div class="pdf-content">
-      <h2>Detailed Analysis</h2>
+      <div class="pdf-section-title">Detailed Analysis & Recommendations</div>
       ${reportContent}
     </div>
     
-    <!-- ENHANCED FOOTER with logo -->
-    <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 20px;">
+    <div class="pdf-footer">
       <img src="https://landingfixai.com/images/logo-header.png" 
            alt="LandingFix AI" 
-           class="footer-logo"
-           style="width: 140px; height: auto; margin-bottom: 16px; padding: 8px; background: white; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); display: block; margin-left: auto; margin-right: auto;" />
-      <p style="margin-bottom: 8px;">Report generated by LandingFix AI - Professional Landing Page Analysis</p>
-      <p>© 2025 LandingFix AI. All rights reserved.</p>
+           class="footer-logo" />
+      <div class="pdf-footer-text">
+        <p><strong>Report generated by LandingFix AI</strong></p>
+        <p>Professional Landing Page Optimization Analysis</p>
+        <p>© 2025 LandingFix AI. All rights reserved.</p>
+      </div>
     </div>
     
   </div>
@@ -937,29 +907,35 @@ function generatePdfHTML(reportData, scores, email, name, company) {
   `;
 }
 
-// NEW: Extract and process report content with enhanced metrics visualization
-function extractAndProcessReportContent() {
+// FIXED: Extract actual report content with proper structure matching
+function extractActualReportContent() {
   try {
     const reportContainer = document.getElementById('report-content');
     if (!reportContainer) {
-      return '<p style="text-align: center; color: #6c757d; padding: 20px;">No report content available.</p>';
+      return '<div class="pdf-no-content">No report content available for PDF generation.</div>';
     }
 
-    // Find all report categories
-    const categories = reportContainer.querySelectorAll('.report-category');
+    // Find all categories that are not locked
+    const categories = reportContainer.querySelectorAll('.report-category:not(.locked)');
     let pdfContent = '';
     
-    categories.forEach((category, index) => {
-      // Skip if this is a locked category
-      if (category.classList.contains('locked')) {
-        return;
-      }
-      
+    if (categories.length === 0) {
+      return '<div class="pdf-no-content">No unlocked content available. Please unlock the report first.</div>';
+    }
+    
+    categories.forEach((category, categoryIndex) => {
       // Extract category information
-      const categoryName = category.querySelector('.category-name')?.textContent?.trim() || `Category ${index + 1}`;
-      const categoryScore = category.querySelector('.cat-score')?.textContent?.trim() || '–';
-      const categoryImpact = category.querySelector('.cat-impact')?.textContent?.trim() || '–';
-      const categoryTiming = category.querySelector('.cat-timing')?.textContent?.trim() || '–';
+      const categoryNameEl = category.querySelector('.category-name, .category-title, h2, h3');
+      const categoryName = categoryNameEl?.textContent?.trim() || `Analysis Category ${categoryIndex + 1}`;
+      
+      // Extract category metrics
+      const scoreEl = category.querySelector('.cat-score, .category-score, .score');
+      const impactEl = category.querySelector('.cat-impact, .category-impact, .impact');
+      const timingEl = category.querySelector('.cat-timing, .category-timing, .timing');
+      
+      const categoryScore = scoreEl?.textContent?.replace('%', '').trim() || '–';
+      const categoryImpact = impactEl?.textContent?.replace('%', '').replace('+', '').trim() || '–';
+      const categoryTiming = timingEl?.textContent?.trim() || '–';
       
       // Start category section
       pdfContent += `
@@ -967,144 +943,163 @@ function extractAndProcessReportContent() {
           <div class="pdf-category-header">
             <div class="pdf-category-title">${categoryName}</div>
             <div class="pdf-category-metrics">
-              <span class="pdf-metric">Score: ${categoryScore}%</span>
-              <span class="pdf-metric">Impact: +${categoryImpact}%</span>
-              <span class="pdf-metric">Time: ${categoryTiming}</span>
+              <span>Score: ${categoryScore}%</span>
+              <span>Impact: +${categoryImpact}%</span>
+              <span>Timing: ${categoryTiming}</span>
             </div>
           </div>
       `;
       
-      // Extract elements within this category
-      const elements = category.querySelectorAll('.report-element');
+      // Find all elements within this category
+      const elements = category.querySelectorAll('.report-element, .element, .analysis-element');
       
-      elements.forEach((element, elementIndex) => {
-        const elementTitle = element.querySelector('.element-title')?.textContent?.trim() || `Element ${elementIndex + 1}`;
-        
-        // Start element section
+      if (elements.length === 0) {
         pdfContent += `
           <div class="pdf-element">
-            <div class="pdf-element-title">${elementTitle}</div>
+            <div class="pdf-element-title">Category Overview</div>
+            <div class="pdf-element-content">
+              <div class="pdf-content-block pdf-solution">
+                <div class="pdf-block-label">Analysis</div>
+                <div class="pdf-block-content">This category contains optimization recommendations for ${categoryName.toLowerCase()}. Implementation of these suggestions can improve your landing page performance.</div>
+              </div>
+            </div>
+          </div>
         `;
-        
-        // Extract site text block
-        const siteTextBlock = element.querySelector('.site-text-block');
-        if (siteTextBlock) {
-          const siteTextContent = siteTextBlock.querySelector('.block-content')?.textContent?.trim() || '';
-          if (siteTextContent && siteTextContent !== 'Not found') {
-            pdfContent += `
-              <div class="pdf-element-block pdf-site-text-block">
-                <div class="pdf-block-label">Current Text</div>
-                <div class="pdf-block-content">${siteTextContent}</div>
-              </div>
-            `;
-          }
-        }
-        
-        // Extract problem block
-        const problemBlock = element.querySelector('.problem');
-        if (problemBlock) {
-          const problemContent = problemBlock.querySelector('.block-content')?.textContent?.trim() || '';
-          if (problemContent) {
-            pdfContent += `
-              <div class="pdf-element-block pdf-problem-block">
-                <div class="pdf-block-label">Problem</div>
-                <div class="pdf-block-content">${problemContent}</div>
-              </div>
-            `;
-          }
-        }
-        
-        // Extract solution block
-        const solutionBlock = element.querySelector('.solution');
-        if (solutionBlock) {
-          const solutionContent = solutionBlock.querySelector('.block-content')?.textContent?.trim() || '';
-          if (solutionContent) {
-            pdfContent += `
-              <div class="pdf-element-block pdf-solution-block">
-                <div class="pdf-block-label">Solution</div>
-                <div class="pdf-block-content">${solutionContent}</div>
-              </div>
-            `;
-          }
-        }
-        
-        // Extract actions block
-        const actionsBlock = element.querySelector('.actions');
-        if (actionsBlock) {
-          const actionsList = actionsBlock.querySelectorAll('.actions-list li');
-          if (actionsList.length > 0) {
-            let actionsHtml = '';
-            actionsList.forEach(action => {
-              const actionText = action.textContent?.trim() || '';
-              if (actionText) {
-                actionsHtml += `<li>${actionText}</li>`;
-              }
-            });
-            
-            if (actionsHtml) {
+      } else {
+        elements.forEach((element, elementIndex) => {
+          // Extract element title
+          const elementTitleEl = element.querySelector('.element-title, .element-name, h4, h5');
+          const elementTitle = elementTitleEl?.textContent?.trim() || `Element ${elementIndex + 1}`;
+          
+          pdfContent += `
+            <div class="pdf-element">
+              <div class="pdf-element-title">${elementTitle}</div>
+              <div class="pdf-element-content">
+          `;
+          
+          // Extract current text/site text
+          const siteTextEl = element.querySelector('.site-text-block .block-content, .current-text, .site-text');
+          if (siteTextEl) {
+            const siteText = siteTextEl.textContent?.trim();
+            if (siteText && siteText !== 'Not found' && siteText.length > 0) {
               pdfContent += `
-                <div class="pdf-element-block pdf-actions-block">
-                  <div class="pdf-block-label">Actions</div>
-                  <div class="pdf-block-content">
-                    <ul class="pdf-actions-list">
-                      ${actionsHtml}
-                    </ul>
+                <div class="pdf-content-block pdf-current-text">
+                  <div class="pdf-block-label">Current Content</div>
+                  <div class="pdf-block-content">${siteText}</div>
+                </div>
+              `;
+            }
+          }
+          
+          // Extract problem
+          const problemEl = element.querySelector('.problem .block-content, .issue, .problem-text');
+          if (problemEl) {
+            const problemText = problemEl.textContent?.trim();
+            if (problemText && problemText.length > 0) {
+              pdfContent += `
+                <div class="pdf-content-block pdf-problem">
+                  <div class="pdf-block-label">Issue Identified</div>
+                  <div class="pdf-block-content">${problemText}</div>
+                </div>
+              `;
+            }
+          }
+          
+          // Extract solution
+          const solutionEl = element.querySelector('.solution .block-content, .recommendation, .solution-text');
+          if (solutionEl) {
+            const solutionText = solutionEl.textContent?.trim();
+            if (solutionText && solutionText.length > 0) {
+              pdfContent += `
+                <div class="pdf-content-block pdf-solution">
+                  <div class="pdf-block-label">Recommended Solution</div>
+                  <div class="pdf-block-content">${solutionText}</div>
+                </div>
+              `;
+            }
+          }
+          
+          // Extract actions
+          const actionsContainer = element.querySelector('.actions, .action-list, .recommendations');
+          if (actionsContainer) {
+            const actionItems = actionsContainer.querySelectorAll('li, .action-item');
+            if (actionItems.length > 0) {
+              let actionsHtml = '';
+              actionItems.forEach(action => {
+                const actionText = action.textContent?.trim();
+                if (actionText && actionText.length > 0) {
+                  actionsHtml += `<li>${actionText}</li>`;
+                }
+              });
+              
+              if (actionsHtml) {
+                pdfContent += `
+                  <div class="pdf-content-block pdf-actions">
+                    <div class="pdf-block-label">Action Steps</div>
+                    <div class="pdf-block-content">
+                      <ul class="pdf-actions-list">
+                        ${actionsHtml}
+                      </ul>
+                    </div>
+                  </div>
+                `;
+              }
+            }
+          }
+          
+          // Extract metrics if available
+          const metricsContainer = element.querySelector('.element-metrics, .metrics');
+          if (metricsContainer) {
+            const impactMetric = metricsContainer.querySelector('[class*="impact"], .metric-impact');
+            const timingMetric = metricsContainer.querySelector('[class*="timing"], .metric-timing');
+            
+            let impactValue = '–';
+            let timingValue = '–';
+            
+            if (impactMetric) {
+              const impactText = impactMetric.textContent?.trim();
+              const impactMatch = impactText?.match(/\+?(\d+)%/);
+              if (impactMatch) impactValue = `+${impactMatch[1]}%`;
+            }
+            
+            if (timingMetric) {
+              const timingText = timingMetric.textContent?.trim();
+              if (timingText) {
+                timingValue = timingText.replace(/.*:\s*/, '').trim();
+              }
+            }
+            
+            if (impactValue !== '–' || timingValue !== '–') {
+              pdfContent += `
+                <div class="pdf-element-metrics">
+                  <div class="pdf-metric-item">
+                    <div class="pdf-metric-value" style="color: #48bb78;">${impactValue}</div>
+                    <div class="pdf-metric-label">Impact</div>
+                  </div>
+                  <div class="pdf-metric-item">
+                    <div class="pdf-metric-value" style="color: #805ad5;">${timingValue}</div>
+                    <div class="pdf-metric-label">Time</div>
                   </div>
                 </div>
               `;
             }
           }
-        }
-        
-        // ENHANCED: Extract and format metrics with professional design
-        const metricsContainer = element.querySelector('.element-metrics');
-        if (metricsContainer) {
-          const metrics = metricsContainer.querySelectorAll('.metric');
-          if (metrics.length > 0) {
-            // Extract individual metric values from the text
-            let impactScore = '–';
-            let timingValue = '–';
-            
-            metrics.forEach(metric => {
-              const metricText = metric.textContent?.trim() || '';
-              // REMOVED: Optimization score extraction since it's not real data
-              if (metricText.includes('Impact') || metricText.includes('+')) {
-                const impactMatch = metricText.match(/\+(\d+)%/);
-                if (impactMatch) impactScore = impactMatch[1];
-              } else if (metricText.includes('min') || metricText.includes('hour') || metricText.includes('day')) {
-                timingValue = metricText.replace(/.*:\s*/, '').trim();
-              }
-            });
-            
-            // FIXED: Generate enhanced metrics cards without optimization score
-            pdfContent += `
-              <div class="pdf-element-metrics">
-                <div class="pdf-element-metric pdf-metric-impact">
-                  <div class="pdf-metric-label">Impact</div>
-                  <div class="pdf-metric-value">+${impactScore}%</div>
-                  <div class="pdf-metric-description">Improvement potential</div>
-                </div>
-                <div class="pdf-element-metric pdf-metric-timing">
-                  <div class="pdf-metric-label">Implementation</div>
-                  <div class="pdf-metric-value">${timingValue}</div>
-                  <div class="pdf-metric-description">Estimated time</div>
-                </div>
+          
+          pdfContent += `
               </div>
-            `;
-          }
-        }
-        
-        pdfContent += '</div>'; // Close element
-      });
+            </div>
+          `;
+        });
+      }
       
       pdfContent += '</div>'; // Close category
     });
     
-    return pdfContent || '<p style="text-align: center; color: #6c757d; padding: 20px;">No unlocked content available for PDF generation.</p>';
+    return pdfContent || '<div class="pdf-no-content">Unable to extract report content.</div>';
     
   } catch (error) {
-    console.error('Error extracting report content for PDF:', error);
-    return '<p style="text-align: center; color: #dc3545; padding: 20px;">Error processing report content for PDF generation.</p>';
+    console.error('Error extracting actual report content:', error);
+    return '<div class="pdf-no-content">Error processing report content for PDF generation.</div>';
   }
 }
 
@@ -1174,5 +1169,3 @@ function showPdfSuccess(email) {
     }
   }
 }
-
-console.log('✅ PDF report system loaded successfully');

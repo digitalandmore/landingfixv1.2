@@ -1,4 +1,4 @@
- // Import required modules
+// Import required modules
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -10,6 +10,22 @@ const jsdom = require('jsdom');
 
 // DISABLED PUPPETEER FOR RENDER DEPLOYMENT
 const USE_PUPPETEER = false;
+
+// FIXED: Only import puppeteer if needed to avoid errors
+let puppeteer = null;
+let StealthPlugin = null;
+
+if (USE_PUPPETEER) {
+  try {
+    puppeteer = require('puppeteer');
+    const puppeteerExtra = require('puppeteer-extra');
+    StealthPlugin = require('puppeteer-extra-plugin-stealth');
+    puppeteerExtra.use(StealthPlugin());
+    puppeteer = puppeteerExtra;
+  } catch (error) {
+    console.warn('⚠️ Puppeteer not available, using basic HTML fetch only');
+  }
+}
 
 const tools = require('./tools.js');
 
@@ -293,23 +309,60 @@ app.get('/api/tools', (req, res) => {
   }
 });
 
-// --- Puppeteer stealth initialization ---
-puppeteer.use(StealthPlugin());
+// FIXED: Remove puppeteer stealth initialization that was causing error
+// puppeteer.use(StealthPlugin()); // This line was causing the error
 
-const port = process.env.PORT || 10000;
-
-// Start server with proper binding for Render
-app.listen(port, '0.0.0.0', () => {
-  console.log(`🚀 LandingFix AI Server running on port ${port}`);
-  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 CORS origins: ${JSON.stringify([
-    'https://landingfixai.com',
-    'https://landingfixv1-2.onrender.com',
-    'http://localhost:5500',
-    process.env.FRONTEND_URL
-  ])}`);
-  console.log(`🤖 Puppeteer enabled: ${USE_PUPPETEER}`);
-});
+// FIXED: Add missing extractVisibleContent function
+async function extractVisibleContent(url) {
+  try {
+    console.log(`🔍 Extracting visible content from: ${url}`);
+    
+    // Use basic fetch for content extraction
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      timeout: 15000
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const html = await response.text();
+    
+    // Create DOM from HTML
+    const dom = new JSDOM(html, { url });
+    const document = dom.window.document;
+    
+    // Remove script and style elements
+    const scripts = document.querySelectorAll('script, style, noscript');
+    scripts.forEach(el => el.remove());
+    
+    // Extract visible text content
+    const visibleText = document.body?.textContent || '';
+    
+    // Use Readability to extract main content
+    let mainContent = '';
+    try {
+      const reader = new Readability(document);
+      const article = reader.parse();
+      mainContent = article?.textContent || visibleText.slice(0, 2000);
+    } catch (readabilityError) {
+      console.warn('Readability parsing failed:', readabilityError.message);
+      mainContent = visibleText.slice(0, 2000);
+    }
+    
+    return {
+      visibleText: visibleText.slice(0, 4000), // Limit to 4KB
+      mainContent: mainContent.slice(0, 2000)  // Limit to 2KB
+    };
+    
+  } catch (error) {
+    console.error('Error extracting visible content:', error);
+    throw error;
+  }
+}
 
 // --- GENERATE REPORT ---
 // Main API endpoint: generates a detailed landing page report using OpenAI and normalization/fallback logic.
@@ -722,88 +775,89 @@ app.post('/api/send-report', async (req, res) => {
     
     console.log('📄 Processing request for:', { email, url, isPdfEmail: !!isPdfEmail });
     
-    // FIXED: Always disable PDF generation in production due to Render limitations
-    if (process.env.NODE_ENV === 'production') {
-      console.log('📄 Production mode: Sending HTML email instead of PDF');
-      
-      // FIXED: Correct method name - createTransport not createTransporter
-      const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.EMAIL_PORT) || 587,
-        secure: process.env.EMAIL_SECURE === 'true',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
-        }
-      });
-      
-      // Verify email configuration
-      try {
-        await transporter.verify();
-        console.log('📧 Email configuration verified');
-      } catch (emailConfigError) {
-        console.error('📧 Email configuration failed:', emailConfigError.message);
-        return res.status(500).json({
-          success: false,
-          error: 'Email service configuration error: ' + emailConfigError.message
-        });
-      }
-      
-      // Prepare email content - simplified and safe
-      const emailSubject = `Your LandingFix AI Report - ${url}`;
-      
-      // FIXED: Use simplified HTML template to avoid size issues
-      const safeHtmlContent = htmlTemplate ? 
-        htmlTemplate.substring(0, 100000) : // Limit to 100KB
-        `
-        <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #333; text-align: center;">Your LandingFix AI Report</h1>
-          <p>Dear ${name || 'User'},</p>
-          <p>Your comprehensive landing page analysis for <strong>${url}</strong> has been completed.</p>
-          
-          <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="color: #333; margin-top: 0;">Report Summary</h2>
-            <p>We've analyzed your landing page and identified key optimization opportunities.</p>
-            <p>This report includes detailed recommendations specifically tailored for your business.</p>
-          </div>
-          
-          ${pdfContent ? `<div style="margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">${pdfContent.substring(0, 50000)}</div>` : ''}
-          
-          <div style="margin-top: 30px; padding: 20px; background: #e8f4fd; border-radius: 8px;">
-            <p><strong>Need more detailed analysis?</strong></p>
-            <p>Visit <a href="https://landingfixai.com" style="color: #007bff;">LandingFix AI</a> to generate additional reports and access our full optimization toolkit.</p>
-          </div>
-          
-          <p style="margin-top: 30px;">Best regards,<br>The LandingFix AI Team</p>
-        </div>
-        `;
-      
-      const mailOptions = {
-        from: `"LandingFix AI" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: emailSubject,
-        html: safeHtmlContent
-      };
-      
-      // Send email with timeout protection
-      const emailPromise = transporter.sendMail(mailOptions);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Email send timeout after 30 seconds')), 30000)
-      );
-      
-      await Promise.race([emailPromise, timeoutPromise]);
-      console.log('📧 Report email sent successfully to:', email);
-      
-      return res.json({
-        success: true,
-        message: 'Report sent successfully via email (HTML format due to server limitations)'
+    // FIXED: Check for required environment variables first
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.error('📧 Email configuration missing');
+      return res.status(500).json({
+        success: false,
+        error: 'Email service not configured'
       });
     }
     
-    // For local development - simplified response
+    // FIXED: Always disable PDF generation in production due to Render limitations
+    console.log('📄 Production mode: Sending HTML email instead of PDF');
+    
+    // FIXED: Correct method name - createTransport not createTransporter
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.EMAIL_PORT) || 587,
+      secure: process.env.EMAIL_SECURE === 'true',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+    
+    // Verify email configuration
+    try {
+      await transporter.verify();
+      console.log('📧 Email configuration verified');
+    } catch (emailConfigError) {
+      console.error('📧 Email configuration failed:', emailConfigError.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Email service configuration error: ' + emailConfigError.message
+      });
+    }
+    
+    // Prepare email content - simplified and safe
+    const emailSubject = `Your LandingFix AI Report - ${url}`;
+    
+    // FIXED: Use simplified HTML template to avoid size issues
+    const safeHtmlContent = htmlTemplate ? 
+      htmlTemplate.substring(0, 100000) : // Limit to 100KB
+      `
+      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #333; text-align: center;">Your LandingFix AI Report</h1>
+        <p>Dear ${name || 'User'},</p>
+        <p>Your comprehensive landing page analysis for <strong>${url}</strong> has been completed.</p>
+        
+        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h2 style="color: #333; margin-top: 0;">Report Summary</h2>
+          <p>We've analyzed your landing page and identified key optimization opportunities.</p>
+          <p>This report includes detailed recommendations specifically tailored for your business.</p>
+        </div>
+        
+        ${pdfContent ? `<div style="margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">${pdfContent.substring(0, 50000)}</div>` : ''}
+        
+        <div style="margin-top: 30px; padding: 20px; background: #e8f4fd; border-radius: 8px;">
+          <p><strong>Need more detailed analysis?</strong></p>
+          <p>Visit <a href="https://landingfixai.com" style="color: #007bff;">LandingFix AI</a> to generate additional reports and access our full optimization toolkit.</p>
+        </div>
+        
+        <p style="margin-top: 30px;">Best regards,<br>The LandingFix AI Team</p>
+      </div>
+      `;
+    
+    const mailOptions = {
+      from: `"LandingFix AI" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: emailSubject,
+      html: safeHtmlContent
+    };
+    
+    // Send email with timeout protection
+    const emailPromise = transporter.sendMail(mailOptions);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Email send timeout after 30 seconds')), 30000)
+    );
+    
+    await Promise.race([emailPromise, timeoutPromise]);
+    console.log('📧 Report email sent successfully to:', email);
+    
     return res.json({
       success: true,
-      message: 'PDF generation completed (development mode)'
+      message: 'Report sent successfully via email (HTML format due to server limitations)'
     });
     
   } catch (error) {
@@ -1539,3 +1593,18 @@ function enhanceActionsWithTools(actions, element, industry) {
     return enhanced;
   });
 }
+
+const port = process.env.PORT || 10000;
+
+// Start server with proper binding for Render
+app.listen(port, '0.0.0.0', () => {
+  console.log(`🚀 LandingFix AI Server running on port ${port}`);
+  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 CORS origins: ${JSON.stringify([
+    'https://landingfixai.com',
+    'https://landingfixv1-2.onrender.com',
+    'http://localhost:5500',
+    process.env.FRONTEND_URL
+  ])}`);
+  console.log(`🤖 Puppeteer enabled: ${USE_PUPPETEER}`);
+});

@@ -159,53 +159,122 @@ function setupCheckout() {
     }
   }
 
-  // --- Show Payment Confirmation ---
+  // --- FIXED: Enhanced Payment Confirmation Modal ---
   function showPaymentConfirmation(email, amount, paymentMethod, transactionId = '') {
-    const confirmationMessage = document.createElement('div');
-    confirmationMessage.innerHTML = `
-      <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                  z-index: 10001; background: white; padding: 30px; border-radius: 16px; 
-                  box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 450px; width: 90%;
-                  font-family: Inter, sans-serif; text-align: center;">
-        <div style="color: #48bb78; font-size: 48px; margin-bottom: 16px;">
-          <i class="fa fa-check-circle"></i>
-        </div>
-        <h3 style="color: #2c3e50; margin-bottom: 16px; font-size: 24px;">Payment Successful!</h3>
-        <p style="color: #6c757d; margin-bottom: 16px; line-height: 1.5;">
-          Thank you for your purchase! Your payment of <strong>€${amount.toFixed(2)}</strong> via ${paymentMethod} has been processed successfully.
-        </p>
-        ${transactionId ? `<p style="color: #6c757d; margin-bottom: 16px; font-size: 12px;">
-          Transaction ID: <code style="background: #f8f9fa; padding: 2px 6px; border-radius: 4px;">${transactionId}</code>
-        </p>` : ''}
-        <p style="color: #6c757d; margin-bottom: 20px; line-height: 1.5;">
-          A confirmation email will be sent to:<br>
-          <strong style="color: #2c3e50;">${email}</strong>
-        </p>
-        <p style="color: #48bb78; margin-bottom: 24px; font-weight: 600; font-size: 16px;">
-          🎉 Your full report has been unlocked!
-        </p>
-        <button onclick="this.parentElement.parentElement.remove()" 
-                style="background: #48bb78; color: white; border: none; padding: 12px 24px; 
-                       border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;
-                       transition: background 0.2s;">
-          Continue to Report
-        </button>
-      </div>
+    // Remove any existing confirmation modals
+    const existingModal = document.querySelector('.payment-confirmation-modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    const confirmationModal = document.createElement('div');
+    confirmationModal.className = 'payment-confirmation-modal';
+    confirmationModal.innerHTML = `
       <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-                  background: rgba(0,0,0,0.5); z-index: 10000;" 
-           onclick="this.parentElement.remove()"></div>
+                  background: rgba(0,0,0,0.7); z-index: 20000; display: flex; 
+                  align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+        <div style="background: white; padding: 40px; border-radius: 20px; 
+                    box-shadow: 0 30px 80px rgba(0,0,0,0.3); max-width: 520px; width: 90%;
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+                    text-align: center; animation: modalSlideIn 0.4s ease-out;">
+          
+          <!-- Success Icon -->
+          <div style="color: #10b981; font-size: 64px; margin-bottom: 24px; animation: bounceIn 0.6s ease-out 0.2s both;">
+            <i class="fa fa-check-circle"></i>
+          </div>
+          
+          <!-- Title -->
+          <h2 style="color: #1f2937; margin-bottom: 16px; font-size: 28px; font-weight: 700;">
+            Payment Successful! 🎉
+          </h2>
+          
+          <!-- Subtitle -->
+          <p style="color: #6b7280; margin-bottom: 32px; font-size: 18px; line-height: 1.5;">
+            Thank you for your purchase! Your report has been unlocked.
+          </p>
+          
+          <!-- Payment Details Box -->
+          <div style="background: #f8fafc; border-radius: 12px; padding: 24px; margin-bottom: 28px; 
+                      border-left: 4px solid #10b981;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: left;">
+              <div>
+                <span style="color: #6b7280; font-size: 14px; font-weight: 500;">Amount Paid</span>
+                <div style="color: #1f2937; font-size: 20px; font-weight: 700;">€${amount.toFixed(2)}</div>
+              </div>
+              <div>
+                <span style="color: #6b7280; font-size: 14px; font-weight: 500;">Payment Method</span>
+                <div style="color: #1f2937; font-size: 16px; font-weight: 600;">${paymentMethod}</div>
+              </div>
+              <div style="grid-column: 1 / 3;">
+                <span style="color: #6b7280; font-size: 14px; font-weight: 500;">Email</span>
+                <div style="color: #1f2937; font-size: 16px; font-weight: 600;">${email}</div>
+              </div>
+              ${transactionId ? `
+              <div style="grid-column: 1 / 3;">
+                <span style="color: #6b7280; font-size: 14px; font-weight: 500;">Transaction ID</span>
+                <div style="color: #6b7280; font-size: 12px; font-family: monospace; 
+                           background: #e5e7eb; padding: 4px 8px; border-radius: 4px; 
+                           word-break: break-all;">${transactionId}</div>
+              </div>` : ''}
+            </div>
+          </div>
+          
+          <!-- Success Message -->
+          <div style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); 
+                      border-radius: 12px; padding: 20px; margin-bottom: 32px;">
+            <div style="color: #15803d; font-size: 18px; font-weight: 600; margin-bottom: 8px;">
+              🔓 Report Unlocked Successfully!
+            </div>
+            <div style="color: #166534; font-size: 14px; line-height: 1.4;">
+              You now have full access to all recommendations and insights. 
+              A confirmation email will be sent shortly.
+            </div>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div style="display: flex; gap: 12px; justify-content: center;">
+            <button onclick="this.closest('.payment-confirmation-modal').remove()" 
+                    style="background: linear-gradient(135deg, #10b981, #059669); 
+                           color: white; border: none; padding: 14px 28px; 
+                           border-radius: 10px; font-size: 16px; font-weight: 600; 
+                           cursor: pointer; transition: all 0.2s; flex: 1; max-width: 200px;
+                           box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(16, 185, 129, 0.4)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)'">
+              <i class="fa fa-arrow-right" style="margin-right: 8px;"></i>
+              Continue to Report
+            </button>
+          </div>
+          
+        </div>
+      </div>
+      
+      <style>
+        @keyframes modalSlideIn {
+          from { transform: translateY(-20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes bounceIn {
+          0% { transform: scale(0); opacity: 0; }
+          50% { transform: scale(1.1); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+      </style>
     `;
-    document.body.appendChild(confirmationMessage);
     
-    // Auto-remove after 10 seconds
+    document.body.appendChild(confirmationModal);
+    
+    // Auto-remove after 15 seconds
     setTimeout(() => {
-      if (confirmationMessage.parentElement) {
-        confirmationMessage.remove();
+      if (confirmationModal.parentElement) {
+        confirmationModal.remove();
       }
-    }, 10000);
+    }, 15000);
+    
+    console.log('✅ Payment confirmation modal displayed');
   }
 
-  // --- Stripe Payment Handler ---
+  // --- FIXED: Enhanced Stripe Payment Handler with Proper Validation ---
   async function handleStripePayment() {
     if (!stripe || !cardElement) {
       console.error('Stripe not properly initialized');
@@ -213,37 +282,68 @@ function setupCheckout() {
       return;
     }
 
-    // FIXED: Validate email BEFORE processing payment
+    // FIXED: Comprehensive validation BEFORE processing payment
     const emailInput = document.getElementById('customer-email');
+    const nameInput = document.getElementById('billing-name');
     const customerEmail = emailInput ? emailInput.value.trim() : '';
+    const customerName = nameInput ? nameInput.value.trim() : '';
     
-    if (!customerEmail || !customerEmail.includes('@')) {
+    console.log('🔍 Validating payment form:', {
+      email: customerEmail,
+      name: customerName,
+      emailElement: !!emailInput,
+      nameElement: !!nameInput
+    });
+    
+    // Email validation
+    if (!customerEmail || !customerEmail.includes('@') || customerEmail.length < 5) {
       alert('Please enter a valid email address before proceeding.');
-      if (emailInput) emailInput.focus();
+      if (emailInput) {
+        emailInput.focus();
+        emailInput.style.borderColor = '#dc3545';
+        emailInput.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
+      }
+      return;
+    }
+    
+    // Name validation
+    if (!customerName || customerName.length < 2) {
+      alert('Please enter your full name for billing purposes.');
+      if (nameInput) {
+        nameInput.focus();
+        nameInput.style.borderColor = '#dc3545';
+        nameInput.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
+      }
       return;
     }
 
-    // FIXED: Validate billing name (required by Stripe)
-    const nameInput = document.getElementById('billing-name');
-    const customerName = nameInput ? nameInput.value.trim() : '';
-    
-    if (!customerName) {
-      alert('Please enter your full name for billing.');
-      if (nameInput) nameInput.focus();
-      return;
+    // Reset field styling
+    if (emailInput) {
+      emailInput.style.borderColor = '#28a745';
+      emailInput.style.boxShadow = '0 0 0 0.2rem rgba(40, 167, 69, 0.25)';
+    }
+    if (nameInput) {
+      nameInput.style.borderColor = '#28a745';
+      nameInput.style.boxShadow = '0 0 0 0.2rem rgba(40, 167, 69, 0.25)';
     }
 
     const submitButton = document.getElementById('stripe-submit');
     const originalText = submitButton.innerHTML;
     
-    // Show loading state
+    // Show enhanced loading state
     submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing payment...';
+    submitButton.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <i class="fa fa-spinner fa-spin" style="margin-right: 8px;"></i>
+        Processing payment...
+      </div>
+    `;
+    submitButton.style.opacity = '0.7';
 
     try {
       console.log('🔄 Creating payment intent for:', customerEmail, 'Amount:', currentEur);
       
-      // Create payment intent
+      // Create payment intent with enhanced data
       const response = await fetch('https://landingfixv1-2.onrender.com/api/create-payment-intent', {
         method: 'POST',
         headers: { 
@@ -258,64 +358,93 @@ function setupCheckout() {
           metadata: {
             product: 'LandingFix AI Report',
             website: localStorage.getItem('landingfix_report_data') ? 
-                     JSON.parse(localStorage.getItem('landingfix_report_data')).url : 'Unknown'
+                     JSON.parse(localStorage.getItem('landingfix_report_data')).url : 'Unknown',
+            timestamp: new Date().toISOString()
           }
         })
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Server error: ${errorText}`);
+        console.error('❌ Server response error:', response.status, errorText);
+        throw new Error(`Server error (${response.status}): Please try again or contact support.`);
       }
 
       const responseData = await response.json();
       
       if (!responseData.clientSecret) {
-        throw new Error('Invalid response from payment processor');
+        console.error('❌ Invalid server response:', responseData);
+        throw new Error('Invalid response from payment processor. Please try again.');
       }
 
       console.log('✅ Payment intent created successfully');
+
+      // Get billing details
+      const billingDetails = {
+        name: customerName,
+        email: customerEmail,
+        address: {
+          line1: document.getElementById('billing-address')?.value || '',
+          city: document.getElementById('billing-city')?.value || '',
+          postal_code: document.getElementById('billing-postal')?.value || '',
+          country: document.getElementById('billing-country')?.value || 'IT'
+        }
+      };
+
+      console.log('🔄 Confirming payment with Stripe...');
 
       // Confirm payment with Stripe
       const { error, paymentIntent } = await stripe.confirmCardPayment(responseData.clientSecret, {
         payment_method: {
           card: cardElement,
-          billing_details: {
-            name: customerName,
-            email: customerEmail,
-            address: {
-              line1: document.getElementById('billing-address')?.value || '',
-              city: document.getElementById('billing-city')?.value || '',
-              postal_code: document.getElementById('billing-postal')?.value || '',
-              country: document.getElementById('billing-country')?.value || 'IT'
-            }
-          }
+          billing_details: billingDetails
         }
       });
 
       if (error) {
         console.error('❌ Stripe payment failed:', error);
-        throw new Error(error.message || 'Payment failed');
+        
+        // Enhanced error handling
+        let userMessage = 'Payment failed: ';
+        
+        if (error.code === 'card_declined') {
+          userMessage += 'Your card was declined. Please try a different payment method or contact your bank.';
+        } else if (error.code === 'insufficient_funds') {
+          userMessage += 'Insufficient funds. Please use a different card or payment method.';
+        } else if (error.code === 'expired_card') {
+          userMessage += 'Your card has expired. Please use a different card.';
+        } else if (error.code === 'incorrect_cvc') {
+          userMessage += 'Incorrect security code. Please check your card details and try again.';
+        } else if (error.code === 'processing_error') {
+          userMessage += 'A processing error occurred. Please try again in a few moments.';
+        } else {
+          userMessage += error.message || 'An unexpected error occurred. Please try again.';
+        }
+        
+        alert(userMessage);
+        return;
       } 
       
       if (paymentIntent && paymentIntent.status === 'succeeded') {
         console.log('✅ Payment succeeded:', paymentIntent.id);
         
-        // Show success message immediately
+        // Show enhanced success message
         showPaymentConfirmation(customerEmail, currentEur, 'Credit Card', paymentIntent.id);
         
-        // Close popup and unlock report
+        // Close popup and unlock report after a delay
         setTimeout(() => {
+          console.log('🔄 Closing checkout and unlocking report...');
           closeCheckoutPopup();
           unlockFullReport();
-        }, 1000);
+        }, 2000);
 
-        // Track successful purchase
+        // Enhanced tracking
         if (typeof fbq === 'function') {
           fbq('track', 'Purchase', { 
             value: currentEur, 
             currency: 'EUR',
-            content_name: 'LandingFix AI Report' 
+            content_name: 'LandingFix AI Report',
+            content_type: 'product'
           });
         }
         if (typeof gtag === 'function') {
@@ -334,35 +463,21 @@ function setupCheckout() {
         }
         
       } else {
-        throw new Error('Payment processing failed - unknown status');
+        console.error('❌ Unexpected payment status:', paymentIntent?.status);
+        throw new Error('Payment processing failed. Please contact support if you were charged.');
       }
 
     } catch (error) {
-      console.error('❌ Payment error:', error);
+      console.error('❌ Payment processing error:', error);
       
-      // FIXED: Better error messages for users
-      let userMessage = 'Payment failed. ';
-      
-      if (error.message.includes('card_declined')) {
-        userMessage += 'Your card was declined. Please try a different payment method.';
-      } else if (error.message.includes('insufficient_funds')) {
-        userMessage += 'Insufficient funds. Please try a different card.';
-      } else if (error.message.includes('expired_card')) {
-        userMessage += 'Your card has expired. Please use a different card.';
-      } else if (error.message.includes('incorrect_cvc')) {
-        userMessage += 'Incorrect security code. Please check and try again.';
-      } else if (error.message.includes('network')) {
-        userMessage += 'Network error. Please check your connection and try again.';
-      } else {
-        userMessage += error.message || 'Please try again or contact support.';
-      }
-      
-      alert(userMessage);
+      // Show user-friendly error message
+      alert(`Payment Error: ${error.message}\n\nIf you continue to experience issues, please contact our support team.`);
       
     } finally {
       // Reset button state
       submitButton.disabled = false;
       submitButton.innerHTML = originalText;
+      submitButton.style.opacity = '1';
     }
   }
 
@@ -468,26 +583,37 @@ function setupCheckout() {
           color: 'blue', 
           shape: 'pill', 
           label: 'pay', 
-          height: 40 
+          height: 45,
+          tagline: false
         },
         createOrder: function(data, actions) {
-          // FIXED: Get email from input and validate
+          // FIXED: Enhanced validation for PayPal
           const emailInput = document.getElementById('customer-email');
           const customerEmail = emailInput ? emailInput.value.trim() : '';
           
-          if (!customerEmail || !customerEmail.includes('@')) {
-            alert('Please enter a valid email address before proceeding with PayPal.');
-            if (emailInput) emailInput.focus();
-            return Promise.reject(new Error('Email required'));
+          if (!customerEmail || !customerEmail.includes('@') || customerEmail.length < 5) {
+            alert('Please enter a valid email address before proceeding with PayPal payment.');
+            if (emailInput) {
+              emailInput.focus();
+              emailInput.style.borderColor = '#dc3545';
+            }
+            return Promise.reject(new Error('Valid email required for PayPal payment'));
           }
           
-          console.log('Creating PayPal order for:', currentEur, 'EUR');
+          // Reset styling
+          if (emailInput) {
+            emailInput.style.borderColor = '#28a745';
+          }
+          
+          console.log('🔄 Creating PayPal order for:', currentEur, 'EUR');
           return actions.order.create({
             purchase_units: [{
               amount: { 
                 value: currentEur.toFixed(2), 
                 currency_code: 'EUR' 
               },
+              description: 'LandingFix AI - Landing Page Analysis Report',
+              custom_id: `landingfix-${Date.now()}`,
               shipping_preference: 'NO_SHIPPING'
             }],
             payer: {
@@ -496,29 +622,44 @@ function setupCheckout() {
           });
         },
         onApprove: function(data, actions) {
-          console.log('PayPal payment approved:', data);
+          console.log('🔄 PayPal payment approved:', data);
+          
+          // Show processing state
+          const paypalButtons = document.querySelector('#paypal-button-container .paypal-buttons');
+          if (paypalButtons) {
+            paypalButtons.style.opacity = '0.5';
+            paypalButtons.style.pointerEvents = 'none';
+          }
+          
           return actions.order.capture().then(function(details) {
-            console.log('PayPal payment captured:', details);
+            console.log('✅ PayPal payment captured:', details);
             
             // Get email for confirmation
             const emailInput = document.getElementById('customer-email');
             const customerEmail = emailInput ? emailInput.value.trim() : details.payer?.email_address || '';
             
-            // Show confirmation message with transaction ID
-            showPaymentConfirmation(customerEmail, currentEur, 'PayPal', details.id);
+            // Show enhanced confirmation message
+            showPaymentConfirmation(
+              customerEmail, 
+              currentEur, 
+              'PayPal', 
+              details.id
+            );
             
-            // Close popup and unlock report
+            // Close popup and unlock report after delay
             setTimeout(() => {
+              console.log('🔄 Closing checkout and unlocking report...');
               closeCheckoutPopup();
               unlockFullReport();
-            }, 1000);
+            }, 2000);
 
-            // Track purchase
+            // Enhanced tracking
             if (typeof fbq === 'function') {
               fbq('track', 'Purchase', { 
                 value: currentEur, 
                 currency: 'EUR',
-                content_name: 'LandingFix AI Report'
+                content_name: 'LandingFix AI Report',
+                content_type: 'product'
               });
             }
             if (typeof gtag === 'function') {
@@ -538,15 +679,33 @@ function setupCheckout() {
           });
         },
         onError: function(err) {
-          console.error('PayPal error:', err);
-          alert('PayPal payment failed. Please try again or use a different payment method.');
+          console.error('❌ PayPal error:', err);
+          
+          // Reset PayPal button state
+          const paypalButtons = document.querySelector('#paypal-button-container .paypal-buttons');
+          if (paypalButtons) {
+            paypalButtons.style.opacity = '1';
+            paypalButtons.style.pointerEvents = 'auto';
+          }
+          
+          alert('PayPal payment failed. Please try again or use a different payment method.\n\nIf the problem persists, please contact our support team.');
+        },
+        onCancel: function(data) {
+          console.log('ℹ️ PayPal payment cancelled by user:', data);
+          
+          // Reset PayPal button state
+          const paypalButtons = document.querySelector('#paypal-button-container .paypal-buttons');
+          if (paypalButtons) {
+            paypalButtons.style.opacity = '1';
+            paypalButtons.style.pointerEvents = 'auto';
+          }
         }
       }).render('#paypal-button-container');
       
-      console.log('PayPal buttons rendered successfully');
+      console.log('✅ PayPal buttons rendered successfully');
       
     } catch (error) {
-      console.error('Error rendering PayPal buttons:', error);
+      console.error('❌ Error rendering PayPal buttons:', error);
     }
   }
 
