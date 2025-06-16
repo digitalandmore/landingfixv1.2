@@ -22,6 +22,70 @@ function setupCheckout() {
     document.getElementById('checkout-url').textContent = url;
   }
 
+  // --- Validation Functions ---
+  function validateBillingInfo() {
+    const firstName = document.getElementById('billing-first-name').value.trim();
+    const lastName = document.getElementById('billing-last-name').value.trim();
+    const email = document.getElementById('billing-email').value.trim();
+    const country = document.getElementById('billing-country').value;
+
+    if (!firstName || !lastName || !email || !country) {
+      showError('Please fill in all required billing information.');
+      return false;
+    }
+
+    if (!isValidEmail(email)) {
+      showError('Please enter a valid email address.');
+      return false;
+    }
+
+    return true;
+  }
+
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  function showError(message) {
+    // Remove any existing error
+    const existingError = document.querySelector('.billing-error');
+    if (existingError) existingError.remove();
+
+    // Create error element
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'billing-error';
+    errorDiv.style.cssText = `
+      background: #fed7d7;
+      color: #c53030;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 0.9em;
+      border-left: 4px solid #e53e3e;
+    `;
+    errorDiv.innerHTML = `<i class="fa fa-exclamation-triangle" style="margin-right: 8px;"></i>${message}`;
+
+    // Insert before payment section
+    const paymentSection = document.getElementById('payment-section');
+    paymentSection.parentNode.insertBefore(errorDiv, paymentSection);
+
+    // Remove after 5 seconds
+    setTimeout(() => {
+      if (errorDiv.parentNode) errorDiv.remove();
+    }, 5000);
+  }
+
+  function getBillingData() {
+    return {
+      firstName: document.getElementById('billing-first-name').value.trim(),
+      lastName: document.getElementById('billing-last-name').value.trim(),
+      email: document.getElementById('billing-email').value.trim(),
+      company: document.getElementById('billing-company').value.trim(),
+      country: document.getElementById('billing-country').value,
+      city: document.getElementById('billing-city').value.trim()
+    };
+  }
+
   // --- Update Prices with Payment Method Visibility ---
   function updatePrices() {
     document.getElementById('checkout-eur').textContent = `€${currentEur.toFixed(2)}`;
@@ -31,12 +95,10 @@ function setupCheckout() {
     const unlockFreeBtn = document.getElementById('unlock-free-btn');
     
     if (currentEur === 0) {
-      // Hide all payment methods, show free unlock
       if (paymentSection) paymentSection.style.display = 'none';
       if (unlockFreeBtn) unlockFreeBtn.style.display = 'block';
       console.log('✅ Price is €0 - showing free unlock button');
     } else {
-      // Show payment methods, hide free unlock
       if (paymentSection) paymentSection.style.display = 'block';
       if (unlockFreeBtn) unlockFreeBtn.style.display = 'none';
       updateStripeSubmitButton();
@@ -69,7 +131,6 @@ function setupCheckout() {
       
       stripe = Stripe(data.publicKey);
       
-      // Create card element
       const elements = stripe.elements({
         appearance: {
           theme: 'stripe',
@@ -99,7 +160,6 @@ function setupCheckout() {
       
       cardElement.mount('#stripe-card-element');
       
-      // Handle real-time validation errors from the card Element
       cardElement.on('change', ({error}) => {
         const cardErrors = document.getElementById('card-errors');
         if (error) {
@@ -125,30 +185,25 @@ function setupCheckout() {
     const stripePayment = document.getElementById('stripe-payment');
     const paypalPayment = document.getElementById('paypal-payment');
 
-    if (stripeTab && paypalTab && stripePayment && paypalPayment) {
-      stripeTab.addEventListener('click', () => {
-        // Switch to Stripe
-        stripeTab.classList.add('active');
-        paypalTab.classList.remove('active');
-        stripePayment.classList.add('active');
-        paypalPayment.classList.remove('active');
-        stripePayment.style.display = 'block';
-        paypalPayment.style.display = 'none';
-      });
+    stripeTab.addEventListener('click', () => {
+      stripeTab.classList.add('active');
+      paypalTab.classList.remove('active');
+      stripePayment.classList.add('active');
+      paypalPayment.classList.remove('active');
+      stripePayment.style.display = 'block';
+      paypalPayment.style.display = 'none';
+    });
 
-      paypalTab.addEventListener('click', () => {
-        // Switch to PayPal
-        paypalTab.classList.add('active');
-        stripeTab.classList.remove('active');
-        paypalPayment.classList.add('active');
-        stripePayment.classList.remove('active');
-        paypalPayment.style.display = 'block';
-        stripePayment.style.display = 'none';
-        
-        // Load PayPal if not already loaded
-        loadPaypalSdkAndRender();
-      });
-    }
+    paypalTab.addEventListener('click', () => {
+      paypalTab.classList.add('active');
+      stripeTab.classList.remove('active');
+      paypalPayment.classList.add('active');
+      stripePayment.classList.remove('active');
+      paypalPayment.style.display = 'block';
+      stripePayment.style.display = 'none';
+      
+      loadPaypalSdkAndRender();
+    });
   }
 
   // --- Update Stripe Submit Button ---
@@ -159,91 +214,30 @@ function setupCheckout() {
     }
   }
 
-  // --- Show Payment Confirmation ---
-  function showPaymentConfirmation(email, amount, paymentMethod, transactionId = '') {
-    const confirmationMessage = document.createElement('div');
-    confirmationMessage.innerHTML = `
-      <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                  z-index: 10001; background: white; padding: 30px; border-radius: 16px; 
-                  box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 450px; width: 90%;
-                  font-family: Inter, sans-serif; text-align: center;">
-        <div style="color: #48bb78; font-size: 48px; margin-bottom: 16px;">
-          <i class="fa fa-check-circle"></i>
-        </div>
-        <h3 style="color: #2c3e50; margin-bottom: 16px; font-size: 24px;">Payment Successful!</h3>
-        <p style="color: #6c757d; margin-bottom: 16px; line-height: 1.5;">
-          Thank you for your purchase! Your payment of <strong>€${amount.toFixed(2)}</strong> via ${paymentMethod} has been processed successfully.
-        </p>
-        ${transactionId ? `<p style="color: #6c757d; margin-bottom: 16px; font-size: 12px;">
-          Transaction ID: <code style="background: #f8f9fa; padding: 2px 6px; border-radius: 4px;">${transactionId}</code>
-        </p>` : ''}
-        <p style="color: #6c757d; margin-bottom: 20px; line-height: 1.5;">
-          A confirmation email will be sent to:<br>
-          <strong style="color: #2c3e50;">${email}</strong>
-        </p>
-        <p style="color: #48bb78; margin-bottom: 24px; font-weight: 600; font-size: 16px;">
-          🎉 Your full report has been unlocked!
-        </p>
-        <button onclick="this.parentElement.parentElement.remove()" 
-                style="background: #48bb78; color: white; border: none; padding: 12px 24px; 
-                       border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;
-                       transition: background 0.2s;">
-          Continue to Report
-        </button>
-      </div>
-      <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-                  background: rgba(0,0,0,0.5); z-index: 10000;" 
-           onclick="this.parentElement.remove()"></div>
-    `;
-    document.body.appendChild(confirmationMessage);
-    
-    // Auto-remove after 10 seconds
-    setTimeout(() => {
-      if (confirmationMessage.parentElement) {
-        confirmationMessage.remove();
-      }
-    }, 10000);
-  }
-
-  // --- Stripe Payment Handler ---
+  // --- Stripe Payment Handler with Customer Creation ---
   async function handleStripePayment() {
     if (!stripe || !cardElement) {
       console.error('Stripe not properly initialized');
-      alert('Payment system not ready. Please refresh and try again.');
       return;
     }
 
-    // FIXED: Validate email BEFORE processing payment
-    const emailInput = document.getElementById('customer-email');
-    const customerEmail = emailInput ? emailInput.value.trim() : '';
-    
-    if (!customerEmail || !customerEmail.includes('@')) {
-      alert('Please enter a valid email address before proceeding.');
-      if (emailInput) emailInput.focus();
-      return;
-    }
-
-    // FIXED: Validate billing name (required by Stripe)
-    const nameInput = document.getElementById('billing-name');
-    const customerName = nameInput ? nameInput.value.trim() : '';
-    
-    if (!customerName) {
-      alert('Please enter your full name for billing.');
-      if (nameInput) nameInput.focus();
+    // Validate billing info first
+    if (!validateBillingInfo()) {
       return;
     }
 
     const submitButton = document.getElementById('stripe-submit');
-    const originalText = submitButton.innerHTML;
+    const originalText = submitButton.textContent;
     
-    // Show loading state
     submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing payment...';
+    submitButton.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
 
     try {
-      console.log('🔄 Creating payment intent for:', customerEmail, 'Amount:', currentEur);
+      const billingData = getBillingData();
       
-      // Create payment intent
+      console.log('🔄 Creating payment intent with customer for:', billingData.email, 'Amount:', currentEur);
+      
+      // Create payment intent with customer
       const response = await fetch('https://landingfixv1-2.onrender.com/api/create-payment-intent', {
         method: 'POST',
         headers: { 
@@ -251,80 +245,80 @@ function setupCheckout() {
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          amount: Math.round(currentEur * 100), // Convert to cents
+          amount: Math.round(currentEur * 100),
           currency: 'eur',
-          customerEmail: customerEmail,
-          customerName: customerName,
+          customerData: {
+            email: billingData.email,
+            name: `${billingData.firstName} ${billingData.lastName}`,
+            company: billingData.company,
+            country: billingData.country,
+            city: billingData.city
+          },
           metadata: {
             product: 'LandingFix AI Report',
-            website: localStorage.getItem('landingfix_report_data') ? 
-                     JSON.parse(localStorage.getItem('landingfix_report_data')).url : 'Unknown'
+            website: url || 'Unknown',
+            customer_first_name: billingData.firstName,
+            customer_last_name: billingData.lastName,
+            customer_company: billingData.company,
+            customer_country: billingData.country,
+            customer_city: billingData.city
           }
         })
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Server error: ${errorText}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const responseData = await response.json();
-      
-      if (!responseData.clientSecret) {
-        throw new Error('Invalid response from payment processor');
-      }
+      const { clientSecret, customerId } = await response.json();
 
-      console.log('✅ Payment intent created successfully');
-
-      // Confirm payment with Stripe
-      const { error, paymentIntent } = await stripe.confirmCardPayment(responseData.clientSecret, {
+      // Confirm payment with billing details
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: cardElement,
           billing_details: {
-            name: customerName,
-            email: customerEmail,
+            name: `${billingData.firstName} ${billingData.lastName}`,
+            email: billingData.email,
             address: {
-              line1: document.getElementById('billing-address')?.value || '',
-              city: document.getElementById('billing-city')?.value || '',
-              postal_code: document.getElementById('billing-postal')?.value || '',
-              country: document.getElementById('billing-country')?.value || 'IT'
+              country: billingData.country,
+              city: billingData.city
             }
           }
         }
       });
 
       if (error) {
-        console.error('❌ Stripe payment failed:', error);
-        throw new Error(error.message || 'Payment failed');
-      } 
-      
-      if (paymentIntent && paymentIntent.status === 'succeeded') {
-        console.log('✅ Payment succeeded:', paymentIntent.id);
+        console.error('Stripe payment failed:', error);
+        showError('Payment failed: ' + error.message);
+      } else if (paymentIntent.status === 'succeeded') {
+        console.log('✅ Stripe payment succeeded');
         
-        // Show success message immediately
-        showPaymentConfirmation(customerEmail, currentEur, 'Credit Card', paymentIntent.id);
-        
-        // Close popup and unlock report
-        setTimeout(() => {
-          closeCheckoutPopup();
-          unlockFullReport();
-        }, 1000);
+        // Show success modal with payment details
+        showPaymentSuccess({
+          method: 'Stripe',
+          amount: currentEur,
+          currency: 'EUR',
+          email: billingData.email,
+          name: `${billingData.firstName} ${billingData.lastName}`,
+          transactionId: paymentIntent.id,
+          customerId: customerId
+        });
 
-        // Track successful purchase
+        // Track purchase
         if (typeof fbq === 'function') {
           fbq('track', 'Purchase', { 
             value: currentEur, 
             currency: 'EUR',
-            content_name: 'LandingFix AI Report' 
+            content_name: 'LandingFix AI Report'
           });
         }
         if (typeof gtag === 'function') {
           gtag('event', 'purchase', { 
-            transaction_id: paymentIntent.id,
             value: currentEur, 
-            currency: 'EUR',
+            currency: 'EUR', 
+            transaction_id: paymentIntent.id,
             items: [{
-              item_id: 'landingfix-report',
+              item_id: 'landingfix-ai-report',
               item_name: 'LandingFix AI Report',
               category: 'Digital Product',
               quantity: 1,
@@ -332,38 +326,71 @@ function setupCheckout() {
             }]
           });
         }
-        
-      } else {
-        throw new Error('Payment processing failed - unknown status');
       }
-
     } catch (error) {
-      console.error('❌ Payment error:', error);
-      
-      // FIXED: Better error messages for users
-      let userMessage = 'Payment failed. ';
-      
-      if (error.message.includes('card_declined')) {
-        userMessage += 'Your card was declined. Please try a different payment method.';
-      } else if (error.message.includes('insufficient_funds')) {
-        userMessage += 'Insufficient funds. Please try a different card.';
-      } else if (error.message.includes('expired_card')) {
-        userMessage += 'Your card has expired. Please use a different card.';
-      } else if (error.message.includes('incorrect_cvc')) {
-        userMessage += 'Incorrect security code. Please check and try again.';
-      } else if (error.message.includes('network')) {
-        userMessage += 'Network error. Please check your connection and try again.';
-      } else {
-        userMessage += error.message || 'Please try again or contact support.';
-      }
-      
-      alert(userMessage);
-      
+      console.error('Stripe payment error:', error);
+      showError('Payment failed. Please try again or contact support.');
     } finally {
-      // Reset button state
       submitButton.disabled = false;
       submitButton.innerHTML = originalText;
     }
+  }
+
+  // --- Show Payment Success Modal ---
+  function showPaymentSuccess(paymentData) {
+    closeCheckoutPopup();
+    
+    const modal = document.getElementById('payment-success-modal');
+    const paymentInfo = document.getElementById('payment-info');
+    
+    // Update payment details
+    paymentInfo.innerHTML = `
+      <div style="margin-bottom: 8px;">
+        <strong>Amount:</strong> €${paymentData.amount.toFixed(2)} ${paymentData.currency}
+      </div>
+      <div style="margin-bottom: 8px;">
+        <strong>Payment Method:</strong> ${paymentData.method}
+      </div>
+      <div style="margin-bottom: 8px;">
+        <strong>Email:</strong> ${paymentData.email}
+      </div>
+      <div style="margin-bottom: 8px;">
+        <strong>Customer:</strong> ${paymentData.name}
+      </div>
+      <div style="margin-bottom: 8px;">
+        <strong>Transaction ID:</strong> ${paymentData.transactionId}
+      </div>
+      <div style="font-size: 0.85em; color: #666; margin-top: 12px;">
+        <i class="fa fa-info-circle" style="margin-right: 4px;"></i>
+        A receipt has been sent to your email address.
+      </div>
+    `;
+    
+    // Show modal
+    modal.style.display = 'flex';
+    
+    // Setup buttons
+    document.getElementById('download-report-btn').onclick = function() {
+      modal.style.display = 'none';
+      unlockFullReport();
+      // Trigger PDF download if available
+      if (typeof window.downloadPdfReport === 'function') {
+        setTimeout(() => window.downloadPdfReport(), 500);
+      }
+    };
+    
+    document.getElementById('continue-reading-btn').onclick = function() {
+      modal.style.display = 'none';
+      unlockFullReport();
+    };
+    
+    // Auto-unlock after 3 seconds if no action
+    setTimeout(() => {
+      if (modal.style.display === 'flex') {
+        modal.style.display = 'none';
+        unlockFullReport();
+      }
+    }, 10000);
   }
 
   // --- Coupon Handler ---
@@ -387,10 +414,8 @@ function setupCheckout() {
       
       console.log(`✅ Coupon applied: ${code}, new price: €${currentEur}`);
       
-      // Force update prices immediately
       updatePrices();
       
-      // Re-render PayPal for new amount (will hide if €0)
       if (currentEur > 0) {
         renderPaypalButton();
       }
@@ -438,7 +463,7 @@ function setupCheckout() {
     };
   }
 
-  // --- PayPal ---
+  // --- PayPal with Enhanced Success Handling ---
   function renderPaypalButton() {
     const paypalContainer = document.getElementById('paypal-button-container');
     if (!paypalContainer) {
@@ -453,7 +478,6 @@ function setupCheckout() {
       return;
     }
 
-    // Se PayPal SDK non è ancora caricato, non fare nulla
     if (!window.paypal) {
       console.log('PayPal SDK not loaded yet');
       return;
@@ -462,6 +486,11 @@ function setupCheckout() {
     console.log('Rendering PayPal buttons for amount:', currentEur);
 
     try {
+      if (!document.body.contains(paypalContainer)) {
+        console.log('PayPal container no longer in DOM, skipping render');
+        return;
+      }
+
       paypal.Buttons({
         style: { 
           layout: 'vertical', 
@@ -471,16 +500,6 @@ function setupCheckout() {
           height: 40 
         },
         createOrder: function(data, actions) {
-          // FIXED: Get email from input and validate
-          const emailInput = document.getElementById('customer-email');
-          const customerEmail = emailInput ? emailInput.value.trim() : '';
-          
-          if (!customerEmail || !customerEmail.includes('@')) {
-            alert('Please enter a valid email address before proceeding with PayPal.');
-            if (emailInput) emailInput.focus();
-            return Promise.reject(new Error('Email required'));
-          }
-          
           console.log('Creating PayPal order for:', currentEur, 'EUR');
           return actions.order.create({
             purchase_units: [{
@@ -488,30 +507,31 @@ function setupCheckout() {
                 value: currentEur.toFixed(2), 
                 currency_code: 'EUR' 
               },
+              description: 'LandingFix AI Report',
               shipping_preference: 'NO_SHIPPING'
-            }],
-            payer: {
-              email_address: customerEmail
-            }
+            }]
           });
         },
         onApprove: function(data, actions) {
           console.log('PayPal payment approved:', data);
           return actions.order.capture().then(function(details) {
-            console.log('PayPal payment captured:', details);
+            console.log('✅ PayPal payment captured:', details);
             
-            // Get email for confirmation
-            const emailInput = document.getElementById('customer-email');
-            const customerEmail = emailInput ? emailInput.value.trim() : details.payer?.email_address || '';
+            // Get billing data for PayPal (optional since PayPal handles this)
+            const billingData = getBillingData();
             
-            // Show confirmation message with transaction ID
-            showPaymentConfirmation(customerEmail, currentEur, 'PayPal', details.id);
-            
-            // Close popup and unlock report
-            setTimeout(() => {
-              closeCheckoutPopup();
-              unlockFullReport();
-            }, 1000);
+            // Show success modal
+            showPaymentSuccess({
+              method: 'PayPal',
+              amount: currentEur,
+              currency: 'EUR',
+              email: details.payer.email_address || billingData.email || 'PayPal User',
+              name: details.payer.name ? 
+                    `${details.payer.name.given_name} ${details.payer.name.surname}` : 
+                    `${billingData.firstName} ${billingData.lastName}` || 'PayPal Customer',
+              transactionId: details.id,
+              paypalDetails: details
+            });
 
             // Track purchase
             if (typeof fbq === 'function') {
@@ -527,7 +547,7 @@ function setupCheckout() {
                 currency: 'EUR', 
                 transaction_id: details.id,
                 items: [{
-                  item_id: 'landingfix-report',
+                  item_id: 'landingfix-ai-report',
                   item_name: 'LandingFix AI Report',
                   category: 'Digital Product',
                   quantity: 1,
@@ -539,158 +559,20 @@ function setupCheckout() {
         },
         onError: function(err) {
           console.error('PayPal error:', err);
-          alert('PayPal payment failed. Please try again or use a different payment method.');
+          showError('PayPal payment failed. Please try again or use a different payment method.');
+        },
+        onCancel: function(data) {
+          console.log('PayPal payment cancelled:', data);
         }
-      }).render('#paypal-button-container');
+      }).render('#paypal-button-container').catch(function(err) {
+        console.error('PayPal render error:', err);
+      });
       
       console.log('PayPal buttons rendered successfully');
       
     } catch (error) {
       console.error('Error rendering PayPal buttons:', error);
     }
-  }
-
-  // --- Render Payment Buttons ---
-  function renderPaymentButtons() {
-    const paymentContainer = document.getElementById('payment-buttons-container');
-    if (!paymentContainer) return;
-
-    paymentContainer.innerHTML = '';
-    
-    if (currentEur === 0) return;
-
-    // Create payment options with email and billing form
-    paymentContainer.innerHTML = `
-      <div class="customer-info" style="margin-bottom: 24px;">
-        <h4 style="margin-bottom: 16px; color: #2c3e50;">Contact Information</h4>
-        <div style="margin-bottom: 16px;">
-          <label style="display: block; margin-bottom: 6px; color: #495057; font-weight: 500;">
-            Email Address *
-          </label>
-          <input type="email" id="customer-email" required
-                 style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; 
-                        font-size: 16px; background: #f8f9fa;" 
-                 placeholder="your@email.com">
-        </div>
-      </div>
-
-      <div class="payment-options">
-        <div class="payment-option">
-          <h4 style="margin-bottom: 10px; color: #2c3e50;">Pay with PayPal</h4>
-          <div id="paypal-button-container" style="min-height: 50px;"></div>
-        </div>
-        
-        <div class="payment-divider" style="text-align: center; margin: 20px 0; color: #6c757d;">
-          <span style="background: white; padding: 0 15px;">OR</span>
-          <hr style="margin-top: -12px; border-color: #dee2e6;">
-        </div>
-        
-        <div class="payment-option">
-          <h4 style="margin-bottom: 10px; color: #2c3e50;">Pay with Card</h4>
-          
-          <div class="billing-fields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-            <div style="grid-column: 1 / 3;">
-              <label style="display: block; margin-bottom: 6px; color: #495057; font-weight: 500;">
-                Full Name *
-              </label>
-              <input type="text" id="billing-name" required
-                     style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; 
-                            font-size: 14px; background: #f8f9fa;" 
-                     placeholder="John Doe">
-            </div>
-            <div style="grid-column: 1 / 3;">
-              <label style="display: block; margin-bottom: 6px; color: #495057; font-weight: 500;">
-                Address
-              </label>
-              <input type="text" id="billing-address"
-                     style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; 
-                            font-size: 14px; background: #f8f9fa;" 
-                     placeholder="123 Main Street">
-            </div>
-            <div>
-              <label style="display: block; margin-bottom: 6px; color: #495057; font-weight: 500;">
-                City
-              </label>
-              <input type="text" id="billing-city"
-                     style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; 
-                            font-size: 14px; background: #f8f9fa;" 
-                     placeholder="City">
-            </div>
-            <div>
-              <label style="display: block; margin-bottom: 6px; color: #495057; font-weight: 500;">
-                Postal Code
-              </label>
-              <input type="text" id="billing-postal"
-                     style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; 
-                            font-size: 14px; background: #f8f9fa;" 
-                     placeholder="12345">
-            </div>
-            <div style="grid-column: 1 / 3;">
-              <label style="display: block; margin-bottom: 6px; color: #495057; font-weight: 500;">
-                Country
-              </label>
-              <select id="billing-country"
-                      style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; 
-                             font-size: 14px; background: #f8f9fa;">
-                <option value="IT">Italy</option>
-                <option value="US">United States</option>
-                <option value="GB">United Kingdom</option>
-                <option value="DE">Germany</option>
-                <option value="FR">France</option>
-                <option value="ES">Spain</option>
-                <option value="NL">Netherlands</option>
-                <option value="CA">Canada</option>
-                <option value="AU">Australia</option>
-              </select>
-            </div>
-          </div>
-
-          <div id="stripe-payment" style="display: block;">
-            <div id="stripe-card-element" style="
-              padding: 12px;
-              border: 1px solid #ced4da;
-              border-radius: 8px;
-              margin-bottom: 10px;
-              background: #f8f9fa;
-              transition: border-color 0.3s ease;
-            "></div>
-            <div id="card-errors" style="color: #e53e3e; margin-bottom: 10px;"></div>
-            <button id="stripe-submit" class="stripe-button" style="
-              width: 100%;
-              background: linear-gradient(135deg, #6772e5, #5469d4);
-              color: white;
-              border: none;
-              padding: 12px 20px;
-              border-radius: 8px;
-              font-size: 16px;
-              font-weight: 600;
-              cursor: pointer;
-              transition: all 0.3s ease;
-            ">
-              <i class="fa fa-credit-card" style="margin-right: 8px;"></i>
-              <span id="stripe-submit-text">Pay €${currentEur.toFixed(2)} with Card</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Setup Stripe button
-    const stripeButton = document.getElementById('stripe-submit');
-    if (stripeButton) {
-      stripeButton.addEventListener('click', handleStripePayment);
-      stripeButton.addEventListener('mouseenter', function() {
-        this.style.background = 'linear-gradient(135deg, #5469d4, #4f63d2)';
-        this.style.transform = 'translateY(-1px)';
-      });
-      stripeButton.addEventListener('mouseleave', function() {
-        this.style.background = 'linear-gradient(135deg, #6772e5, #5469d4)';
-        this.style.transform = 'translateY(0)';
-      });
-    }
-
-    // Render PayPal buttons
-    renderPaypalButton();
   }
 
   // --- Carica PayPal SDK ---
@@ -705,17 +587,9 @@ function setupCheckout() {
       if (window.paypal) {
         renderPaypalButton();
       } else {
-        console.log('PayPal SDK script found but window.paypal not ready, waiting...');
         setTimeout(() => {
           if (window.paypal) {
             renderPaypalButton();
-          } else {
-            console.log('PayPal still not ready after 500ms, trying again...');
-            setTimeout(() => {
-              if (window.paypal) {
-                renderPaypalButton();
-              }
-            }, 1000);
           }
         }, 500);
       }
@@ -741,7 +615,6 @@ function setupCheckout() {
         script.src = `https://www.paypal.com/sdk/js?client-id=${data.clientId}&currency=EUR`;
         script.onload = () => {
           console.log('✅ PayPal SDK loaded successfully');
-          // Wait a bit for PayPal to fully initialize
           setTimeout(() => {
             renderPaypalButton();
           }, 200);
@@ -763,7 +636,7 @@ function setupCheckout() {
   loadPaypalSdkAndRender();
 }
 
-// Funzione per chiudere il popup
+// Resto delle funzioni invariato...
 function closeCheckoutPopup() {
   console.log('closeCheckoutPopup called');
   const popup = document.getElementById('checkout-popup');
@@ -777,13 +650,11 @@ function closeCheckoutPopup() {
   }
 }
 
-// Funzione per sbloccare il report completo
 function unlockFullReport() {
   console.log('🔓 Unlocking full report...');
   
   localStorage.setItem('landingfix_unlocked', 'true');
   
-  // Remove locked state from categories
   const lockedCategories = document.querySelectorAll('.report-category.locked');
   lockedCategories.forEach(category => {
     category.classList.remove('locked');
@@ -800,14 +671,12 @@ function unlockFullReport() {
     }
   });
   
-  // Hide the main unlock button in header
   const mainUnlockBtn = document.getElementById('unlock-full-report');
   if (mainUnlockBtn) {
     mainUnlockBtn.style.display = 'none';
     console.log('✅ Main unlock button hidden');
   }
   
-  // Show success message
   const successMessage = document.createElement('div');
   successMessage.innerHTML = `
     <div style="position: fixed; top: 20px; right: 20px; z-index: 10000; 
@@ -828,7 +697,6 @@ function unlockFullReport() {
   console.log('✅ Report unlocked successfully');
 }
 
-// Funzione globale per aprire il popup da report.html
 window.openCheckout = function() {
   const popup = document.getElementById('checkout-popup');
   if (!popup) {
@@ -839,33 +707,27 @@ window.openCheckout = function() {
   console.log('Opening checkout popup');
   popup.style.display = 'flex';
   
-  // Setup checkout first
   setupCheckout();
   
-  // Start timer after a small delay to ensure DOM is ready
   setTimeout(() => {
     startOtoCountdown();
   }, 100);
 
-  // FIXED: Proper close button setup
   setTimeout(() => {
     const closeBtn = document.getElementById('close-popup');
     if (closeBtn) {
-      console.log('Setting up close button - NEW METHOD');
+      console.log('Setting up close button');
       
-      // Clear any existing handlers
       const newCloseBtn = closeBtn.cloneNode(true);
       closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
       
-      // Add click handler with immediate effect
       newCloseBtn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        console.log('✅ Close button clicked - calling closeCheckoutPopup');
+        console.log('✅ Close button clicked');
         closeCheckoutPopup();
-      }, { once: false }); // Allow multiple clicks
+      });
       
-      // Add additional safety handler
       newCloseBtn.onmousedown = function(e) {
         e.preventDefault();
         console.log('✅ Mouse down on close button');
@@ -876,7 +738,6 @@ window.openCheckout = function() {
       console.error('❌ Close button not found in DOM');
     }
     
-    // Click outside to close
     popup.addEventListener('click', function(e) {
       if (e.target === popup) {
         console.log('Clicked outside popup');
@@ -884,9 +745,8 @@ window.openCheckout = function() {
       }
     });
     
-  }, 300); // Increased timeout
+  }, 300);
 
-  // ESC to close
   const escHandler = function(e) {
     if (e.key === "Escape") {
       console.log('ESC key pressed');
@@ -897,9 +757,7 @@ window.openCheckout = function() {
   document.addEventListener('keydown', escHandler);
 };
 
-// --- OTO TIMER ---
 function startOtoCountdown() {
-  // Find the timer element
   const timerElement = document.getElementById('oto-timer');
   if (!timerElement) {
     console.warn('Timer element not found');
@@ -908,7 +766,6 @@ function startOtoCountdown() {
 
   console.log('✅ Starting OTO countdown timer');
   
-  // 5 minuti = 300 secondi
   const duration = 5 * 60;
   let timeLeft = duration;
 
@@ -916,7 +773,6 @@ function startOtoCountdown() {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     
-    // Update timer display
     timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     
     if (timeLeft <= 0) {
@@ -924,7 +780,6 @@ function startOtoCountdown() {
       window.otoExpired = true;
       timerElement.textContent = "00:00";
       
-      // Disable TRY5 coupon and gray out offer
       const offer = document.getElementById('oto-offer');
       if (offer) {
         offer.style.opacity = '0.6';
@@ -937,32 +792,26 @@ function startOtoCountdown() {
     }
   }
 
-  // Reset expired state
   window.otoExpired = false;
   
-  // Clear any existing timer
   if (window.otoTimerInterval) {
     clearInterval(window.otoTimerInterval);
   }
   
-  // Start timer immediately and then every second
   updateTimer();
   window.otoTimerInterval = setInterval(updateTimer, 1000);
   
   console.log('✅ Timer started successfully');
 }
 
-// Mostra il popup se l'utente torna indietro
 if (window.history.state && window.history.state.checkoutPopup) {
   window.openCheckout();
 }
 
-// Aggiungi un listener per la navigazione indietro
 window.addEventListener('popstate', function(event) {
   if (event.state && event.state.checkoutPopup) {
     window.openCheckout();
   }
 });
 
-// Invia un evento di stato alla storia per la navigazione indietro
 window.history.replaceState({ checkoutPopup: true }, '');

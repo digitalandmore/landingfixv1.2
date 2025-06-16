@@ -977,20 +977,73 @@ app.post('/api/create-payment-intent', async (req, res) => {
       }
     }
     
-    const { amount, currency, customerEmail, customerName, metadata } = req.body;
+    const { amount, currency, customerData, metadata } = req.body;
     
     if (!amount || amount <= 0) {
       return res.status(400).json({ error: 'Invalid amount' });
     }
+
+    if (!customerData || !customerData.email) {
+      return res.status(400).json({ error: 'Customer data with email is required' });
+    }
     
-    console.log(`Creating payment intent for ${customerEmail}: ${amount/100} ${currency?.toUpperCase() || 'EUR'}`);
+    console.log(`Creating payment intent with customer for ${customerData.email}: ${amount/100} ${currency?.toUpperCase() || 'EUR'}`);
     
-    const paymentIntent = await stripe.paymentIntents.create({
+    let customer;
+    
+    try {
+      // First, try to find existing customer by email
+      const existingCustomers = await stripe.customers.list({
+        email: customerData.email,
+        limit: 1
+      });
+      
+      if (existingCustomers.data.length > 0) {
+        customer = existingCustomers.data[0];
+        console.log('Found existing Stripe customer:', customer.id);
+        
+        // Update customer with new information if provided
+        if (customerData.name || customerData.company || customerData.country) {
+          customer = await stripe.customers.update(customer.id, {
+            name: customerData.name || customer.name,
+            metadata: {
+              ...customer.metadata,
+              company: customerData.company || customer.metadata?.company,
+              country: customerData.country || customer.metadata?.country,
+              city: customerData.city || customer.metadata?.city,
+              last_purchase: new Date().toISOString()
+            }
+          });
+          console.log('Updated existing customer with new info');
+        }
+      } else {
+        // Create new customer
+        customer = await stripe.customers.create({
+          email: customerData.email,
+          name: customerData.name,
+          metadata: {
+            company: customerData.company || '',
+            country: customerData.country || '',
+            city: customerData.city || '',
+            source: 'LandingFix AI',
+            first_purchase: new Date().toISOString()
+          }
+        });
+        console.log('Created new Stripe customer:', customer.id);
+      }
+    } catch (customerError) {
+      console.error('Error handling customer:', customerError);
+      // Continue without customer if creation fails
+      customer = null;
+    }
+    
+    // Create payment intent
+    const paymentIntentData = {
       amount: Math.round(amount),
       currency: currency || 'eur',
-      customer_email: customerEmail,
       metadata: {
-        customer_name: customerName,
+        customer_email: customerData.email,
+        customer_name: customerData.name,
         service: 'LandingFix AI Report',
         timestamp: new Date().toISOString(),
         ...metadata
@@ -998,13 +1051,22 @@ app.post('/api/create-payment-intent', async (req, res) => {
       automatic_payment_methods: {
         enabled: true,
       },
-    });
+      receipt_email: customerData.email
+    };
+    
+    // Add customer to payment intent if customer was created/found
+    if (customer) {
+      paymentIntentData.customer = customer.id;
+    }
+    
+    const paymentIntent = await stripe.paymentIntents.create(paymentIntentData);
 
-    console.log('Payment intent created:', paymentIntent.id);
+    console.log('Payment intent created:', paymentIntent.id, customer ? `for customer ${customer.id}` : 'without customer');
     
     res.json({
       clientSecret: paymentIntent.client_secret,
-      paymentIntentId: paymentIntent.id
+      paymentIntentId: paymentIntent.id,
+      customerId: customer ? customer.id : null
     });
     
   } catch (error) {
@@ -1015,6 +1077,7 @@ app.post('/api/create-payment-intent', async (req, res) => {
     });
   }
 });
+
 
 // Generate Enhanced PDF format (HTML-like structure)
 // Removed - now handled on frontend

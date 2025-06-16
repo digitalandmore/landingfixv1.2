@@ -13,7 +13,7 @@
   align-items: center;
   justify-content: center;
 ">
-  <div style="background:#fff;padding:32px;border-radius:20px;max-width:480px;width:95vw;margin:auto;text-align:left;box-shadow:0 20px 60px rgba(0,0,0,0.15);position:relative;display:flex;flex-direction:column;">
+  <div style="background:#fff;padding:32px;border-radius:20px;max-width:520px;width:95vw;margin:auto;text-align:left;box-shadow:0 20px 60px rgba(0,0,0,0.15);position:relative;display:flex;flex-direction:column;max-height:90vh;overflow-y:auto;">
     <button id="close-popup" style="
       position: absolute;
       top: 20px;
@@ -36,15 +36,15 @@
     
     <h2 style="margin-bottom:24px;font-size:1.5em;color:#1a202c;font-weight:700;text-align:center;">Complete Your Purchase</h2>
     
-    <!-- ONE TIME OFFER BANNER -->
-    <div id="oto-offer" style="background:linear-gradient(135deg,#667eea 0%, #764ba2 100%);border-radius:16px;padding:20px;margin-bottom:24px;box-shadow:0 4px 20px rgba(102,126,234,0.3);color:white;text-align:center;">
-      <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;">
-        <span style="font-size:1.5em;"><i class="fa fa-bolt"></i></span>
-        <span style="background:rgba(255,255,255,0.2);padding:6px 16px;border-radius:20px;font-weight:700;font-size:0.9em;letter-spacing:0.5px;">LIMITED TIME OFFER</span>
-      </div>
-      <div style="font-size:1.1em;font-weight:600;margin-bottom:8px;">Get your full AI report for only <span style="color:#ffd700;font-weight:800;">€10</span> (~$11.34)</div>
-      <div style="font-size:0.9em;opacity:0.9;">Use coupon <span style="color:#ffd700;font-weight:700;">TRY10</span> • Time left: <span id="oto-timer" style="font-weight:700;">05:00</span></div>
-    </div>
+   <!-- ONE TIME OFFER BANNER -->
+<div id="oto-offer" style="background:linear-gradient(135deg,#667eea 0%, #764ba2 100%);border-radius:16px;padding:20px;margin-bottom:24px;box-shadow:0 4px 20px rgba(102,126,234,0.3);color:white;text-align:center;">
+  <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;">
+    <span style="font-size:1.5em;"><i class="fa fa-bolt"></i></span>
+    <span style="background:rgba(255,255,255,0.2);padding:6px 16px;border-radius:20px;font-weight:700;font-size:0.9em;letter-spacing:0.5px;">LIMITED TIME OFFER</span>
+  </div>
+  <div style="font-size:1.1em;font-weight:600;margin-bottom:8px;">Get your full AI report for only <span style="color:#ffd700;font-weight:800;">€10</span> (~$11.34)</div>
+  <div style="font-size:0.9em;opacity:0.9;">Use coupon <span style="color:#ffd700;font-weight:700;">TRY10</span> • Time left: <span id="oto-timer" style="font-weight:700;">05:00</span></div>
+</div>
 
     <!-- Product Info -->
     <div style="margin-bottom:20px;padding:16px;background:#f8f9fa;border-radius:12px;">
@@ -69,6 +69,56 @@
         <button id="apply-coupon" type="button" style="padding:12px 20px;background:#667eea;color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:600;transition:background 0.2s;" onmouseover="this.style.background='#5a6fd8';" onmouseout="this.style.background='#667eea';">Apply</button>
       </div>
       <div id="coupon-msg" style="font-size:0.9em;margin-top:8px;display:none;"></div>
+    </div>
+
+    <!-- Billing Information Form -->
+    <div id="billing-section" style="margin-bottom:24px;">
+      <h3 style="font-size:1.1em;color:#1a202c;margin-bottom:16px;font-weight:600;">
+        <i class="fa fa-user" style="margin-right:8px;color:#667eea;"></i>Billing Information
+      </h3>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+          <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">First Name *</label>
+          <input id="billing-first-name" type="text" required style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+        </div>
+        <div>
+          <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Last Name *</label>
+          <input id="billing-last-name" type="text" required style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+        </div>
+      </div>
+      
+      <div style="margin-bottom:12px;">
+        <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Email Address *</label>
+        <input id="billing-email" type="email" required style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+      </div>
+      
+      <div style="margin-bottom:12px;">
+        <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Company (Optional)</label>
+        <input id="billing-company" type="text" style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+      </div>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+          <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Country *</label>
+          <select id="billing-country" required style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;background:white;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+            <option value="">Select Country</option>
+            <option value="IT">Italy</option>
+            <option value="US">United States</option>
+            <option value="GB">United Kingdom</option>
+            <option value="DE">Germany</option>
+            <option value="FR">France</option>
+            <option value="ES">Spain</option>
+            <option value="NL">Netherlands</option>
+            <option value="CA">Canada</option>
+            <option value="AU">Australia</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">City</label>
+          <input id="billing-city" type="text" style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+        </div>
+      </div>
     </div>
 
     <!-- Payment Methods -->
@@ -125,6 +175,99 @@
   </div>
 </div>
 
+<!-- Payment Success Modal -->
+<div id="payment-success-modal" style="
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.8);
+  z-index: 10000;
+  font-family: Inter, sans-serif;
+  align-items: center;
+  justify-content: center;
+">
+  <div style="
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    max-width: 500px;
+    width: 90vw;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: successPop 0.5s ease-out;
+  ">
+    <div style="
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #48bb78, #38a169);
+      border-radius: 50%;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: checkmark 0.6s ease-out 0.2s both;
+    ">
+      <i class="fa fa-check" style="font-size: 36px; color: white;"></i>
+    </div>
+    
+    <h2 style="
+      color: #1a202c;
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-bottom: 16px;
+    ">Payment Successful! 🎉</h2>
+    
+    <p style="
+      color: #4a5568;
+      font-size: 1.1em;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    ">Your LandingFix AI report has been unlocked successfully.<br>You now have access to all optimization insights!</p>
+    
+    <div id="payment-details" style="
+      background: #f7fafc;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      text-align: left;
+    ">
+      <div style="font-weight: 600; color: #1a202c; margin-bottom: 8px;">Payment Details:</div>
+      <div id="payment-info" style="font-size: 0.9em; color: #4a5568;"></div>
+    </div>
+    
+    <div style="display: flex; gap: 12px; justify-content: center;">
+      <button id="download-report-btn" style="
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      ">
+        <i class="fa fa-download" style="margin-right: 8px;"></i>Download Report
+      </button>
+      
+      <button id="continue-reading-btn" style="
+        background: #48bb78;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      ">
+        <i class="fa fa-eye" style="margin-right: 8px;"></i>Continue Reading
+      </button>
+    </div>
+  </div>
+</div>
+
 <style>
 .payment-tab.active {
   background: white !important;
@@ -147,5 +290,21 @@
 #stripe-card-element:focus-within {
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+}
+
+@keyframes successPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes checkmark {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+#payment-success-modal button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 </style>
