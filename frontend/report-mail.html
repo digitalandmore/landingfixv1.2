@@ -1,0 +1,107 @@
+<div id="email-popup" style="
+  display: none;
+  position: fixed;
+  top: 0; 
+  left: 0;
+  width: 100vw; 
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  font-family: Inter,sans-serif;
+  overflow: auto;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+">
+  <div style="background:#fff;padding:32px;border-radius:20px;max-width:450px;width:95vw;margin:auto;text-align:left;box-shadow:0 20px 60px rgba(0,0,0,0.15);position:relative;display:flex;flex-direction:column;">
+    <button id="close-email-popup" style="
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      font-size: 20px;
+      color: #6c757d;
+      cursor: pointer;
+      z-index: 10001;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s;
+      font-weight: bold;
+    " 
+    onmouseover="this.style.background='#e9ecef'; this.style.color='#495057';" 
+    onmouseout="this.style.background='#f8f9fa'; this.style.color='#6c757d';"
+    onclick="if(typeof closeEmailPopup === 'function') closeEmailPopup(); else if(typeof window.closeEmailPopup === 'function') window.closeEmailPopup();"
+    title="Close popup">&times;</button>
+    
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="width:60px;height:60px;background:linear-gradient(135deg,#28a745 0%, #20c997 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="fa fa-envelope" style="font-size:24px;color:white;"></i>
+      </div>
+      <h2 style="margin:0;font-size:1.4em;color:#1a202c;font-weight:700;">Send Report via Email</h2>
+      <p style="margin:8px 0 0;color:#6c757d;font-size:0.95em;">Get your complete landing page analysis delivered to your inbox</p>
+    </div>
+
+    <!-- Report Preview -->
+    <div style="margin-bottom:20px;padding:16px;background:#f8f9fa;border-radius:12px;border-left:4px solid #28a745;">
+      <div style="font-size:0.9em;color:#28a745;font-weight:600;margin-bottom:8px;">
+        <i class="fa fa-chart-line" style="margin-right:6px;"></i>Report Ready
+      </div>
+      <div style="font-weight:600;color:#1a202c;margin-bottom:4px;">AI Landing Page Analysis</div>
+      <div id="email-report-url" style="font-size:0.85em;color:#6c757d;word-break:break-all;"></div>
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:0.85em;">
+        <span style="color:#28a745;"><i class="fa fa-gauge-high"></i> <span id="email-opt-score">–</span>%</span>
+        <span style="color:#0070ba;"><i class="fa fa-arrow-up-right-dots"></i> +<span id="email-impact-score">–</span>%</span>
+        <span style="color:#6c757d;"><i class="fa fa-clock"></i> <span id="email-timing">–</span></span>
+      </div>
+    </div>
+
+    <!-- Email Form -->
+    <form id="email-form" style="display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:8px;">Your Email Address *</label>
+        <input id="email-address" name="email" type="email" required placeholder="Enter your email address" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:10px;font-size:1em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#28a745';" onblur="this.style.borderColor='#e2e8f0';">
+      </div>
+      
+      <div>
+        <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:8px;">Your Name (Optional)</label>
+        <input id="sender-name" name="name" type="text" placeholder="Your full name" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:10px;font-size:1em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#28a745';" onblur="this.style.borderColor='#e2e8f0';">
+      </div>
+      
+      <div>
+        <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:8px;">Company (Optional)</label>
+        <input id="sender-company" name="company" type="text" placeholder="Your company name" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:10px;font-size:1em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#28a745';" onblur="this.style.borderColor='#e2e8f0';">
+      </div>
+
+      <!-- Send Button -->
+      <button id="send-email-btn" type="submit" style="width:100%;padding:16px;background:linear-gradient(135deg,#28a745 0%, #20c997 100%);color:white;border:none;border-radius:12px;font-size:1.1em;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 12px rgba(40,167,69,0.3);margin-top:8px;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(40,167,69,0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(40,167,69,0.3)';">
+        <i class="fa fa-paper-plane" style="margin-right:8px;"></i>
+        <span id="send-btn-text">Send Report to Email</span>
+      </button>
+    </form>
+
+    <!-- Success State (Hidden by default) -->
+    <div id="email-success" style="display:none;text-align:center;padding:24px 0;">
+      <div style="width:60px;height:60px;background:#28a745;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="fa fa-check" style="font-size:24px;color:white;"></i>
+      </div>
+      <h3 style="margin:0 0 8px;color:#28a745;font-weight:700;">Email Sent Successfully!</h3>
+      <p style="margin:0;color:#6c757d;font-size:0.95em;line-height:1.4;">Your detailed landing page analysis has been sent to <span id="sent-email" style="font-weight:600;color:#1a202c;"></span></p>
+      <button onclick="if(typeof closeEmailPopup === 'function') closeEmailPopup(); else if(typeof window.closeEmailPopup === 'function') window.closeEmailPopup();" style="margin-top:20px;padding:12px 24px;background:#f8f9fa;color:#495057;border:1px solid #dee2e6;border-radius:8px;cursor:pointer;font-weight:500;transition:background 0.2s;" onmouseover="this.style.background='#e9ecef';" onmouseout="this.style.background='#f8f9fa';">
+        Close
+      </button>
+    </div>
+
+    <div style="margin-top:20px;text-align:center;color:#6c757d;font-size:0.85em;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+        <i class="fa fa-shield-alt"></i>
+        <span>Your email is secure and will not be shared</span>
+      </div>
+      <div style="font-size:0.8em;opacity:0.8;">You'll receive a beautifully formatted PDF report</div>
+    </div>
+  </div>
+</div>

@@ -141,6 +141,35 @@ document.addEventListener('DOMContentLoaded', () => {
               <button type="button" class="goal-btn">Optimize mobile experience</button>
             </div>
           </div>
+          <div class="focus-group" style="margin-top:22px;">
+            <label style="font-size:1.15em;font-weight:700;letter-spacing:0.5px;">Focus</label>
+            <div class="focus-subtitle" style="font-size:14px; color:#555; margin-bottom:8px;">
+              Select the main area you want to focus your analysis on (only one).
+            </div>
+            <div class="focus-btn-row">
+              <button type="button" class="focus-btn" data-focus="Copywriting"><i class="fa fa-pen-nib"></i> Copywriting</button>
+              <button type="button" class="focus-btn" data-focus="UX/UI"><i class="fa fa-object-group"></i> UX/UI</button>
+              <button type="button" class="focus-btn" data-focus="Mobile"><i class="fa fa-mobile-alt"></i> Mobile</button>
+              <button type="button" class="focus-btn" data-focus="CTA"><i class="fa fa-bullseye"></i> CTA</button>
+              <button type="button" class="focus-btn" data-focus="SEO"><i class="fa fa-magnifying-glass"></i> SEO</button>
+            </div>
+          </div>
+          <div class="industry-group" style="margin-top:22px;">
+            <label style="font-size:1.15em;font-weight:700;letter-spacing:0.5px;">Industry</label>
+            <div class="industry-subtitle" style="font-size:14px; color:#555; margin-bottom:8px;">
+              Select the industry of your landing page.
+            </div>
+            <select id="userIndustry" name="industry" required style="padding:10px 14px;font-size:1.08em;border-radius:8px;border:1.5px solid #0077cc;width:100%;max-width:320px;">
+              <option value="">Select industry...</option>
+              <option value="saas">SaaS / Software</option>
+              <option value="ecommerce">E-commerce</option>
+              <option value="services">Professional Services</option>
+              <option value="coaching">Coaching / Training</option>
+              <option value="local">Local Business</option>
+              <option value="health">Health / Wellness</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
           <div class="privacy-group" style="margin:22px 0 0 0;">
             <label style="font-size:14px; color:#444; display:flex; align-items:flex-start; gap:8px;">
               <input type="checkbox" id="privacyAccept" required style="margin-top:3px;">
@@ -178,92 +207,146 @@ document.addEventListener('DOMContentLoaded', () => {
           btn.classList.toggle('selected');
         });
       });
-    }, 4000);
+
+      // Focus toggle (solo uno selezionabile)
+      document.querySelectorAll('.focus-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          document.querySelectorAll('.focus-btn').forEach(b => b.classList.remove('selected'));
+          this.classList.add('selected');
+        });
+      });
+
+      // EXTRA: Submit handler per extraForm
+      const extraForm = document.getElementById('extraForm');
+      if (extraForm) {
+        extraForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          const name = document.getElementById('userName').value.trim();
+          const email = document.getElementById('userEmail').value.trim();
+          const company = document.getElementById('userCompany').value.trim();
+          const goals = Array.from(document.querySelectorAll('.goal-btn.selected')).map(btn => btn.textContent.trim());
+          const focusBtn = document.querySelector('.focus-btn.selected');
+          const focus = focusBtn ? focusBtn.dataset.focus : '';
+          const industry = document.getElementById('userIndustry').value;
+          const privacy = document.getElementById('privacyAccept').checked;
+          const url = localStorage.getItem('landingfix_temp_url') || '';
+
+          if (!name || !email || !privacy || !industry) {
+            alert('Please fill all required fields and accept privacy.');
+            return;
+          }
+
+          // Send to Brevo
+          const listId = 38; // <-- Replace with your Brevo list ID
+          const data = {
+            email: email,
+            attributes: {
+              FIRSTNAME: name,
+              COMPANY: company,
+              LANDING_URL: url,
+              GOALS: goals.join(', '),
+              FOCUS: focus,
+              INDUSTRY: industry
+            },
+            listIds: [listId],
+            updateEnabled: true
+          };
+
+          async function sendToBrevo() {
+            try {
+              const res = await fetch('http://localhost:3002/api/subscribe', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+              });
+              const result = await res.json();
+              console.log('Subscribe API result:', result);
+
+              // Tracking events
+              if (typeof fbq === 'function') {
+                fbq('track', 'Lead');
+              }
+              if (typeof gtag === 'function') {
+                gtag('event', 'generate_lead');
+              }
+            } catch (err) {
+              console.error('Network error:', err);
+              
+              // Still fire tracking events even if Brevo fails
+              if (typeof fbq === 'function') {
+                fbq('track', 'Lead');
+              }
+              if (typeof gtag === 'function') {
+                gtag('event', 'generate_lead');
+              }
+            }
+          }
+
+          // Execute Brevo subscription
+          sendToBrevo();
+
+          // Add focus icons mapping
+          const focusIcons = {
+            'Copywriting': 'fa-pen-nib',
+            'UX/UI': 'fa-object-group', 
+            'Mobile': 'fa-mobile-alt',
+            'CTA': 'fa-bullseye',
+            'SEO': 'fa-magnifying-glass'
+          };
+
+          // Industry full names mapping
+          const industryNames = {
+            'saas': 'SaaS / Software',
+            'ecommerce': 'E-commerce',
+            'services': 'Professional Services',
+            'coaching': 'Coaching / Training',
+            'local': 'Local Business',
+            'health': 'Health / Wellness',
+            'other': 'Other'
+          };
+
+          localStorage.setItem('landingfix_report_data', JSON.stringify({
+            url: url,
+            name,
+            email,
+            company,
+            goals,
+            focus,
+            focusIcon: focusIcons[focus] || 'fa-chart-line',
+            industry,
+            industryName: industryNames[industry] || industry,
+            reportType: 'detailed'
+          }));
+
+          window.location.href = 'report.html';
+        });
+      }
+
+    }, 1800); // <-- chiusura setTimeout, puoi regolare il tempo se vuoi
   }
 
+  // Mostra i campi extra quando serve
   if (urlForm) {
     urlForm.addEventListener('submit', function(e) {
       e.preventDefault();
+      
+      // Fire tracking events for initial URL submission
+      // Google Analytics Contact event
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'contact');
+      }
+
+      // Meta Pixel Contact event
+      if (typeof fbq !== 'undefined') {
+        fbq('track', 'Contact');
+      }
+
       showLoaderAndFields();
     });
-  }
-});
-
-// Loader overlay for final submit
-function showFinalLoader() {
-  let loader = document.getElementById('report-loader');
-  if (!loader) {
-    loader = document.createElement('div');
-    loader.id = 'report-loader';
-    loader.style = 'display:flex;align-items:center;justify-content:center;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.85);text-align:center;';
-    loader.innerHTML = `
-      <div style="position:relative;">
-        <div class="loader" style="margin-bottom:16px;">
-          <i class="fas fa-spinner fa-spin" style="font-size:2.5rem;color:#0070ba;"></i>
-        </div>
-        <div style="font-size:1.2rem;color:#222;">Generating your report, please wait…</div>
-      </div>
-    `;
-    document.body.appendChild(loader);
-  }
-  loader.style.display = 'flex';
-}
-
-document.addEventListener('submit', async function(e) {
-  if (e.target && e.target.id === 'extraForm') {
-    e.preventDefault();
-
-    // Show loader overlay
-    showFinalLoader();
-
-    // Collect data
-    const name = document.getElementById('userName').value;
-    const email = document.getElementById('userEmail').value;
-    const company = document.getElementById('userCompany').value;
-    const goals = Array.from(document.querySelectorAll('.goal-btn.selected')).map(btn => btn.textContent);
-    const url = localStorage.getItem('landingfix_temp_url') || '';
-
-    // Save data for report
-    localStorage.setItem('landingfix_report_data', JSON.stringify({ name, email, company, url, goals }));
-
-    // Send to Brevo
-    const listId = 38; // <-- Replace with your Brevo list ID
-    const data = {
-      email: email,
-      attributes: {
-        FIRSTNAME: name,
-        COMPANY: company,
-        LANDING_URL: url,
-        GOALS: goals.join(', ')
-      },
-      listIds: [listId],
-      updateEnabled: true
-    };
-
-    try {
-      const res = await fetch('https://landingfixv1-1.onrender.com/api/subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-      const result = await res.json();
-      console.log('Subscribe API result:', result);
-
-      // Tracking events
-      if (typeof fbq === 'function') {
-        fbq('track', 'Lead');
-      }
-      if (typeof gtag === 'function') {
-        gtag('event', 'generate_lead');
-      }
-    } catch (err) {
-      console.error('Network error:', err);
-    }
-
-    // Redirect to report page
-    window.location.href = 'report.html';
   }
 });
 
@@ -300,7 +383,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
-
 
 // Hamburger menu toggle and CTA visibility
 function setupHamburgerMenu() {

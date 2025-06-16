@@ -2479,3 +2479,151 @@ body {
     display: flex !important;
   }
 }
+
+/* Focus Analysis Buttons */
+.focus-group {
+  width: 100%;
+  text-align: center;
+  margin-top: 18px;
+}
+
+.focus-group label,
+.focus-label {
+  font-size: 16px;
+  color: var(--brand-main);
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.focus-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.focus-btn {
+  background: #f0f4f8;
+  color: #003366;
+  border: 1.5px solid var(--brand-main);
+  border-radius: 22px;
+  padding: 10px 20px;
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.focus-btn.selected {
+  background: var(--brand-main);
+  color: #fff;
+  border-color: var(--brand-main);
+}
+
+.focus-btn i {
+  margin-right: 6px;
+  font-size: 1.1em;
+}
+
+@media (max-width: 900px) {
+  .focus-btn {
+    min-width: 100px;
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .focus-btn-row {
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  .focus-btn {
+    width: 98vw;
+    max-width: 340px;
+    justify-content: center;
+  }
+}
+
+/* --- Industry Filter --- */
+.industry-group {
+  width: 100%;
+  text-align: center;
+  margin-top: 18px;
+}
+
+.industry-group label {
+  font-size: 16px;
+  color: var(--brand-main);
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.industry-subtitle {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+#userIndustry {
+  padding: 12px 18px;
+  border: 1.5px solid var(--brand-main);
+  border-radius: 22px;
+  font-size: 1.08em;
+  width: 320px;
+  max-width: 98vw;
+  background: #fff;
+  color: #003366;
+  margin-bottom: 8px;
+  transition: border-color 0.2s;
+  outline: none;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0,119,204,0.06);
+}
+
+#userIndustry:focus {
+  border-color: var(--brand-dark);
+  background: #f0f8ff;
+}
+
+@media (max-width: 900px) {
+  #userIndustry {
+    width: 98vw;
+    max-width: 340px;
+    font-size: 1em;
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .industry-group {
+    margin-top: 12px;
+  }
+  #userIndustry {
+    width: 98vw;
+    max-width: 99vw;
+    font-size: 1em;
+    padding: 10px 10px;
+  }
+}
+
+.tool-btn {
+  display: inline-block;
+  background: #0077cc;
+  color: #fff !important;
+  padding: 3px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  margin: 0 2px;
+  transition: background 0.2s;
+}
+.tool-btn:hover { background: #005fa3; }

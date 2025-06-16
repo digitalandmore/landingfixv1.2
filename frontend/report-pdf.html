@@ -1,0 +1,152 @@
+<div id="pdf-popup" style="
+  display: none;
+  position: fixed;
+  top: 0; 
+  left: 0;
+  width: 100vw; 
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  font-family: Inter,sans-serif;
+  overflow: auto;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+">
+  <div style="background:#fff;padding:32px;border-radius:20px;max-width:450px;width:95vw;margin:auto;text-align:left;box-shadow:0 20px 60px rgba(0,0,0,0.15);position:relative;display:flex;flex-direction:column;">
+    <button id="close-pdf-popup" style="
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      font-size: 20px;
+      color: #6c757d;
+      cursor: pointer;
+      z-index: 10001;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s;
+      font-weight: bold;
+    " 
+    onmouseover="this.style.background='#e9ecef'; this.style.color='#495057';" 
+    onmouseout="this.style.background='#f8f9fa'; this.style.color='#6c757d';"
+    title="Close popup">&times;</button>
+    
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="width:60px;height:60px;background:linear-gradient(135deg,#dc3545 0%, #c82333 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="fa fa-envelope" style="font-size:24px;color:white;"></i>
+      </div>
+      <h2 style="margin:0;font-size:1.4em;color:#1a202c;font-weight:700;">Get PDF Report via Email</h2>
+      <p style="margin:8px 0 0;color:#6c757d;font-size:0.95em;">Receive your complete landing page analysis as a professional PDF attachment</p>
+    </div>
+
+    <!-- Report Preview -->
+    <div style="margin-bottom:20px;padding:16px;background:#f8f9fa;border-radius:12px;border-left:4px solid #dc3545;">
+      <div style="font-size:0.9em;color:#dc3545;font-weight:600;margin-bottom:8px;">
+        <i class="fa fa-chart-line" style="margin-right:6px;"></i>Report Ready for Download
+      </div>
+      <div style="font-weight:600;color:#1a202c;margin-bottom:4px;">AI Landing Page Analysis</div>
+      <div id="pdf-report-url" style="font-size:0.85em;color:#6c757d;word-break:break-all;"></div>
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:0.85em;">
+        <span style="color:#28a745;"><i class="fa fa-gauge-high"></i> <span id="pdf-opt-score">–</span>%</span>
+        <span style="color:#0070ba;"><i class="fa fa-arrow-up-right-dots"></i> +<span id="pdf-impact-score">–</span>%</span>
+        <span style="color:#6c757d;"><i class="fa fa-clock"></i> <span id="pdf-timing">–</span></span>
+      </div>
+    </div>
+
+    <!-- PDF Features -->
+    <div style="margin-bottom:24px;padding:16px;background:#f8f9fa;border-radius:12px;">
+      <h3 style="margin:0 0 12px;font-size:1.1em;color:#2c3e50;">Professional PDF Report via Email</h3>
+      <div style="color:#495057;font-size:0.9em;line-height:1.4;margin-bottom:12px;">
+        Receive your comprehensive analysis as a professionally formatted PDF document delivered directly to your email inbox.
+      </div>
+      <div style="font-size:0.85em;color:#28a745;">
+        <i class="fa fa-check" style="margin-right:6px;"></i>Complete analysis with all categories and elements<br>
+        <i class="fa fa-check" style="margin-right:6px;"></i>Professional PDF formatting optimized for printing<br>
+        <i class="fa fa-check" style="margin-right:6px;"></i>Detailed recommendations and action items<br>
+        <i class="fa fa-check" style="margin-right:6px;"></i>Email delivery with PDF attachment<br>
+        <i class="fa fa-check" style="margin-right:6px;"></i>Perfect for sharing with team members
+      </div>
+    </div>
+
+    <!-- Locked State (Hidden by default) -->
+    <div id="pdf-locked-state" style="display:none;text-align:center;padding:24px 0;">
+      <div style="width:60px;height:60px;background:#e74c3c;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="fa fa-lock" style="font-size:24px;color:white;"></i>
+      </div>
+      <h3 style="margin:0 0 12px;color:#e74c3c;font-weight:700;">Report Access Required</h3>
+      <p style="margin:0 0 20px;color:#6c757d;font-size:0.95em;line-height:1.4;">
+        To download the PDF report, you need to unlock the full analysis first.
+      </p>
+      <button id="pdf-unlock-btn" style="padding:14px 28px;background:linear-gradient(135deg,#0070ba 0%, #005a91 100%);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:1.05em;transition:all 0.2s;box-shadow:0 4px 12px rgba(0,112,186,0.3);" onmouseover="this.style.transform='translateY(-1px)';" onmouseout="this.style.transform='translateY(0)';">
+        <i class="fa fa-unlock" style="margin-right:8px;"></i>
+        Unlock Full Report
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form id="pdf-form" style="display:none;flex-direction:column;gap:16px;">
+      <div>
+        <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:8px;">Your Email Address *</label>
+        <input id="pdf-email" type="email" required placeholder="Enter your email address" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:10px;font-size:1em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#dc3545';" onblur="this.style.borderColor='#e2e8f0';">
+      </div>
+      
+      <div>
+        <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:8px;">Your Name (Optional)</label>
+        <input id="pdf-name" type="text" placeholder="Your full name" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:10px;font-size:1em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#dc3545';" onblur="this.style.borderColor='#e2e8f0';">
+      </div>
+      
+      <div>
+        <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:8px;">Company (Optional)</label>
+        <input id="pdf-company" type="text" placeholder="Your company name" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:10px;font-size:1em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#dc3545';" onblur="this.style.borderColor='#e2e8f0';">
+      </div>
+
+      <!-- FIXED: Updated button text and description -->
+      <button id="generate-pdf-btn" type="submit" style="width:100%;padding:16px;background:linear-gradient(135deg,#dc3545 0%, #c82333 100%);color:white;border:none;border-radius:12px;font-size:1.1em;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 12px rgba(220,53,69,0.3);margin-top:8px;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(220,53,69,0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220,53,69,0.3)';">
+        <i class="fa fa-envelope" style="margin-right:8px;"></i>
+        <span id="pdf-submit-text">Send PDF Report via Email</span>
+      </button>
+      
+      <!-- FIXED: Added clarification text -->
+      <div style="text-align:center;margin-top:12px;color:#6c757d;font-size:0.85em;">
+        <i class="fa fa-info-circle" style="margin-right:4px;"></i>
+        Your PDF report will be generated and sent directly to your email
+      </div>
+    </form>
+
+    <!-- FIXED: Updated success message -->
+    <div id="pdf-success" style="display:none;text-align:center;padding:24px 0;">
+      <div style="width:60px;height:60px;background:#28a745;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="fa fa-check" style="font-size:24px;color:white;"></i>
+      </div>
+      <h3 style="margin:0 0 8px;color:#28a745;font-weight:700;">PDF Report Sent Successfully!</h3>
+      <p style="margin:0;color:#6c757d;font-size:0.95em;line-height:1.4;">
+        Your PDF report has been generated and sent to <span id="pdf-sent-email" style="font-weight:600;color:#1a202c;"></span>
+      </p>
+      <div style="background:#d4edda;padding:16px;border-radius:8px;margin:20px 0;border:1px solid #c3e6cb;">
+        <p style="margin:0;font-size:0.9em;color:#155724;">
+          <i class="fa fa-envelope" style="margin-right:6px;"></i>
+          Check your email for the complete PDF report with professional formatting. The PDF includes all analysis details and actionable recommendations.
+        </p>
+      </div>
+      
+      <!-- Close button will be added here by JavaScript -->
+      <button onclick="closePdfPopup();" style="margin-top:20px;padding:12px 24px;background:#f8f9fa;color:#495057;border:1px solid #dee2e6;border-radius:8px;cursor:pointer;font-weight:500;transition:background 0.2s;" onmouseover="this.style.background='#e9ecef';" onmouseout="this.style.background='#f8f9fa';">
+        Close
+      </button>
+    </div>
+
+    <div style="margin-top:20px;text-align:center;color:#6c757d;font-size:0.85em;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+        <i class="fa fa-shield-alt"></i>
+        <span>Secure delivery - your information is protected</span>
+      </div>
+      <div style="font-size:0.8em;opacity:0.8;">Professional PDF report sent directly to your email</div>
+    </div>
+</div>v>
+</div>

@@ -55,376 +55,220 @@ fetch('header.html')
   });
 </script>
 
-  <main>
-    <div class="container">
-      <h2 class="report-title">🚀 Your Landing Page Report</h2>
-      <div id="dynamic-report-details"></div>
-      <div id="report-content">Loading...</div>
+<main>
+  <div class="container">
+    <h2 class="report-title">Landing Page Analysis Report</h2>
+    <div id="dynamic-report-details"></div>
+    <div id="report-content">
+      <!-- FIXED: Ensure all 4 category divs exist with proper structure -->
+      <div class="report-category" id="category-0">
+        <div class="category-header">
+          <h3 class="category-title">
+            <span class="category-name">Loading...</span>
+            <span class="category-metrics">
+              <span class="metric"><i class="fa fa-gauge-high"></i> <span class="cat-score">–</span>%</span>
+              <span class="metric" style="color:#27ae60;"><i class="fa fa-arrow-up-right-dots"></i> +<span class="cat-impact">–</span>%</span>
+              <span class="metric"><i class="fa fa-clock"></i> <span class="cat-timing">–</span></span>
+            </span>
+          </h3>
+        </div>
+        <div class="category-elements">
+          <div style="padding: 20px; text-align: center; color: #666;">Loading elements...</div>
+        </div>
+      </div>
+
+      <div class="report-category locked" id="category-1">
+        <div class="category-header">
+          <h3 class="category-title">
+            <span class="category-name">Loading...</span>
+            <span class="category-metrics">
+              <span class="metric"><i class="fa fa-gauge-high"></i> <span class="cat-score">–</span>%</span>
+              <span class="metric" style="color:#27ae60;"><i class="fa fa-arrow-up-right-dots"></i> +<span class="cat-impact">–</span>%</span>
+              <span class="metric"><i class="fa fa-clock"></i> <span class="cat-timing">–</span></span>
+            </span>
+          </h3>
+        </div>
+        <div class="category-elements">
+          <div style="padding: 20px; text-align: center; color: #666;">Locked - unlock to view</div>
+        </div>
+      </div>
+
+      <div class="report-category locked" id="category-2">
+        <div class="category-header">
+          <h3 class="category-title">
+            <span class="category-name">Loading...</span>
+            <span class="category-metrics">
+              <span class="metric"><i class="fa fa-gauge-high"></i> <span class="cat-score">–</span>%</span>
+              <span class="metric" style="color:#27ae60;"><i class="fa fa-arrow-up-right-dots"></i> +<span class="cat-impact">–</span>%</span>
+              <span class="metric"><i class="fa fa-clock"></i> <span class="cat-timing">–</span></span>
+            </span>
+          </h3>
+        </div>
+        <div class="category-elements">
+          <div style="padding: 20px; text-align: center; color: #666;">Locked - unlock to view</div>
+        </div>
+      </div>
+
+      <div class="report-category locked" id="category-3">
+        <div class="category-header">
+          <h3 class="category-title">
+            <span class="category-name">Loading...</span>
+            <span class="category-metrics">
+              <span class="metric"><i class="fa fa-gauge-high"></i> <span class="cat-score">–</span>%</span>
+              <span class="metric" style="color:#27ae60;"><i class="fa fa-arrow-up-right-dots"></i> +<span class="cat-impact">–</span>%</span>
+              <span class="metric"><i class="fa fa-clock"></i> <span class="cat-timing">–</span></span>
+            </span>
+          </h3>
+        </div>
+        <div class="category-elements">
+          <div style="padding: 20px; text-align: center; color: #666;">Locked - unlock to view</div>
+        </div>
+      </div>
+
+      <!-- Final summary section -->
+      <div class="report-summary-final">
+        <div class="final-metrics">
+          <span class="metric"><i class="fa fa-gauge-high"></i> <span id="final-score">–</span>%</span>
+          <span class="metric" style="color:#27ae60;"><i class="fa fa-arrow-up-right-dots"></i> +<span id="final-impact">–</span>%</span>
+          <span class="metric"><i class="fa fa-clock"></i> <span id="final-timing">–</span></span>
+        </div>
+        <div class="legend">
+          <span><i class="fa fa-gauge-high"></i> Current Optimization (%)</span>
+          <span><i class="fa fa-arrow-up-right-dots"></i> Improvement Potential (%)</span>
+          <span><i class="fa fa-clock"></i> Implementation Time</span>
+        </div>
+      </div>
     </div>
-  </main>
+  </div>
+</main>
 
-  <!-- Footer Include -->
-  <div id="main-footer"></div>
-  <script>
-    fetch('footer.html')
-      .then(res => res.text())
-      .then(html => { document.getElementById('main-footer').innerHTML = html; });
-  </script>
+<!-- Footer Include -->
+<div id="main-footer"></div>
+<script>
+fetch('footer.html')
+  .then(res => res.text())
+  .then(html => { document.getElementById('main-footer').innerHTML = html; });
+</script>
 
-  <script>
+<!-- Load dependencies FIRST before other scripts -->
+<script src="report-utils.js"></script>
+<script src="report-builder.js"></script>
 
-document.addEventListener('DOMContentLoaded', async function() {
-  const data = JSON.parse(localStorage.getItem('landingfix_report_data') || '{}');
-  if (!data || !data.url) {
-    document.getElementById('report-content').textContent = "No data found.";
+<!-- Load the checkout functionality -->
+<script src="checkout.js"></script>
+
+<!-- Load the email functionality -->
+<script>
+// Preload email system
+const emailScript = document.createElement('script');
+emailScript.src = 'report-mail.js';
+emailScript.async = true;
+document.head.appendChild(emailScript);
+</script>
+
+<!-- Load the PDF functionality -->
+<script>
+// Preload PDF system
+const pdfScript = document.createElement('script');
+pdfScript.src = 'report-pdf.js';
+pdfScript.async = true;
+document.head.appendChild(pdfScript);
+</script>
+
+<!-- Load the progressive loading system LAST -->
+<script src="load.js"></script>
+
+<!-- Define loadCheckoutPopup function globally - ENHANCED -->
+<script>
+// Enhanced loadCheckoutPopup with better error handling
+window.loadCheckoutPopup = function(callback) {
+  console.log('🔄 loadCheckoutPopup called');
+  
+  if (document.getElementById('checkout-popup')) {
+    console.log('✅ Checkout popup already exists');
+    if (callback) callback();
     return;
   }
-
-  // Loader avanzato
-  document.getElementById('report-content').innerHTML = `
-    <div class="report-loader">
-      <div class="loader-bar-bg">
-        <div class="loader-bar-fill" id="reportProgressBar"></div>
-      </div>
-      <div class="loader-percent" id="loaderPercent">0%</div>
-      <div class="loader-steps" id="loaderSteps">
-        <div><i class="fa fa-robot"></i> AI is analyzing your landing page...</div>
-        <ul id="loaderStepList" class="loader-step-list">
-          <li>🔍 Structure & Content</li>
-          <li>✍️ Copy & CTAs</li>
-          <li>📱 Mobile Experience</li>
-          <li>⚡️ Technical Performance</li>
-          <li>🎯 Conversion Potential</li>
-        </ul>
-      </div>
-      <div class="loader-msg" id="reportLoaderMsg">Starting analysis...</div>
-    </div>
-  `;
-
-  // Loader animato
-  const steps = [
-    "Analyzing structure & content...",
-    "Evaluating copy and CTAs...",
-    "Reviewing mobile experience...",
-    "Checking technical performance...",
-    "Assessing conversion potential...",
-    "Finalizing your personalized report..."
-  ];
-  let progress = 0, step = 0;
-  const bar = document.getElementById('reportProgressBar');
-  const msg = document.getElementById('reportLoaderMsg');
-  const percent = document.getElementById('loaderPercent');
-  const stepList = document.getElementById('loaderStepList').getElementsByTagName('li');
-  const interval = setInterval(() => {
-    progress += 100 / steps.length;
-    if (bar) bar.style.width = progress + "%";
-    if (percent) percent.textContent = Math.round(progress) + "%";
-    if (msg && steps[step]) msg.textContent = steps[step];
-    if (stepList[step]) stepList[step].style.color = "#27ae60";
-    step++;
-    if (progress >= 100) clearInterval(interval);
-  }, 800);
-
-  let fullReportHtml = "";
-
-  // Funzione per mostrare info utente + score principale
-  function renderUserDetails() {
-    const detailsDiv = document.getElementById('dynamic-report-details');
-    if (!detailsDiv) return;
-
-    let scoreHtml = '';
-    let totalTimeHtml = '';
-    if (typeof fullReportHtml === 'string') {
-      let cleanHtml = fullReportHtml.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '');
-
-      // Regex robusta: prende il PRIMO score-number (che è quello del summary)
-      const scoreMatch = cleanHtml.match(/class=["']score-number["'][^>]*>([\d.,]+)/i);
-      let score = scoreMatch ? parseFloat(scoreMatch[1].replace(',', '.')) : null;
-      let scoreClass = "green";
-      if (score !== null && !isNaN(score)) {
-        if (score < 60) scoreClass = "red";
-        else if (score < 80) scoreClass = "orange";
-        scoreHtml = `
-          <div class="score-block">
-            <div class="score-label">Optimization Score</div>
-            <div class="score-circle ${scoreClass}">
-              <span class="score-number">${score}</span><span class="score-percent">%</span>
-            </div>
-          </div>
-        `;
-      } else {
-        scoreHtml = `
-          <div class="score-block">
-            <div class="score-label">Optimization Score</div>
-            <div class="score-circle" style="border-color:#bbb;color:#bbb;">
-              <span class="score-number">–</span>
-            </div>
-          </div>
-        `;
-      }
-
-      // Implementation Time extraction
-      const timeMatch = cleanHtml.match(/Implementation Time[^<]{0,20}([0-9.,]+\s*(?:hours?|mins?|minutes?))/i)
-        || cleanHtml.match(/Timing[^<]{0,20}([0-9.,]+\s*(?:hours?|mins?|minutes?))/i);
-      if (timeMatch) {
-        totalTimeHtml = `
-          <div class="score-block" style="margin-top:18px;">
-            <div class="score-label">Implementation Time</div>
-            <div class="score-circle" style="border-color:#0077cc;color:#0077cc;">
-              <span class="score-number" style="font-size:0.7em;">${timeMatch[1]}</span>
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    detailsDiv.innerHTML = `
-      <div class="report-user-header user-header-flex">
-        <div class="user-info-col">
-          <div class="user-info-row">
-            <div class="user-info-block">
-              <div class="user-info-label">
-                <span class="icon-bg"><i class="fa fa-link"></i></span>
-                <span>Landing Page</span>
-              </div>
-              <a href="${data.url}" target="_blank" class="user-info-value">${data.url}</a>
-              <div class="user-info-label">
-                <span class="icon-bg"><i class="fa fa-envelope"></i></span>
-                <span>Email</span>
-              </div>
-              <span class="user-info-value">${data.email || '-'}</span>
-              ${data.company ? `
-              <div class="user-info-label">
-                <span class="icon-bg"><i class="fa fa-building"></i></span>
-                <span>Company</span>
-              </div>
-              <span class="user-info-value">${data.company}</span>
-              ` : ''}
-              <div class="goals-row">
-                <div class="goals-label">
-                  <span class="icon-bg"><i class="fa fa-bullseye"></i></span>
-                  <span>Goals</span>
-                </div>
-                <div class="goals-list">
-                  ${data.goals && data.goals.length ? data.goals.map(g => `<span class="goal-badge">${g}</span>`).join('') : '<span style="color:#888;">-</span>'}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="score-col">
-          ${scoreHtml}
-          ${totalTimeHtml}
-        </div>
-      </div>
-    `;
-  }
-
-  // Funzione per caricare dinamicamente il popup da checkout.html
-  function loadCheckoutPopup(callback) {
-    if (document.getElementById('checkout-popup')) {
-      if (callback) callback();
-      return;
-    }
-    fetch('checkout.html')
-      .then(res => res.text())
-      .then(html => {
-        const temp = document.createElement('div');
-        temp.innerHTML = html;
-        const popup = temp.querySelector('#checkout-popup');
-        if (popup) {
-          document.body.appendChild(popup);
-          if (callback) callback();
-        }
-      });
-  }
-
-  // Evidenzia e migliora il summary finale
-  function highlightFinalSummary(html) {
-    const summaryMatch = html.match(/(<div class="report-summary">[\s\S]*?<\/div>)/i);
-    if (!summaryMatch) return html;
-    const summarySection = `
-      <section class="final-summary-section" style="
-        margin-top:48px;margin-bottom:32px;
-        padding:36px 0 32px 0;
-        background:#f8fbfd;
-        border-radius:18px;
-        box-shadow:0 4px 24px rgba(0,119,204,0.13);
-        border:2.5px solid #0077cc;
-        max-width:700px;
-        margin-left:auto;
-        margin-right:auto;
-        text-align:center;
-      ">
-        <h3 style="font-size:1.45em;font-weight:800;color:#0077cc;margin-bottom:10px;letter-spacing:0.5px;">
-          <i class="fa fa-gauge-high"></i> Overall Optimization & Implementation Time
-        </h3>
-        <p style="color:#333;font-size:1.08em;margin-bottom:18px;">
-          This section summarizes your overall landing page optimization score and the estimated time required to implement all recommended improvements.
-        </p>
-        <div class="legend" style="text-align:center;margin-bottom:18px;">
-          <span style="display:inline-block;background:#e6f4ef;color:#0077cc;border-radius:12px;padding:4px 12px;font-size:0.98em;margin-right:8px;">
-            <i class="fa fa-gauge-high"></i> Optimization Score = Overall quality
-          </span>
-          <span style="display:inline-block;background:#e6f4ef;color:#0077cc;border-radius:12px;padding:4px 12px;font-size:0.98em;">
-            <i class="fa fa-clock"></i> Implementation Time = Estimated time to apply all suggestions
-          </span>
-        </div>
-        <div style="display:flex;justify-content:center;gap:40px;flex-wrap:wrap;">
-          ${summaryMatch[1]
-            .replace(/class="report-summary"/, 'class="report-summary" style="display:flex;justify-content:center;gap:40px;flex-wrap:wrap;background:none;box-shadow:none;border:none;padding:0;margin:0;"')
-            .replace(/category-score-badge/g, 'category-score-badge final-badge')
-            .replace(/category-time-badge/g, 'category-time-badge final-badge')
-          }
-        </div>
-      </section>
-    `;
-    return html.replace(summaryMatch[1], summarySection);
-  }
-
-  try {
-    const response = await fetch("https://landingfixv1-1.onrender.com/api/generate-report", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        url: data.url,
-        company: data.company,
-        email: data.email,
-        goals: data.goals
-      })
+  
+  console.log('📥 Loading checkout popup...');
+  
+  fetch('checkout.html')
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.text();
+    })
+    .then(html => {
+      document.body.insertAdjacentHTML('beforeend', html);
+      console.log('✅ Checkout popup HTML loaded');
+      
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        if (callback) callback();
+      }, 100);
+    })
+    .catch(err => {
+      console.error('❌ Failed to load checkout popup:', err);
+      alert('Unable to load checkout system. Please refresh the page and try again.');
     });
-    const result = await response.json();
-    let html = result.choices?.[0]?.message?.content || "No report generated.";
-    html = html.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '');
-    fullReportHtml = html;
+};
 
-    renderUserDetails();
-
-    // Estrai General Overview (tutto il contenuto)
-    const matches = html.match(/<div class="report-section">[\s\S]*?(?=<div class="report-section">|$)/gi) || [];
-    const generalOverview = matches.find(section => section.includes('<h4>General Overview</h4>')) || '<div style="color:#c0392b;">General Overview not found.</div>';
-
-    const lockedContent = `
-      <div id="locked-report" style="background:#fffbe6;border:1px solid #ffe58f;border-radius:10px;padding:28px 22px;margin:32px auto 0 auto;max-width:600px;text-align:center;box-shadow:0 2px 8px rgba(255,215,0,0.08);">
-        <h3 style="color:#e67e22;font-size:1.3em;margin-bottom:12px;"><i class="fa fa-lock"></i> Unlock the Full Report</h3>
-        <p style="font-size:1.08em;color:#444;margin-bottom:18px;">
-          Go beyond the overview! Unlock your complete AI-powered landing page report and access all actionable insights to maximize your results.
-        </p>
-        <div style="margin:0 auto 18px auto;display:inline-block;text-align:left;">
-          <div style="font-weight:600;color:#222;margin-bottom:6px;">Unlock all categories:</div>
-          <ul style="margin:0 0 10px 18px;padding:0;color:#444;font-size:1em;">
-            <li>Copywriting &amp; Persuasion</li>
-            <li>Design &amp; User Experience</li>
-            <li>Technical &amp; Mobile Optimization</li>
-            <li>Conversion Potential</li>
-          </ul>
-          <div style="font-weight:600;color:#222;margin:10px 0 6px 0;">What you'll get:</div>
-          <ul style="margin:0 0 0 18px;padding:0;color:#444;font-size:1em;">
-            <li>Actionable recommendations for every section</li>
-            <li>In-depth AI analysis and expert tips</li>
-            <li>Personalized suggestions to boost conversions</li>
-            <li>Full report delivered directly to your email</li>
-          </ul>
-        </div>
-        <button id="unlock-btn" style="margin-top:18px;padding:14px 36px;font-size:1.1em;background:#27ae60;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;box-shadow:0 2px 8px rgba(39,174,96,0.13);transition:background 0.2s;">
-          <i class="fa fa-unlock"></i> Unlock Full Report
-        </button>
-        <p style="margin-top:16px;color:#888;font-size:0.97em;">
-          Secure checkout. After unlocking, you’ll receive full access and your complete report via email.
-        </p>
-      </div>
-    `;
-
-    document.getElementById('report-content').innerHTML = `
-      <div style="margin-bottom:32px;">${generalOverview}</div>
-      ${lockedContent}
-    `;
-
-    document.getElementById('unlock-btn').onclick = function(e) {
-      e.preventDefault();
-      loadCheckoutPopup(function() {
-        if (typeof window.openCheckout === 'function') {
-          window.openCheckout();
-        } else {
-          document.getElementById('checkout-popup').style.display = 'flex';
-        }
-      });
-    };
-
-    // Funzione globale per sbloccare il report dopo pagamento/coupon
-    window.unlockReport = function() {
-      let unlockedHtml = highlightFinalSummary(fullReportHtml);
-
-      document.getElementById('report-content').innerHTML = unlockedHtml;
-      renderUserDetails();
-
-      // --- FORM INVIO EMAIL ---
-      const reportContent = document.getElementById('report-content');
-      if (reportContent) {
-        const emailForm = document.createElement('div');
-        emailForm.innerHTML = `
-          <div style="background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,112,186,0.07);padding:38px 28px 32px 28px;max-width:520px;margin:40px auto 0 auto;text-align:center;">
-            <h3 style="font-size:1.35em;color:#0070ba;margin-bottom:10px;font-weight:700;">
-              Save Your Full Report
-            </h3>
-            <p style="color:#444;font-size:1.08em;margin-bottom:22px;">
-              Want to implement these improvements later?<br>
-              Enter your email below and receive your complete, actionable report directly in your inbox—so you can boost your results anytime!
-            </p>
-            <form id="send-report-form" style="margin:0 auto;max-width:420px;text-align:center;">
-              <input type="email" id="send-report-email" placeholder="Your email address" required
-                style="padding:16px 16px;width:85%;border:1.5px solid #0070ba;border-radius:8px;margin-bottom:16px;font-size:1.13em;">
-              <br>
-              <button type="submit"
-                style="padding:16px 38px;background:#0070ba;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1.13em;font-weight:700;box-shadow:0 2px 8px rgba(0,112,186,0.10);transition:background 0.2s;">
-                <i class="fa fa-envelope"></i> Send Report to My Email
-              </button>
-              <div id="send-report-msg" style="margin-top:14px;font-size:1.05em;"></div>
-            </form>
-          </div>
-        `;
-        reportContent.appendChild(emailForm);
-
-        document.getElementById('send-report-form').onsubmit = async function(e) {
-          e.preventDefault();
-          const email = document.getElementById('send-report-email').value;
-          const msg = document.getElementById('send-report-msg');
-          msg.textContent = "Sending...";
-          msg.style.color = "#0070ba";
-          try {
-            const res = await fetch('https://landingfixv1-1.onrender.com/api/send-report', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                url: data.url,
-                html: fullReportHtml,
-                email: email,
-                name: data.name || '',
-                company: data.company || ''
-              })
-            });
-            const result = await res.json();
-            if (result.success) {
-              msg.textContent = "Report sent successfully! Check your inbox.";
-              msg.style.color = "#27ae60";
-            } else {
-              msg.textContent = "Error sending report.";
-              msg.style.color = "#c0392b";
-            }
-          } catch (err) {
-            msg.textContent = "Error sending report.";
-            msg.style.color = "#c0392b";
-          }
-        };
+// FIXED: Add global unlock status monitoring
+window.addEventListener('storage', function(e) {
+  if (e.key === 'landingfix_unlocked' && e.newValue === 'true') {
+    console.log('🔓 Global unlock detected - updating UI');
+    
+    // Hide all unlock buttons
+    const unlockBtns = document.querySelectorAll('#unlock-full-report, .summary-action-btn.primary, .unlock-btn');
+    unlockBtns.forEach(btn => {
+      if (btn.textContent.includes('Unlock') || btn.innerHTML.includes('unlock')) {
+        btn.style.display = 'none';
+        console.log('🔓 Hiding unlock button:', btn.id || btn.className);
       }
-    };
-
-  } catch (e) {
-    document.getElementById('report-content').innerHTML = '<div style="color:#c0392b;font-weight:bold;">Error: Unable to connect to the AI report service.</div>';
-    document.getElementById('dynamic-report-details').innerHTML = '';
+    });
+    
+    // Force refresh of final summary if it exists
+    setTimeout(() => {
+      const event = new CustomEvent('unlockStatusChanged', { detail: { isUnlocked: true } });
+      window.dispatchEvent(event);
+    }, 500);
   }
 });
+
+// Add page load debug with enhanced logging
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('📋 Report.html DOMContentLoaded');
+  console.log('🔍 Available functions:', {
+    loadCheckoutPopup: typeof window.loadCheckoutPopup,
+    openCheckout: typeof window.openCheckout,
+    unlockFullReport: typeof window.unlockFullReport,
+    showEmailPopup: typeof window.showEmailPopup,
+    showPdfPopup: typeof window.showPdfPopup
+  });
+  
+  // Check if buttons exist in DOM
+  console.log('🔍 Button elements check:', {
+    unlockBtn: !!document.getElementById('unlock-full-report'),
+    emailBtn: !!document.getElementById('send-via-email'),
+    pdfBtn: !!document.getElementById('save-as-pdf')
+  });
+  
+  // FIXED: Listen for unlock status changes
+  window.addEventListener('unlockStatusChanged', function(e) {
+    console.log('🔓 Unlock status changed event received:', e.detail);
+    
+    // Trigger report builder to update final summary
+    if (window.ReportLoader && window.ReportLoader.reportBuilder) {
+      setTimeout(() => {
+        const currentScores = {
+          optimization: document.getElementById('final-score')?.textContent || '–',
+          impact: document.getElementById('final-impact')?.textContent?.replace('+', '') || '–',
+          timing: document.getElementById('final-timing')?.textContent || '–'
+        };
+        window.ReportLoader.reportBuilder.updateFinalSummary(currentScores);
+      }, 100);
+    }
+  });
+});
 </script>
-<script src="checkout.js"></script>
 </body>
 </html>

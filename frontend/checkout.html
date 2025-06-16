@@ -1,70 +1,151 @@
-<div id="checkout-popup" style="display:none;
-  position:fixed;
-  top:0; left:0;
-  width:100vw; height:100vh;
-  background:rgba(0,0,0,0.45);
-  z-index:9999;
-  font-family:Inter,sans-serif;
-  overflow:auto;
-  box-sizing:border-box;
-  /* Responsive centering */
-  display:flex;
-  align-items:center;
-  justify-content:center;
+<div id="checkout-popup" style="
+  display: none;
+  position: fixed;
+  top: 0; 
+  left: 0;
+  width: 100vw; 
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  font-family: Inter,sans-serif;
+  overflow: auto;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
 ">
-  <div style="background:#fff;padding:32px 32px 28px 32px;border-radius:16px;max-width:410px;width:95vw;margin:auto;text-align:left;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;display:flex;flex-direction:column;">
-    <button id="close-popup" style="position:absolute;top:18px;right:18px;background:none;border:none;font-size:1.5em;color:#888;cursor:pointer;">&times;</button>
-    <h2 style="margin-bottom:18px;font-size:1.35em;color:#222;font-weight:700;text-align:left;">Checkout</h2>
+  <div style="background:#fff;padding:32px;border-radius:20px;max-width:480px;width:95vw;margin:auto;text-align:left;box-shadow:0 20px 60px rgba(0,0,0,0.15);position:relative;display:flex;flex-direction:column;">
+    <button id="close-popup" style="
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      font-size: 20px;
+      color: #6c757d;
+      cursor: pointer;
+      z-index: 10001;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s;
+      font-weight: bold;
+    " onmouseover="this.style.background='#e9ecef'; this.style.color='#495057';" onmouseout="this.style.background='#f8f9fa'; this.style.color='#6c757d';">&times;</button>
+    
+    <h2 style="margin-bottom:24px;font-size:1.5em;color:#1a202c;font-weight:700;text-align:center;">Complete Your Purchase</h2>
     
     <!-- ONE TIME OFFER BANNER -->
-    <div id="oto-offer" style="background:linear-gradient(90deg,#ff5858,#ffb199);border-radius:12px;padding:18px 18px 14px 18px;margin-bottom:22px;box-shadow:0 2px 12px rgba(255,88,88,0.13);border:2px solid #c0392b;display:flex;flex-direction:column;align-items:flex-start;">
-      <div style="display:flex;align-items:center;gap:14px;width:100%;margin-bottom:8px;">
-        <span style="font-size:1.6em;color:#fff;"><i class="fa fa-bolt"></i></span>
-        <span style="font-size:1.08em;font-weight:700;color:#fff;letter-spacing:0.5px;">
-          <span style="background:#c0392b;padding:3px 12px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.07);margin-right:10px;display:inline-block;">ONE TIME OFFER</span>
-          <span style="display:inline-block;margin-top:6px;">Experience the power of LandingFix AI: <span style="color:#ffe259;">get your full report for only <b>€5</b></span> (~$5.50)!</span>
-        </span>
+    <div id="oto-offer" style="background:linear-gradient(135deg,#667eea 0%, #764ba2 100%);border-radius:16px;padding:20px;margin-bottom:24px;box-shadow:0 4px 20px rgba(102,126,234,0.3);color:white;text-align:center;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;">
+        <span style="font-size:1.5em;"><i class="fa fa-bolt"></i></span>
+        <span style="background:rgba(255,255,255,0.2);padding:6px 16px;border-radius:20px;font-weight:700;font-size:0.9em;letter-spacing:0.5px;">LIMITED TIME OFFER</span>
       </div>
-      <div style="margin-top:6px;font-size:1em;color:#fff;line-height:1.5;">
-        <b>Just for you:</b> enter coupon <b style="color:#ffe259;">TRY5</b> below and grab this exclusive deal.<br>
-        <span style="display:inline-block;margin-top:4px;">
-          <i class="fa fa-clock-o" style="color:#ffe259;"></i>
-          <span style="margin-left:4px;">You have <span id="oto-timer" style="font-weight:700;">05:00</span> left to decide!</span>
-        </span>
-      </div>
+      <div style="font-size:1.1em;font-weight:600;margin-bottom:8px;">Get your full AI report for only <span style="color:#ffd700;font-weight:800;">€5</span> (~$5.50)</div>
+      <div style="font-size:0.9em;opacity:0.9;">Use coupon <span style="color:#ffd700;font-weight:700;">TRY5</span> • Time left: <span id="oto-timer" style="font-weight:700;">05:00</span></div>
     </div>
-    <!-- END ONE TIME OFFER BANNER -->
 
-    <div style="margin-bottom:18px;padding:14px 0 10px 0;border-bottom:1px solid #eee;">
-      <div style="font-size:1.08em;color:#444;margin-bottom:4px;">Product:</div>
-      <div style="font-size:1.13em;font-weight:500;color:#0070ba;">
-        AI Landing Page Report
+    <!-- Product Info -->
+    <div style="margin-bottom:20px;padding:16px;background:#f8f9fa;border-radius:12px;">
+      <div style="font-size:0.9em;color:#6c757d;margin-bottom:4px;">Product</div>
+      <div style="font-weight:600;color:#1a202c;margin-bottom:8px;">AI Landing Page Analysis Report</div>
+      <div id="checkout-url" style="font-size:0.85em;color:#6c757d;word-break:break-all;"></div>
+    </div>
+
+    <!-- Pricing -->
+    <div style="margin-bottom:20px;text-align:center;">
+      <div style="font-size:2em;font-weight:700;color:#1a202c;">
+        <span id="checkout-eur">€20.00</span>
+        <span id="checkout-usd" style="font-size:0.6em;color:#6c757d;font-weight:400;margin-left:8px;">(~$22.68)</span>
       </div>
-      <div id="checkout-url" style="font-size:0.98em;color:#666;word-break:break-all;margin-top:2px;"></div>
     </div>
-    <div style="margin-bottom:18px;">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span style="font-size:1.08em;color:#222;">Total:</span>
-        <span id="checkout-eur" style="font-size:1.18em;font-weight:600;color:#0070ba;">€20.00</span>
-        <span id="checkout-usd" style="font-size:1.08em;color:#888;">(~$22.68)</span>
+
+    <!-- Coupon -->
+    <div style="margin-bottom:24px;">
+      <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:8px;">Promo Code</label>
+      <div style="display:flex;gap:12px;">
+        <input id="coupon-input" type="text" placeholder="Enter coupon code" style="flex:1;padding:12px 16px;border:2px solid #e2e8f0;border-radius:10px;font-size:1em;transition:border-color 0.2s;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+        <button id="apply-coupon" type="button" style="padding:12px 20px;background:#667eea;color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:600;transition:background 0.2s;" onmouseover="this.style.background='#5a6fd8';" onmouseout="this.style.background='#667eea';">Apply</button>
+      </div>
+      <div id="coupon-msg" style="font-size:0.9em;margin-top:8px;display:none;"></div>
+    </div>
+
+    <!-- Payment Methods -->
+    <div id="payment-section">
+      <!-- Payment Method Switcher -->
+      <div style="margin-bottom:20px;">
+        <div style="display:flex;background:#f1f5f9;border-radius:12px;padding:4px;margin-bottom:16px;">
+          <button id="stripe-tab" class="payment-tab active" style="flex:1;padding:12px;border:none;background:white;border-radius:8px;font-weight:600;color:#1a202c;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+            <i class="fa fa-credit-card" style="margin-right:8px;"></i>Card
+          </button>
+          <button id="paypal-tab" class="payment-tab" style="flex:1;padding:12px;border:none;background:transparent;border-radius:8px;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.2s;">
+            <i class="fab fa-paypal" style="margin-right:8px;"></i>PayPal
+          </button>
+        </div>
+      </div>
+
+      <!-- Stripe Payment Form (Default) -->
+      <div id="stripe-payment" class="payment-method active">
+        <div id="stripe-card-element" style="padding:16px;border:2px solid #e2e8f0;border-radius:10px;background:white;margin-bottom:16px;"></div>
+        
+        <!-- Digital Wallets -->
+        <div style="display:flex;gap:12px;margin-bottom:20px;">
+          <div id="apple-pay-button" style="flex:1;height:48px;border-radius:8px;background:#000;color:white;display:none;align-items:center;justify-content:center;cursor:pointer;">
+            <i class="fab fa-apple" style="margin-right:8px;"></i>Apple Pay
+          </div>
+          <div id="google-pay-button" style="flex:1;height:48px;border-radius:8px;background:#4285f4;color:white;display:none;align-items:center;justify-content:center;cursor:pointer;">
+            <i class="fab fa-google" style="margin-right:8px;"></i>Google Pay
+          </div>
+        </div>
+
+        <button id="stripe-submit" type="button" style="width:100%;padding:16px;background:linear-gradient(135deg,#667eea 0%, #764ba2 100%);color:white;border:none;border-radius:12px;font-size:1.1em;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 12px rgba(102,126,234,0.3);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(102,126,234,0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(102,126,234,0.3)';">
+          <span id="stripe-submit-text">Complete Payment</span>
+        </button>
+      </div>
+
+      <!-- PayPal Payment -->
+      <div id="paypal-payment" class="payment-method" style="display:none;">
+        <div id="paypal-button-container" style="min-height:48px;"></div>
       </div>
     </div>
-    <div style="margin-bottom:18px;">
-      <label for="coupon-input" style="font-size:0.98em;color:#444;">Coupon code:</label>
-      <div style="display:flex;gap:8px;margin-top:6px;">
-        <input id="coupon-input" type="text" placeholder="Enter coupon" style="flex:1;padding:8px 12px;border:1px solid #ccc;border-radius:6px;font-size:1em;">
-        <button id="apply-coupon" type="button" style="padding:8px 18px;background:#0070ba;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:1em;">Apply</button>
+
+    <!-- Free Unlock Button - MOVED OUTSIDE payment-section -->
+    <button id="unlock-free-btn" type="button" style="display:none;width:100%;padding:16px;background:linear-gradient(135deg,#48bb78 0%, #38a169 100%);color:white;border:none;border-radius:12px;font-size:1.1em;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 12px rgba(72,187,120,0.3);margin-top:20px;" onmouseover="this.style.transform='translateY(-1px)';" onmouseout="this.style.transform='translateY(0)';">
+      <i class="fa fa-unlock" style="margin-right:8px;"></i>Unlock Report Free
+    </button>
+
+    <div style="margin-top:20px;text-align:center;color:#6c757d;font-size:0.85em;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+        <i class="fa fa-shield-alt"></i>
+        <span>Secure payment powered by Stripe & PayPal</span>
       </div>
-      <div id="coupon-msg" style="font-size:0.97em;color:#c0392b;margin-top:6px;display:none;"></div>
-    </div>
-    <div id="paypal-or-free" style="margin-top:18px;text-align:center;">
-      <div id="paypal-button-container"></div>
-      <button id="unlock-free-btn" type="button" style="display:none;padding:12px 32px;font-size:1.1em;background:#27ae60;color:#fff;border:none;border-radius:6px;cursor:pointer;">
-        Unlock Report Free
-      </button>
-    </div>
-    <div style="margin-top:22px;text-align:center;color:#888;font-size:0.98em;">
-      Secure payment powered by PayPal
+      <div style="font-size:0.8em;opacity:0.8;">Your payment information is encrypted and secure</div>
     </div>
   </div>
 </div>
+
+<style>
+.payment-tab.active {
+  background: white !important;
+  color: #1a202c !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.payment-method {
+  display: none;
+}
+
+.payment-method.active {
+  display: block;
+}
+
+#stripe-card-element {
+  transition: border-color 0.2s;
+}
+
+#stripe-card-element:focus-within {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+}
+</style>
