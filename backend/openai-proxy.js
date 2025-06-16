@@ -31,10 +31,17 @@ const { generateAdvancedPrompt, generateSpecificActions } = require('./prompt.js
 const { focusCategories, getExpectedElementsForFocus, getFocusDebugInfo } = require('./categories.js');
 
 app.use(cors({ 
-  origin: ['https://landingfixv1-2.onrender.com', 'http://localhost:5500'],
-  credentials: true 
+  origin: [
+    'https://landingfixai.com',           // ✅ Aggiungi questo dominio
+    'https://landingfixv1-2.onrender.com', 
+    'http://localhost:5500',
+    'http://localhost:3000',
+    process.env.FRONTEND_URL
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
 
 app.get('/tools.json', (req, res) => {
   const allTools = [
