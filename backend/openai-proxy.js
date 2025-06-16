@@ -958,33 +958,48 @@ app.get('/api/stripe-public-key', (req, res) => {
   res.json({ publicKey: publicKey });
 });
 
+
 // --- ROUTE FOR STRIPE PAYMENT INTENT ---
 app.post('/api/create-payment-intent', async (req, res) => {
   try {
-    const { amount, currency } = req.body;
     const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
     
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return res.status(500).json({ error: 'Stripe secret key not configured' });
+    const { amount, currency, customerEmail, customerName, metadata } = req.body;
+    
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid amount' });
     }
-
-    // Create payment intent
+    
+    console.log(`Creating payment intent for ${customerEmail}: ${amount/100} ${currency?.toUpperCase() || 'EUR'}`);
+    
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount, // Amount in cents
+      amount: Math.round(amount), // Amount in cents
       currency: currency || 'eur',
+      customer_email: customerEmail,
       metadata: {
+        customer_name: customerName,
         service: 'LandingFix AI Report',
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+        ...metadata
+      },
+      automatic_payment_methods: {
+        enabled: true,
+      },
     });
 
+    console.log('Payment intent created:', paymentIntent.id);
+    
     res.json({
-      clientSecret: paymentIntent.client_secret
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id
     });
-
+    
   } catch (error) {
     console.error('Stripe payment intent creation failed:', error);
-    res.status(500).json({ error: 'Payment setup failed' });
+    res.status(500).json({ 
+      error: 'Payment intent creation failed',
+      message: error.message 
+    });
   }
 });
 
