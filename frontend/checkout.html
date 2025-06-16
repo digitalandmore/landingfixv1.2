@@ -71,40 +71,56 @@
       <div id="coupon-msg" style="font-size:0.9em;margin-top:8px;display:none;"></div>
     </div>
 
-    <!-- Billing Information Form -->
+      <!-- Billing Information Form -->
     <div id="billing-section" style="display:none;margin-bottom:24px;opacity:0;transition:all 0.5s ease-in-out;">
       <h3 style="font-size:1.1em;color:#1a202c;margin-bottom:16px;font-weight:600;">
         <i class="fa fa-user" style="margin-right:8px;color:#667eea;"></i>Billing Information
       </h3>
       
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;">
         <div>
           <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">First Name *</label>
-          <input id="billing-first-name" type="text" required style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+          <input id="billing-first-name" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
         </div>
         <div>
           <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Last Name *</label>
-          <input id="billing-last-name" type="text" required style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+          <input id="billing-last-name" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
         </div>
       </div>
       
-      <div style="margin-bottom:12px;">
+      <div style="margin-bottom:14px;">
         <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Email Address *</label>
-        <input id="billing-email" type="email" required style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+        <input id="billing-email" type="email" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
       </div>
       
-      <div style="margin-bottom:12px;">
+      <div style="margin-bottom:14px;">
         <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Company (Optional)</label>
-        <input id="billing-company" type="text" style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+        <input id="billing-company" type="text" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
       </div>
       
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div style="margin-bottom:14px;">
+        <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Address Line 1 *</label>
+        <input id="billing-address" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';" placeholder="Street address">
+      </div>
+      
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:14px;">
+        <div>
+          <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">City *</label>
+          <input id="billing-city" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+        </div>
+        <div>
+          <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">ZIP/Postal Code *</label>
+          <input id="billing-postal" type="text" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';" placeholder="12345">
+        </div>
+      </div>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;">
         <div>
           <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Country *</label>
-          <select id="billing-country" required style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;background:white;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+          <select id="billing-country" required style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;background:white;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
             <option value="">Select Country</option>
-            <option value="IT">Italy</option>
             <option value="US">United States</option>
+            <option value="IT">Italy</option>
             <option value="GB">United Kingdom</option>
             <option value="DE">Germany</option>
             <option value="FR">France</option>
@@ -112,12 +128,27 @@
             <option value="NL">Netherlands</option>
             <option value="CA">Canada</option>
             <option value="AU">Australia</option>
+            <option value="BE">Belgium</option>
+            <option value="CH">Switzerland</option>
+            <option value="AT">Austria</option>
+            <option value="SE">Sweden</option>
+            <option value="DK">Denmark</option>
+            <option value="NO">Norway</option>
+            <option value="FI">Finland</option>
+            <option value="PT">Portugal</option>
+            <option value="IE">Ireland</option>
+            <option value="LU">Luxembourg</option>
           </select>
         </div>
         <div>
-          <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">City</label>
-          <input id="billing-city" type="text" style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';">
+          <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">State/Province</label>
+          <input id="billing-state" type="text" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';" placeholder="Optional">
         </div>
+      </div>
+      
+      <div style="margin-bottom:14px;">
+        <label style="font-size:0.9em;color:#4a5568;font-weight:500;display:block;margin-bottom:6px;">Phone Number (Optional)</label>
+        <input id="billing-phone" type="tel" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95em;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#667eea';" onblur="this.style.borderColor='#e2e8f0';" placeholder="+1 234 567 8900">
       </div>
     </div>
 
@@ -139,16 +170,6 @@
       <div id="stripe-payment" class="payment-method active">
         <div id="stripe-card-element" style="padding:16px;border:2px solid #e2e8f0;border-radius:10px;background:white;margin-bottom:16px;"></div>
         
-        <!-- Digital Wallets -->
-        <div style="display:flex;gap:12px;margin-bottom:20px;">
-          <div id="apple-pay-button" style="flex:1;height:48px;border-radius:8px;background:#000;color:white;display:none;align-items:center;justify-content:center;cursor:pointer;">
-            <i class="fab fa-apple" style="margin-right:8px;"></i>Apple Pay
-          </div>
-          <div id="google-pay-button" style="flex:1;height:48px;border-radius:8px;background:#4285f4;color:white;display:none;align-items:center;justify-content:center;cursor:pointer;">
-            <i class="fab fa-google" style="margin-right:8px;"></i>Google Pay
-          </div>
-        </div>
-
         <button id="stripe-submit" type="button" style="width:100%;padding:16px;background:linear-gradient(135deg,#667eea 0%, #764ba2 100%);color:white;border:none;border-radius:12px;font-size:1.1em;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 12px rgba(102,126,234,0.3);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(102,126,234,0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(102,126,234,0.3)';">
           <span id="stripe-submit-text">Complete Payment</span>
         </button>
@@ -238,37 +259,26 @@
       <div id="payment-info" style="font-size: 0.9em; color: #4a5568;"></div>
     </div>
     
-    <div style="display: flex; gap: 12px; justify-content: center;">
-      <button id="download-report-btn" style="
+        <div style="display: flex; gap: 12px; justify-content: center;">
+      <button id="view-report-btn" style="
         background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
         border: none;
-        padding: 12px 24px;
-        border-radius: 10px;
+        padding: 16px 32px;
+        border-radius: 12px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s;
+        font-size: 1.1em;
       ">
-        <i class="fa fa-download" style="margin-right: 8px;"></i>Download Report
-      </button>
-      
-      <button id="continue-reading-btn" style="
-        background: #48bb78;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 10px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-      ">
-        <i class="fa fa-eye" style="margin-right: 8px;"></i>Continue Reading
+        <i class="fa fa-eye" style="margin-right: 10px;"></i>View Your Report
       </button>
     </div>
   </div>
 </div>
 
 <style>
+/* === PAYMENT TABS === */
 .payment-tab.active {
   background: white !important;
   color: #1a202c !important;
@@ -283,6 +293,7 @@
   display: block;
 }
 
+/* === STRIPE CARD ELEMENT === */
 #stripe-card-element {
   transition: border-color 0.2s;
 }
@@ -292,51 +303,27 @@
   box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
 }
 
-@keyframes successPop {
-  0% { transform: scale(0.5); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes checkmark {
-  0% { transform: scale(0); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
-
-#payment-success-modal button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-.payment-tab.active {
-  background: white !important;
-  color: #1a202c !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.payment-method {
-  display: none;
-}
-
-.payment-method.active {
-  display: block;
-}
-
-#stripe-card-element {
-  transition: border-color 0.2s;
-}
-
-#stripe-card-element:focus-within {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
-}
-
-/* ✅ ANIMAZIONI PER I CAMPI DI FATTURAZIONE */
+/* === BILLING SECTION === */
 #billing-section {
   transform: translateY(-20px);
   transition: all 0.5s ease-in-out;
 }
 
+/* Enhanced billing field styles */
+#billing-section input:focus,
+#billing-section select:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102,126,234,0.1) !important;
+  outline: none;
+}
+
+#billing-section input.error,
+#billing-section select.error {
+  border-color: #e53e3e !important;
+  box-shadow: 0 0 0 3px rgba(229,62,62,0.1) !important;
+}
+
+/* === ANIMATIONS === */
 @keyframes slideInFromTop {
   0% { transform: translateY(-20px); opacity: 0; }
   100% { transform: translateY(0); opacity: 1; }
@@ -364,8 +351,38 @@
   75% { transform: translateX(5px); }
 }
 
+@keyframes errorSlideIn {
+  0% { transform: translateY(-20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes errorSlideOut {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-20px); opacity: 0; }
+}
+
+/* === BUTTONS === */
 #payment-success-modal button:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 640px) {
+  #billing-section div[style*="grid-template-columns"] {
+    display: block !important;
+  }
+  
+  #billing-section div[style*="grid-template-columns"] > div {
+    margin-bottom: 14px;
+  }
+  
+  #billing-section div[style*="grid-template-columns"] > div:last-child {
+    margin-bottom: 0;
+  }
 }
 </style>

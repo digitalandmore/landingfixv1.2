@@ -52,14 +52,18 @@ function setupCheckout() {
     }, 5000);
   }
 
-  function getBillingData() {
+    function getBillingData() {
     return {
-      firstName: document.getElementById('billing-first-name').value.trim(),
-      lastName: document.getElementById('billing-last-name').value.trim(),
-      email: document.getElementById('billing-email').value.trim(),
-      company: document.getElementById('billing-company').value.trim(),
-      country: document.getElementById('billing-country').value,
-      city: document.getElementById('billing-city').value.trim()
+      firstName: document.getElementById('billing-first-name')?.value?.trim() || '',
+      lastName: document.getElementById('billing-last-name')?.value?.trim() || '',
+      email: document.getElementById('billing-email')?.value?.trim() || '',
+      company: document.getElementById('billing-company')?.value?.trim() || '',
+      address: document.getElementById('billing-address')?.value?.trim() || '',
+      city: document.getElementById('billing-city')?.value?.trim() || '',
+      postal: document.getElementById('billing-postal')?.value?.trim() || '',
+      country: document.getElementById('billing-country')?.value || '',
+      state: document.getElementById('billing-state')?.value?.trim() || '',
+      phone: document.getElementById('billing-phone')?.value?.trim() || ''
     };
   }
 
@@ -254,6 +258,9 @@ function validateBillingInfo() {
     { id: 'billing-first-name', label: 'First Name' },
     { id: 'billing-last-name', label: 'Last Name' },
     { id: 'billing-email', label: 'Email Address' },
+    { id: 'billing-address', label: 'Address' },
+    { id: 'billing-city', label: 'City' },
+    { id: 'billing-postal', label: 'ZIP/Postal Code' },
     { id: 'billing-country', label: 'Country' }
   ];
 
@@ -300,6 +307,17 @@ function validateBillingInfo() {
     emailField.style.borderColor = '#e53e3e';
     emailField.style.boxShadow = '0 0 0 3px rgba(229,62,62,0.1)';
     showError('Please enter a valid email address.');
+    return false;
+  }
+
+  // Check postal code format (basic validation)
+  const postalField = document.getElementById('billing-postal');
+  const postal = postalField?.value?.trim() || '';
+  if (postal && postal.length < 3) {
+    isValid = false;
+    postalField.style.borderColor = '#e53e3e';
+    postalField.style.boxShadow = '0 0 0 3px rgba(229,62,62,0.1)';
+    showError('Please enter a valid postal code.');
     return false;
   }
 
@@ -385,15 +403,21 @@ function validateBillingInfo() {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({
+                body: JSON.stringify({
           amount: Math.round(currentEur * 100),
           currency: 'eur',
           customerData: {
             email: billingData.email,
             name: `${billingData.firstName} ${billingData.lastName}`,
             company: billingData.company,
-            country: billingData.country,
-            city: billingData.city
+            phone: billingData.phone,
+            address: {
+              line1: billingData.address,
+              city: billingData.city,
+              postal_code: billingData.postal,
+              country: billingData.country,
+              state: billingData.state
+            }
           },
           metadata: {
             product: 'LandingFix AI Report',
@@ -402,7 +426,8 @@ function validateBillingInfo() {
             customer_last_name: billingData.lastName,
             customer_company: billingData.company,
             customer_country: billingData.country,
-            customer_city: billingData.city
+            customer_city: billingData.city,
+            customer_postal: billingData.postal
           }
         })
       });
@@ -415,14 +440,18 @@ function validateBillingInfo() {
 
       // Confirm payment with billing details
       const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
+                payment_method: {
           card: cardElement,
           billing_details: {
             name: `${billingData.firstName} ${billingData.lastName}`,
             email: billingData.email,
+            phone: billingData.phone || undefined,
             address: {
+              line1: billingData.address,
+              city: billingData.city,
+              postal_code: billingData.postal,
               country: billingData.country,
-              city: billingData.city
+              state: billingData.state || undefined
             }
           }
         }
@@ -510,17 +539,8 @@ function validateBillingInfo() {
     // Show modal
     modal.style.display = 'flex';
     
-    // Setup buttons
-    document.getElementById('download-report-btn').onclick = function() {
-      modal.style.display = 'none';
-      unlockFullReport();
-      // Trigger PDF download if available
-      if (typeof window.downloadPdfReport === 'function') {
-        setTimeout(() => window.downloadPdfReport(), 500);
-      }
-    };
-    
-    document.getElementById('continue-reading-btn').onclick = function() {
+        // Setup buttons
+    document.getElementById('view-report-btn').onclick = function() {
       modal.style.display = 'none';
       unlockFullReport();
     };
