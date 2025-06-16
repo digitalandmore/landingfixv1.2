@@ -1,15 +1,16 @@
-// Import required modules
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const nodemailer = require('nodemailer');
 const { JSDOM } = require('jsdom');
+const puppeteer = require('puppeteer-extra');
 const { Readability } = require('@mozilla/readability');
-
+const jsdom = require('jsdom');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const tools = require('./tools.js');
 
-// Import scoring and prompt modules
+// Import the new scoring module
 const {
   calculateDynamicBenchmark,
   calculateElementOptimization,
@@ -23,95 +24,45 @@ const {
   enforceConstraint
 } = require('./score.js');
 
+// Import the new prompting system
 const { generateAdvancedPrompt, generateSpecificActions } = require('./prompt.js');
+
+// Import categories from external file
 const { focusCategories, getExpectedElementsForFocus, getFocusDebugInfo } = require('./categories.js');
 
-// Initialize Express app
-const app = express();
+const app = express(); 
+app.use(cors({ origin: 'https://landingfixv1-2.onrender.com' }));
+app.use(express.json());
 
-// SIMPLIFIED: No Puppeteer - using only fetch and JSDOM
-console.log('🔄 Running in production mode without Puppeteer');
-console.log('📄 Using enhanced fetch + JSDOM for content extraction');
-console.log('📧 Email generation will use optimized HTML templates');
+app.get('/tools.json', (req, res) => {
+  const allTools = [
+    ...tools.abTesting,
+    ...tools.copywriting,
+    ...tools.testimonials,
+    ...tools.feedback
+  ];
+  res.json(allTools);
+});
 
-// ENHANCED: More comprehensive CORS configuration
-const allowedOrigins = [
-  'https://landingfixai.com',
-  'https://www.landingfixai.com',
-  'https://landingfixv1-2.onrender.com',
-  'http://localhost:5500',
-  'http://localhost:3000',
-  'http://127.0.0.1:5500',
-  process.env.FRONTEND_URL
-].filter(Boolean);
-
-app.use(cors({ 
-  origin: function(origin, callback) {
-    // Allow requests with no origin (mobile apps, etc.)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.warn(`🚫 CORS blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  maxAge: 86400 // 24 hours
-}));
-
-// ENHANCED: Middleware with better payload limits and security
-app.use(express.json({ 
-  limit: '100mb',
-  verify: (req, res, buf) => {
-    req.rawBody = buf;
+// Add tools endpoint
+app.get('/api/tools', (req, res) => {
+  try {
+    const tools = require('./tools');
+    res.json(tools);
+    console.log('Tools data served to frontend');
+  } catch (error) {
+    console.error('Error loading tools:', error);
+    res.status(500).json({ error: 'Failed to load tools data' });
   }
-}));
-app.use(express.urlencoded({ extended: true, limit: '100mb' }));
-
-// ENHANCED: Security and logging middleware
-app.use((req, res, next) => {
-  // Add security headers
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  
-  // Log requests with more detail
-  const timestamp = new Date().toISOString();
-  console.log(`${timestamp} - ${req.method} ${req.path} from ${req.headers.origin || 'unknown'}`);
-  
-  next();
 });
 
-// ENHANCED: Health monitoring endpoints
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    version: '1.2.0',
-    services: {
-      email: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS),
-      openai: !!process.env.OPENAI_API_KEY,
-      stripe: !!process.env.STRIPE_SECRET_KEY,
-      paypal: !!process.env.PAYPAL_CLIENT_ID
-    }
-  });
+// --- Puppeteer stealth initialization ---
+puppeteer.use(StealthPlugin());
+
+const PORT = process.env.PORT || 3002;
+app.listen(PORT, () => {
+  console.log(`OpenAI proxy server running on port ${PORT}`);
 });
-
-app.get('/api/status', (req, res) => {
-  res.json({
-    online: true,
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-
-
 
 // --- BENCHMARK CHECKLIST BY INDUSTRY ---
 // Maps each industry to a list of objective checklist items and their detection logic.
@@ -197,180 +148,167 @@ function normalizeFocusKey(focus) {
   return 'copywriting';
 }
 
-// ENHANCED: Advanced HTML fetching without Puppeteer
-async function fetchHtmlContent(url) {
-  const maxRetries = 3;
-  
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(`🔍 Enhanced fetch attempt ${attempt}/${maxRetries}: ${url}`);
-      
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
-      
-      const response = await fetch(url, {
-        headers: {
-          // ENHANCED: Comprehensive headers to simulate real browser
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-          'Sec-Fetch-Dest': 'document',
-          'Sec-Fetch-Mode': 'navigate',
-          'Sec-Fetch-Site': 'none',
-          'Upgrade-Insecure-Requests': '1',
-          'DNT': '1',
-          'Connection': 'keep-alive'
-        },
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeout);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const html = await response.text();
-      
-      console.log(`✅ Successfully fetched ${html.length} characters from ${url}`);
-      
-      return { 
-        html, 
-        css: '', // No CSS extraction without Puppeteer
-        error: null,
-        method: 'enhanced_fetch',
-        attempt,
-        contentLength: html.length
-      };
-      
-    } catch (error) {
-      console.error(`❌ Fetch attempt ${attempt} failed:`, error.message);
-      
-      if (attempt === maxRetries) {
-        return { 
-          html: '', 
-          css: '', 
-          error: error.message,
-          method: 'failed',
-          attempt
-        };
-      }
-      
-      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
-    }
-  }
-}
-
-// ENHANCED: Comprehensive content extraction using JSDOM only
-async function extractComprehensiveContent(url) {
-  try {
-    console.log(`🔍 Extracting comprehensive content from: ${url}`);
-    
-    const fetchResult = await fetchHtmlContent(url);
-    
-    if (!fetchResult.html) {
-      throw new Error(`Failed to fetch content: ${fetchResult.error}`);
-    }
-    
-    const dom = new JSDOM(fetchResult.html, { 
-      url,
-      pretendToBeVisual: true,
-      resources: 'usable'
-    });
-    
-    const document = dom.window.document;
-    
-    // ENHANCED: Remove unwanted elements
-    const elementsToRemove = [
-      'script', 'style', 'noscript', 'iframe', 'object', 'embed', 
-      'svg', 'canvas', 'audio', 'video', 'link[rel="stylesheet"]'
-    ];
-    
-    elementsToRemove.forEach(selector => {
-      const elements = document.querySelectorAll(selector);
-      elements.forEach(el => el.remove());
-    });
-    
-    // ENHANCED: Extract structured content
-    const title = document.title || '';
-    const metaDescription = document.querySelector('meta[name="description"]')?.content || '';
-    
-    // Extract headings with hierarchy
-    const headings = {
-      h1: Array.from(document.querySelectorAll('h1')).map(el => el.textContent?.trim()).filter(Boolean),
-      h2: Array.from(document.querySelectorAll('h2')).map(el => el.textContent?.trim()).filter(Boolean),
-      h3: Array.from(document.querySelectorAll('h3')).map(el => el.textContent?.trim()).filter(Boolean)
-    };
-    
-    // Get main content using Readability
-    let mainContent = '';
-    try {
-      const reader = new Readability(document.cloneNode(true));
-      const article = reader.parse();
-      
-      if (article) {
-        mainContent = article.textContent || '';
-      }
-    } catch (readabilityError) {
-      console.warn('Readability parsing failed:', readabilityError.message);
-      mainContent = document.body?.textContent || '';
-    }
-    
-    // Get visible text - FIXED: Remove jsdom reference
-    const visibleText = document.body?.textContent || '';
-    
-    console.log('📊 Content extraction summary:', {
-      title: title.length,
-      metaDescription: metaDescription.length,
-      headings: Object.values(headings).flat().length,
-      mainContentWords: mainContent.split(/\s+/).length,
-      method: fetchResult.method
-    });
-    
-    return {
-      title: title.slice(0, 200),
-      metaDescription: metaDescription.slice(0, 300),
-      headings,
-      visibleText: visibleText.slice(0, 8000),
-      mainContent: mainContent.slice(0, 4000),
-      fetchMethod: fetchResult.method
-    };
-    
-  } catch (error) {
-    console.error('Error extracting comprehensive content:', error);
-    
-    return {
-      title: '',
-      metaDescription: '',
-      headings: { h1: [], h2: [], h3: [] },
-      visibleText: '',
-      mainContent: '',
-      fetchMethod: 'failed',
-      error: error.message
-    };
-  }
-}
-
-// UPDATED: Use new fetchHtmlContent instead of fetchRenderedHtmlAndCss
+// Utility function: fetches rendered HTML and CSS using Puppeteer Stealth
 async function fetchRenderedHtmlAndCss(url) {
-  console.log('🔄 Using enhanced fetch method (no Puppeteer)');
-  return await fetchHtmlContent(url);
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      headless: "new",
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-blink-features=AutomationControlled'
+      ]
+    });
+    const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    await page.setJavaScriptEnabled(true);
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.waitForTimeout(3500);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(1200);
+
+    const html = await page.content();
+
+    // Get all loaded CSS (inline and linked)
+    const cssHandles = await page.$$eval('link[rel="stylesheet"]', links =>
+      links.map(link => link.href)
+    );
+    let cssContent = '';
+    for (const href of cssHandles) {
+      try {
+        const response = await page.goto(href, { timeout: 7000 });
+        if (response && response.ok()) {
+          const css = await response.text();
+          cssContent += `/* ${href} */\n${css}\n\n`;
+        }
+      } catch (e) {}
+    }
+    const inlineCss = await page.$$eval('style', styles =>
+      styles.map(style => style.innerHTML).join('\n')
+    );
+    cssContent += inlineCss;
+
+    await browser.close();
+
+    if (!/<body[^>]*>[\s\S]{100,}<\/body>/i.test(html)) {
+      throw new Error('Body too short or empty');
+    }
+
+    return { html, css: cssContent };
+  } catch (err) {
+    if (browser) await browser.close();
+    try {
+      const res = await fetch(url, { timeout: 15000 });
+      if (!res.ok) throw new Error('Fetch failed');
+      let html = await res.text();
+      if (html.length > 10000) html = html.slice(0, 10000);
+      let cssContent = '';
+      try {
+        const dom = new JSDOM(html, { url });
+        const document = dom.window.document;
+        const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
+        for (const link of links) {
+          let href = link.href;
+          if (!href.startsWith('http')) {
+            try {
+              const urlObj = new URL(href, url);
+              href = urlObj.href;
+            } catch (e) { continue; }
+          }
+          try {
+            const cssRes = await fetch(href, { timeout: 7000 });
+            if (cssRes.ok) {
+              const css = await cssRes.text();
+              cssContent += `/* ${href} */\n${css}\n\n`;
+            }
+          } catch (e) { }
+        }
+        cssContent += Array.from(document.querySelectorAll('style')).map(s => s.textContent).join('\n');
+      } catch (e) { }
+      return { html, css: cssContent };
+    } catch (e2) {
+      return { html: '[ERROR: Unable to fetch landing page HTML]', css: '' };
+    }
+  }
 }
 
-// UPDATED: Use extractComprehensiveContent instead of extractVisibleContent
 async function extractVisibleContent(url) {
-  const comprehensiveData = await extractComprehensiveContent(url);
-  
+  const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+  const page = await browser.newPage();
+  await page.goto(url, { waitUntil: 'networkidle2', timeout: 45000 });
+
+  // Simulate user interaction: scroll, click, wait for JS
+  await page.evaluate(async () => {
+    await new Promise(resolve => {
+      let totalHeight = 0;
+      const distance = 300;
+      const timer = setInterval(() => {
+        window.scrollBy(0, distance);
+        totalHeight += distance;
+        if (totalHeight >= document.body.scrollHeight) {
+          clearInterval(timer);
+          resolve();
+        }
+      }, 200);
+    });
+  });
+  // Try to click common expanders (optional, non-blocking)
+  await page.evaluate(() => {
+    const selectors = ['button', '[role=button]', '.expand', '.show-more', '.read-more'];
+    selectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(btn => {
+        if (btn && btn.offsetParent !== null) btn.click();
+      });
+    });
+  });
+  // Replace page.waitForTimeout(1000) with a portable delay
+  await new Promise(r => setTimeout(r, 1000));
+
+  // Extract visible text only
+  const visibleText = await page.evaluate(() => {
+    function getVisibleText(node) {
+      if (!node) return '';
+      if (node.nodeType === Node.TEXT_NODE && node.parentElement && window.getComputedStyle(node.parentElement).display !== 'none' && node.textContent.trim()) {
+        return node.textContent.trim();
+      }
+      if (node.nodeType === Node.ELEMENT_NODE && window.getComputedStyle(node).display !== 'none' && window.getComputedStyle(node).visibility !== 'hidden') {
+        let text = '';
+        for (const child of node.childNodes) {
+          text += getVisibleText(child) + ' ';
+        }
+        return text.trim();
+      }
+      return '';
+    }
+    return getVisibleText(document.body);
+  });
+
+  // Extract meta tags and structured data
+  const meta = await page.evaluate(() => {
+    const metas = Array.from(document.querySelectorAll('meta')).map(m => ({
+      name: m.getAttribute('name') || m.getAttribute('property'),
+      content: m.getAttribute('content')
+    })).filter(m => m.name && m.content);
+    const ldJson = Array.from(document.querySelectorAll('script[type="application/ld+json"]')).map(s => s.innerText);
+    return { metas, ldJson };
+  });
+
+  // Use Mozilla Readability for main content extraction
+  const html = await page.content();
+  const dom = new jsdom.JSDOM(html, { url });
+  let mainContent = '';
+  try {
+    const reader = new Readability(dom.window.document);
+    const article = reader.parse();
+    if (article && article.textContent) mainContent = article.textContent;
+  } catch (e) { mainContent = ''; }
+
+  await browser.close();
   return {
-    title: comprehensiveData.title,
-    metaDescription: comprehensiveData.metaDescription,
-    h1Elements: comprehensiveData.headings.h1,
-    h2Elements: comprehensiveData.headings.h2,
-    visibleText: comprehensiveData.visibleText,
-    mainContent: comprehensiveData.mainContent
+    visibleText,
+    meta,
+    mainContent
   };
 }
 
@@ -438,8 +376,8 @@ app.post('/api/generate-report', async (req, res) => {
       });
     } catch (contentError) {
       console.warn('Content extraction failed, using HTML fallback:', contentError.message);
-      // FIXED: Use JSDOM correctly
-      const dom = new JSDOM(landingHtml, { url });
+      // Fallback to HTML text extraction
+      const dom = new jsdom.JSDOM(landingHtml, { url });
       contentData.visibleText = dom.window.document.body?.textContent?.slice(0, 4000) || '';
       contentData.mainContent = landingHtml.slice(0, 2000);
     }
@@ -761,262 +699,187 @@ app.post('/api/generate-report', async (req, res) => {
 
 // --- SEND REPORT VIA EMAIL ---
 app.post('/api/send-report', async (req, res) => {
+  console.log('📧 /api/send-report endpoint hit');
+  console.log('📧 Request headers:', req.headers);
+  console.log('📧 Request body keys:', Object.keys(req.body || {}));
+  
+  const { url, htmlTemplate, email, name, company, isPdfEmail, pdfContent } = req.body;
+
   try {
-    console.log('📧 Enhanced email generation request received');
-    
-    const { url, name, company, email, isPdfEmail, pdfContent, htmlTemplate } = req.body;
-    
-    // Validation
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Valid email address is required'
-      });
+    console.log('📧 Email request received:', { 
+      url, 
+      email, 
+      name, 
+      company, 
+      hasTemplate: !!htmlTemplate, 
+      isPdfEmail: !!isPdfEmail,
+      hasPdfContent: !!pdfContent,
+      bodySize: JSON.stringify(req.body).length
+    });
+
+    // Validate required fields
+    if (!email || !url) {
+      console.error('📧 Missing required fields:', { email: !!email, url: !!url });
+      return res.status(400).json({ error: 'Missing required fields: email and url' });
     }
-    
-    if (!url || !/^https?:\/\/.+/.test(url)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Valid website URL is required'
-      });
-    }
-    
-    console.log('📧 Processing request:', { email, url, hasContent: !!pdfContent });
-    
-    // Check email configuration
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.error('📧 Missing email configuration');
-      return res.status(500).json({
-        success: false,
-        error: 'Email service not configured'
-      });
-    }
-    
-    // ENHANCED: Create transporter with correct method name
-    const transporter = nodemailer.createTransporter({
-      service: 'gmail',
+
+    // FIXED: Correct method name - createTransport not createTransporter
+    console.log('📧 Creating email transporter...');
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: parseInt(process.env.EMAIL_PORT, 10),
+      secure: process.env.EMAIL_SECURE === 'true',
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-      },
-      tls: {
-        rejectUnauthorized: false
       }
     });
-    
-    // Verify transporter
-    try {
-      await transporter.verify();
-      console.log('📧 Email service verified successfully');
-    } catch (verifyError) {
-      console.error('📧 Email verification failed:', verifyError.message);
-      return res.status(500).json({
-        success: false,
-        error: 'Email service verification failed'
-      });
-    }
-    
-    // Generate email content
-    const now = new Date();
-    const timestamp = now.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    
-    const emailSubject = `🚀 Your LandingFix AI Report - ${new URL(url).hostname}`;
-    
-    // Create comprehensive HTML email
-    const enhancedHtmlContent = generateComprehensiveEmailReport({
-      url, name, company, email, timestamp, pdfContent, htmlTemplate
-    });
-    
-    const mailOptions = {
+
+    console.log('📧 Transporter created successfully');
+
+    // Generate subject based on email type
+    const subject = isPdfEmail ? 
+      "📄 Your LandingFix AI PDF Report is Ready!" : 
+      "🚀 Your LandingFix AI Report is Ready!";
+
+    // Prepare email options
+    const emailOptions = {
       from: `"LandingFix AI" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: emailSubject,
-      html: enhancedHtmlContent,
-      headers: {
-        'X-Mailer': 'LandingFix AI v1.2',
-        'X-Priority': '1'
-      }
+      subject: subject,
+      html: htmlTemplate || '<p>Your LandingFix AI report is ready!</p>'
     };
-    
-    // Send email with retry logic
-    const maxRetries = 3;
-    let emailSent = false;
-    
-    for (let attempt = 1; attempt <= maxRetries && !emailSent; attempt++) {
+
+    // ENHANCED: Add PDF attachment if this is a PDF email
+    if (isPdfEmail && pdfContent) {
+      console.log('📎 Adding PDF attachment...');
+      console.log('📎 PDF content length:', pdfContent.length);
+      
+      // Use puppeteer to convert HTML to PDF
+      let browser;
+      
       try {
-        console.log(`📧 Sending email attempt ${attempt}/${maxRetries}`);
+        console.log('📎 Launching puppeteer browser...');
+        browser = await puppeteer.launch({ 
+          headless: true, 
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] 
+        });
         
-        await transporter.sendMail(mailOptions);
-        emailSent = true;
-        console.log('📧 Email sent successfully to:', email);
+        console.log('📎 Creating new page...');
+        const page = await browser.newPage();
         
-      } catch (emailError) {
-        console.error(`📧 Email attempt ${attempt} failed:`, emailError.message);
+        console.log('📎 Setting page content...');
+        // Set content and generate PDF with enhanced styling
+        await page.setContent(pdfContent, { waitUntil: 'networkidle0', timeout: 30000 });
         
-        if (attempt === maxRetries) {
-          throw emailError;
+        console.log('📎 Adding PDF styling...');
+        // Add CSS for better PDF formatting
+        await page.addStyleTag({
+          content: `
+            @media print {
+              body { font-family: Arial, sans-serif; margin: 0; color: #000; }
+              .pdf-page-break { page-break-before: always; }
+              .pdf-no-break { page-break-inside: avoid; }
+              h1, h2, h3 { page-break-after: avoid; color: #1a202c; }
+              .pdf-score-card { margin-bottom: 20px; page-break-inside: avoid; }
+              .report-category { page-break-inside: avoid; margin-bottom: 30px; }
+              .report-element { page-break-inside: avoid; margin-bottom: 25px; }
+              .element-block { page-break-inside: avoid; }
+              /* Remove background colors for better PDF printing */
+              * { 
+                background: white !important; 
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+              .pdf-score-card { 
+                border: 2px solid #333 !important; 
+                background: #f5f5f5 !important;
+              }
+            }
+          `
+        });
+        
+        console.log('📎 Generating PDF...');
+        const pdfBuffer = await page.pdf({
+          format: 'A4',
+          printBackground: true,
+          preferCSSPageSize: true,
+          margin: {
+            top: '20px',
+            right: '20px',
+            bottom: '20px',
+            left: '20px'
+          },
+          displayHeaderFooter: true,
+          headerTemplate: '<div style="font-size:10px;width:100%;text-align:center;color:#666;">LandingFix AI - Professional Landing Page Analysis</div>',
+          footerTemplate: '<div style="font-size:10px;width:100%;text-align:center;color:#666;">Page <span class="pageNumber"></span> of <span class="totalPages"></span> | Generated by LandingFix AI</div>',
+          timeout: 30000
+        });
+        
+        await browser.close();
+        console.log('📎 PDF generated successfully, size:', pdfBuffer.length);
+        
+        // Add PDF as attachment
+        const timestamp = new Date().toISOString().split('T')[0];
+        const urlDomain = url.replace(/^https?:\/\//, '').replace(/[^a-zA-Z0-9]/g, '-').slice(0, 20);
+        const filename = `LandingFix-AI-Report-${urlDomain}-${timestamp}.pdf`;
+        
+        emailOptions.attachments = [{
+          filename: filename,
+          content: pdfBuffer,
+          contentType: 'application/pdf'
+        }];
+        
+        console.log(`📎 PDF attachment created: ${filename} (${Math.round(pdfBuffer.length / 1024)}KB)`);
+        
+      } catch (pdfError) {
+        console.error('❌ PDF generation failed:', {
+          error: pdfError.message,
+          stack: pdfError.stack,
+          name: pdfError.name
+        });
+        if (browser) {
+          try {
+            await browser.close();
+          } catch (closeError) {
+            console.error('Error closing browser:', closeError);
+          }
         }
-        
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        // Return error instead of continuing without attachment
+        return res.status(500).json({ 
+          success: false,
+          error: 'PDF generation failed: ' + pdfError.message 
+        });
       }
     }
-    
-    return res.json({
-      success: true,
-      message: 'Report sent successfully via email (HTML format)',
-      timestamp: timestamp,
-      method: 'comprehensive_html_email'
+
+    console.log('📧 Sending email...');
+    console.log('📧 Email options:', {
+      from: emailOptions.from,
+      to: emailOptions.to,
+      subject: emailOptions.subject,
+      hasHtml: !!emailOptions.html,
+      hasAttachments: !!emailOptions.attachments,
+      attachmentCount: emailOptions.attachments?.length || 0
     });
+
+    await transporter.sendMail(emailOptions);
+
+    console.log('✅ Email sent successfully to:', email);
+    res.json({ success: true });
     
-  } catch (error) {
-    console.error('📧 Email sending error:', error.message);
-    
-    let errorMessage = 'Failed to send report email';
-    
-    if (error.message.includes('authentication')) {
-      errorMessage = 'Email authentication error';
-    } else if (error.message.includes('ENOTFOUND')) {
-      errorMessage = 'Email server connection error';
-    }
-    
-    return res.status(500).json({
+  } catch (err) {
+    console.error("❌ Email error:", {
+      error: err.message,
+      stack: err.stack,
+      name: err.name
+    });
+    res.status(500).json({ 
       success: false,
-      error: errorMessage
+      error: 'Email send failed: ' + err.message 
     });
   }
 });
-
-// ENHANCED: Generate comprehensive email with embedded report
-function generateComprehensiveEmailReport({ url, name, company, email, timestamp, pdfContent, htmlTemplate }) {
-  try {
-    const domain = new URL(url).hostname;
-    
-    // Use provided template or generate comprehensive one
-    if (htmlTemplate && htmlTemplate.length > 1000) {
-      return htmlTemplate;
-    }
-    
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Your LandingFix AI Analysis Report</title>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background: #f8fafc; }
-          .container { max-width: 800px; margin: 0 auto; background: white; }
-          .header { background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 40px 20px; text-align: center; }
-          .header h1 { font-size: 28px; margin-bottom: 10px; }
-          .content { padding: 30px; }
-          .info-box { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
-          .report-section { margin: 30px 0; padding: 20px; border: 1px solid #dee2e6; border-radius: 8px; }
-          .cta-button { display: inline-block; background: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; margin: 20px 0; }
-          .footer { background: #2d3748; color: #a0aec0; padding: 20px; text-align: center; }
-          @media (max-width: 600px) { .container { margin: 0; } .content { padding: 20px; } }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <!-- Header -->
-          <div class="header">
-            <h1>🚀 Your LandingFix AI Analysis Report</h1>
-            <p>Complete optimization insights for ${domain}</p>
-          </div>
-          
-          <!-- Content -->
-          <div class="content">
-            <!-- Report Info -->
-            <div class="info-box">
-              <h3>Report Details</h3>
-              <p><strong>Website:</strong> ${url}</p>
-              <p><strong>Generated for:</strong> ${name || 'LandingFix AI User'}</p>
-              ${company ? `<p><strong>Company:</strong> ${company}</p>` : ''}
-              <p><strong>Date:</strong> ${timestamp}</p>
-              <p><strong>Email:</strong> ${email}</p>
-            </div>
-            
-            <!-- Key Benefits -->
-            <div class="report-section">
-              <h3>📊 What's Included in Your Analysis</h3>
-              <ul style="padding-left: 20px; margin: 15px 0;">
-                <li>Comprehensive landing page performance analysis</li>
-                <li>Specific optimization recommendations by category</li>
-                <li>Implementation timelines and priorities</li>
-                <li>Industry-specific best practices</li>
-                <li>Actionable steps to improve conversions</li>
-                <li>Professional insights from AI-powered analysis</li>
-              </ul>
-            </div>
-            
-            ${pdfContent ? `
-            <!-- Report Content -->
-            <div class="report-section">
-              <h3>📋 Your Complete Analysis</h3>
-              <div style="border: 2px solid #007bff; border-radius: 8px; padding: 20px; background: #f8f9ff;">
-                ${pdfContent}
-              </div>
-            </div>
-            ` : ''}
-            
-            <!-- Implementation Guide -->
-            <div class="report-section">
-              <h3>🎯 Implementation Roadmap</h3>
-              <div style="margin: 20px 0;">
-                <div style="padding: 15px; background: #e8f5e8; border-radius: 6px; margin-bottom: 15px;">
-                  <strong>Phase 1: Quick Wins (Week 1-2)</strong>
-                  <p>Implement high-impact, low-effort improvements to see immediate results.</p>
-                </div>
-                <div style="padding: 15px; background: #fff3cd; border-radius: 6px; margin-bottom: 15px;">
-                  <strong>Phase 2: Strategic Changes (Week 3-6)</strong>
-                  <p>Execute major optimizations that require planning and testing.</p>
-                </div>
-                <div style="padding: 15px; background: #d4edda; border-radius: 6px;">
-                  <strong>Phase 3: Continuous Optimization (Ongoing)</strong>
-                  <p>Regular testing, monitoring, and refinement of all improvements.</p>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Next Steps -->
-            <div class="report-section" style="background: #f0f8ff; border-color: #007bff;">
-              <h3>🚀 Ready to Optimize Your Landing Page?</h3>
-              <p>Use this analysis to improve your conversion rates and grow your business.</p>
-              <a href="https://landingfixai.com" class="cta-button">Get Another Analysis</a>
-            </div>
-          </div>
-          
-          <!-- Footer -->
-          <div class="footer">
-            <p>Thank you for using LandingFix AI!</p>
-            <p style="margin-top: 10px;">
-              <a href="https://landingfixai.com" style="color: #667eea;">Visit our website</a> | 
-              <a href="mailto:support@landingfixai.com" style="color: #667eea;">Contact Support</a>
-            </p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-  } catch (error) {
-    console.error('Error generating email template:', error);
-    return `
-      <html><body>
-        <h1>LandingFix AI Report</h1>
-        <p>Your analysis report is ready!</p>
-        <p>Website: ${url}</p>
-        <p>Generated on: ${timestamp}</p>
-      </body></html>
-    `;
-  }
-}
 
 // --- TEST ROUTE ---
 // Simple health check endpoint for API status.
@@ -1724,39 +1587,3 @@ function enhanceActionsWithTools(actions, element, industry) {
     return enhanced;
   });
 }
-
-const port = process.env.PORT || 10000;
-
-app.listen(port, '0.0.0.0', () => {
-  console.log(`🚀 LandingFix AI Server v1.2 running on port ${port}`);
-  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🤖 Services status:`);
-  console.log(`   - Content Fetching: ✅ Enhanced Fetch + JSDOM`);
-  console.log(`   - Email Reports: ✅ HTML Email Templates`);
-  console.log(`   - Email: ${process.env.EMAIL_USER ? '✅ Configured' : '❌ Missing'}`);
-  console.log(`   - OpenAI: ${process.env.OPENAI_API_KEY ? '✅ Configured' : '❌ Missing'}`);
-  console.log(`📊 Health check: http://localhost:${port}/health`);
-}).on('error', (error) => {
-  console.error('🚨 Server startup error:', error);
-  process.exit(1);
-});
-
-// ENHANCED: Graceful shutdown handling
-process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM received, shutting down gracefully');
-  process.exit(0);
-});
-
-process.on('SIGINT', () => {
-  console.log('🛑 SIGINT received, shutting down gracefully');
-  process.exit(0);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('🚨 Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-process.on('uncaughtException', (error) => {
-  console.error('🚨 Uncaught Exception:', error);
-  process.exit(1);
-});
