@@ -962,7 +962,20 @@ app.get('/api/stripe-public-key', (req, res) => {
 // --- ROUTE FOR STRIPE PAYMENT INTENT ---
 app.post('/api/create-payment-intent', async (req, res) => {
   try {
-    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    let stripe;
+    try {
+      stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    } catch (stripeError) {
+      console.log('Trying alternative Stripe path...');
+      try {
+        const stripePath = require.resolve('stripe');
+        console.log('Stripe found at:', stripePath);
+        stripe = require(stripePath)(process.env.STRIPE_SECRET_KEY);
+      } catch (altError) {
+        console.error('Stripe not found in any path:', altError);
+        throw new Error('Stripe module not available');
+      }
+    }
     
     const { amount, currency, customerEmail, customerName, metadata } = req.body;
     
@@ -973,7 +986,7 @@ app.post('/api/create-payment-intent', async (req, res) => {
     console.log(`Creating payment intent for ${customerEmail}: ${amount/100} ${currency?.toUpperCase() || 'EUR'}`);
     
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount), // Amount in cents
+      amount: Math.round(amount),
       currency: currency || 'eur',
       customer_email: customerEmail,
       metadata: {
