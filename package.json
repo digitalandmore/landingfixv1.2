@@ -1,33 +1,80 @@
 {
   "name": "landingfix-ai-backend",
   "version": "1.2.0",
-  "description": "LandingFix AI Backend Server",
+  "description": "LandingFix AI Backend Server - Professional Landing Page Analysis Platform",
   "main": "backend/openai-proxy.js",
   "scripts": {
     "start": "node backend/openai-proxy.js",
-    "dev": "node backend/openai-proxy.js"
+    "dev": "nodemon backend/openai-proxy.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "echo \"No build step required for Node.js backend\"",
+    "postinstall": "echo \"Dependencies installed successfully\"",
+    "lint": "echo \"Linting not configured\"",
+    "production": "NODE_ENV=production node backend/openai-proxy.js"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "node-fetch": "^3.3.2",
-    "nodemailer": "^6.9.4",
+    "nodemailer": "^6.9.7",
     "jsdom": "^22.1.0",
     "@mozilla/readability": "^0.4.4",
-    "stripe": "^12.18.0",
-    "paypal-rest-sdk": "^1.8.1"
+    "stripe": "^13.11.0",
+    "paypal-rest-sdk": "^1.8.1",
+    "puppeteer-core": "^21.5.2",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  },
+  "optionalDependencies": {
+    "puppeteer": "^21.5.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/landingfix-ai.git"
+  },
+  "homepage": "https://landingfixai.com",
+  "bugs": {
+    "url": "https://github.com/your-username/landingfix-ai/issues"
+  },
   "keywords": [
     "landing-page",
     "optimization",
     "ai",
-    "analysis"
+    "analysis",
+    "conversion-rate",
+    "ux-ui",
+    "copywriting",
+    "seo",
+    "mobile-optimization",
+    "cta-optimization",
+    "web-analytics",
+    "business-intelligence"
   ],
-  "author": "LandingFix AI",
-  "license": "ISC"
+  "author": {
+    "name": "LandingFix AI",
+    "email": "support@landingfixai.com",
+    "url": "https://landingfixai.com"
+  },
+  "license": "ISC",
+  "private": true,
+  "config": {
+    "unsafe-perm": true
+  },
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
 }

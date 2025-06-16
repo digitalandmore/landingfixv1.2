@@ -8,22 +8,27 @@ const { JSDOM } = require('jsdom');
 const { Readability } = require('@mozilla/readability');
 const jsdom = require('jsdom');
 
-// DISABLED PUPPETEER FOR RENDER DEPLOYMENT
-const USE_PUPPETEER = false;
-
-// FIXED: Only import puppeteer if needed to avoid errors
+// ENHANCED: Conditional puppeteer loading with better error handling
+const USE_PUPPETEER = process.env.USE_PUPPETEER !== 'false';
 let puppeteer = null;
 let StealthPlugin = null;
 
+// ENHANCED: Try to load puppeteer with graceful fallback
 if (USE_PUPPETEER) {
   try {
-    puppeteer = require('puppeteer');
+    const puppeteerCore = require('puppeteer-core');
     const puppeteerExtra = require('puppeteer-extra');
     StealthPlugin = require('puppeteer-extra-plugin-stealth');
-    puppeteerExtra.use(StealthPlugin());
+    
+    if (StealthPlugin) {
+      puppeteerExtra.use(StealthPlugin());
+    }
+    
     puppeteer = puppeteerExtra;
+    console.log('✅ Puppeteer loaded successfully');
   } catch (error) {
-    console.warn('⚠️ Puppeteer not available, using basic HTML fetch only');
+    console.warn('⚠️ Puppeteer not available:', error.message);
+    console.warn('📄 PDF generation will use HTML-to-email fallback');
   }
 }
 
@@ -46,32 +51,85 @@ const {
 const { generateAdvancedPrompt, generateSpecificActions } = require('./prompt.js');
 const { focusCategories, getExpectedElementsForFocus, getFocusDebugInfo } = require('./categories.js');
 
-// Initialize Express app - MUST be declared before using app
+// Initialize Express app
 const app = express();
 
-// Configure CORS for production deployment on Render
+// ENHANCED: More comprehensive CORS configuration
+const allowedOrigins = [
+  'https://landingfixai.com',
+  'https://www.landingfixai.com',
+  'https://landingfixv1-2.onrender.com',
+  'http://localhost:5500',
+  'http://localhost:3000',
+  'http://127.0.0.1:5500',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({ 
-  origin: [
-    'https://landingfixai.com',              // Production frontend domain
-    'https://landingfixv1-2.onrender.com',   // Render backend domain
-    'http://localhost:5500',                 // Local development
-    'http://localhost:3000',                 // Local development alternative
-    process.env.FRONTEND_URL                 // Environment variable for flexibility
-  ],
-  credentials: true,                         // Allow cookies and auth headers
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],  // Allowed HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization']       // Allowed request headers
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.warn(`🚫 CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  maxAge: 86400 // 24 hours
 }));
 
-// Configure Express middleware for JSON parsing with large payload support
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// ENHANCED: Middleware with better payload limits and security
+app.use(express.json({ 
+  limit: '100mb',
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
-// Add debug middleware to log CORS requests
+// ENHANCED: Security and logging middleware
 app.use((req, res, next) => {
-  console.log(`🌐 Request from origin: ${req.headers.origin}`);
-  console.log(`🌐 Method: ${req.method}`);
+  // Add security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  
+  // Log requests with more detail
+  const timestamp = new Date().toISOString();
+  console.log(`${timestamp} - ${req.method} ${req.path} from ${req.headers.origin || 'unknown'}`);
+  
   next();
+});
+
+// ENHANCED: Health monitoring endpoints
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: '1.2.0',
+    services: {
+      puppeteer: !!puppeteer,
+      email: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS),
+      openai: !!process.env.OPENAI_API_KEY,
+      stripe: !!process.env.STRIPE_SECRET_KEY,
+      paypal: !!process.env.PAYPAL_CLIENT_ID
+    }
+  });
+});
+
+app.get('/api/status', (req, res) => {
+  res.json({
+    online: true,
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 
@@ -162,128 +220,162 @@ function normalizeFocusKey(focus) {
 
 // Utility function: fetches rendered HTML and CSS using Puppeteer Stealth
 async function fetchRenderedHtmlAndCss(url) {
-  let browser;
+  const maxRetries = 2;
+  let attempt = 0;
   
-  try {
-    console.log(`🔍 Fetching rendered content for: ${url}`);
+  while (attempt < maxRetries) {
+    attempt++;
     
-    // Check if Puppeteer should be used (disabled in production for Render compatibility)
-    if (!USE_PUPPETEER) {
-      console.log('🔄 Using basic HTML fetch (Puppeteer disabled in production)');
-      return await fetchBasicHtml(url);
-    }
-    
-    // Puppeteer configuration optimized for Render deployment
-    const browserOptions = {
-      headless: "new",                       // Use new headless mode
-      args: [
-        '--no-sandbox',                      // Required for Render
-        '--disable-setuid-sandbox',          // Required for Render
-        '--disable-dev-shm-usage',           // Prevents /dev/shm issues
-        '--disable-extensions',              // Reduce memory usage
-        '--disable-gpu',                     // Disable GPU acceleration
-        '--single-process',                  // Run in single process
-        '--no-zygote',                       // Disable zygote process
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding'
-      ],
-      timeout: 30000                         // 30 second timeout
-    };
-
-    // Launch browser with production-safe configuration
-    browser = await puppeteer.launch(browserOptions);
-    const page = await browser.newPage();
-    
-    // Set viewport and user agent
-    await page.setViewport({ width: 1200, height: 800 });
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
-    
-    // Navigate to URL with timeout
-    await page.goto(url, { 
-      waitUntil: 'networkidle2', 
-      timeout: 30000 
-    });
-    
-    // Wait for content to load
-    await page.waitForTimeout(3000);
-    
-    // Extract HTML content
-    const html = await page.content();
-    
-    // Extract CSS (simplified for production)
-    const css = await page.evaluate(() => {
-      const styles = Array.from(document.styleSheets);
-      return styles.map(sheet => {
-        try {
-          return Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
-        } catch (e) {
-          return '';
-        }
-      }).join('\n');
-    });
-    
-    await browser.close();
-    
-    return { 
-      html, 
-      css, 
-      error: null,
-      method: 'puppeteer'
-    };
-    
-  } catch (error) {
-    console.error('❌ Puppeteer error:', error.message);
-    
-    // Close browser if it was opened
-    if (browser) {
-      try {
-        await browser.close();
-      } catch (closeError) {
-        console.error('❌ Error closing browser:', closeError.message);
+    try {
+      console.log(`🔍 Fetching content (attempt ${attempt}/${maxRetries}): ${url}`);
+      
+      if (!USE_PUPPETEER || !puppeteer) {
+        console.log('🔄 Using basic HTML fetch');
+        return await fetchBasicHtml(url);
       }
+      
+      const browser = await puppeteer.launch({
+        headless: "new",
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-extensions',
+          '--disable-gpu',
+          '--disable-background-timer-throttling',
+          '--disable-backgrounding-occluded-windows',
+          '--disable-renderer-backgrounding',
+          '--disable-features=TranslateUI',
+          '--disable-ipc-flooding-protection',
+          '--memory-pressure-off'
+        ],
+        timeout: 45000
+      });
+      
+      const page = await browser.newPage();
+      
+      // ENHANCED: Better page configuration
+      await page.setViewport({ width: 1366, height: 768 });
+      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+      
+      // ENHANCED: Set extra HTTP headers
+      await page.setExtraHTTPHeaders({
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br'
+      });
+      
+      // ENHANCED: Navigate with better error handling
+      const response = await page.goto(url, { 
+        waitUntil: ['networkidle2', 'domcontentloaded'],
+        timeout: 30000 
+      });
+      
+      if (!response || !response.ok()) {
+        throw new Error(`HTTP ${response?.status() || 'unknown'}: Failed to load page`);
+      }
+      
+      // ENHANCED: Wait for dynamic content
+      await page.waitForTimeout(5000);
+      
+      // ENHANCED: Better content extraction
+      const [html, css] = await Promise.all([
+        page.content(),
+        page.evaluate(() => {
+          try {
+            const styles = Array.from(document.styleSheets);
+            return styles.map(sheet => {
+              try {
+                return Array.from(sheet.cssRules || []).map(rule => rule.cssText).join('\n');
+              } catch (e) {
+                return '';
+              }
+            }).join('\n');
+          } catch (e) {
+            return '';
+          }
+        })
+      ]);
+      
+      await browser.close();
+      
+      return { 
+        html, 
+        css: css.substring(0, 8000), // Limit CSS size
+        error: null,
+        method: 'puppeteer',
+        attempt
+      };
+      
+    } catch (error) {
+      console.error(`❌ Attempt ${attempt} failed:`, error.message);
+      
+      if (attempt >= maxRetries) {
+        console.log('🔄 All attempts failed, falling back to basic HTML fetch');
+        return await fetchBasicHtml(url);
+      }
+      
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
     }
-    
-    // Fallback to basic HTML fetch
-    console.log('🔄 Falling back to basic HTML fetch');
-    return await fetchBasicHtml(url);
   }
 }
 
-// Fallback function for basic HTML fetching without Puppeteer
+// ENHANCED: Better basic HTML fetching with retry
 async function fetchBasicHtml(url) {
-  try {
-    console.log(`🔍 Fetching basic HTML for: ${url}`);
-    
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      },
-      timeout: 15000
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  const maxRetries = 3;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`🔍 Basic fetch attempt ${attempt}/${maxRetries}: ${url}`);
+      
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+      
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.5',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'DNT': '1',
+          'Connection': 'keep-alive',
+          'Upgrade-Insecure-Requests': '1'
+        },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeout);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const html = await response.text();
+      
+      return { 
+        html, 
+        css: '', 
+        error: null,
+        method: 'basic_fetch',
+        attempt
+      };
+      
+    } catch (error) {
+      console.error(`❌ Basic fetch attempt ${attempt} failed:`, error.message);
+      
+      if (attempt === maxRetries) {
+        return { 
+          html: '', 
+          css: '', 
+          error: error.message,
+          method: 'failed',
+          attempt
+        };
+      }
+      
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
     }
-    
-    const html = await response.text();
-    
-    return { 
-      html, 
-      css: '', 
-      error: null,
-      method: 'basic_fetch'
-    };
-    
-  } catch (error) {
-    console.error('❌ Basic HTML fetch error:', error.message);
-    
-    return { 
-      html: '', 
-      css: '', 
-      error: error.message,
-      method: 'failed'
-    };
   }
 }
 
@@ -312,50 +404,64 @@ app.get('/api/tools', (req, res) => {
 // FIXED: Remove puppeteer stealth initialization that was causing error
 // puppeteer.use(StealthPlugin()); // This line was causing the error
 
-// FIXED: Add missing extractVisibleContent function
+// ENHANCED: Better content extraction with fallback strategies
 async function extractVisibleContent(url) {
   try {
     console.log(`🔍 Extracting visible content from: ${url}`);
     
-    // Use basic fetch for content extraction
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       },
-      timeout: 15000
+      signal: controller.signal
     });
+    
+    clearTimeout(timeout);
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
     const html = await response.text();
-    
-    // Create DOM from HTML
     const dom = new JSDOM(html, { url });
     const document = dom.window.document;
     
-    // Remove script and style elements
-    const scripts = document.querySelectorAll('script, style, noscript');
-    scripts.forEach(el => el.remove());
+    // ENHANCED: Better content cleaning
+    const elementsToRemove = ['script', 'style', 'noscript', 'iframe', 'object', 'embed'];
+    elementsToRemove.forEach(tag => {
+      const elements = document.querySelectorAll(tag);
+      elements.forEach(el => el.remove());
+    });
     
-    // Extract visible text content
+    // ENHANCED: Extract structured content
+    const title = document.title || '';
+    const metaDescription = document.querySelector('meta[name="description"]')?.content || '';
+    const h1Elements = Array.from(document.querySelectorAll('h1')).map(el => el.textContent?.trim()).filter(Boolean);
+    const h2Elements = Array.from(document.querySelectorAll('h2')).map(el => el.textContent?.trim()).filter(Boolean);
+    
     const visibleText = document.body?.textContent || '';
     
-    // Use Readability to extract main content
+    // ENHANCED: Use Readability with better error handling
     let mainContent = '';
     try {
-      const reader = new Readability(document);
+      const reader = new Readability(document.cloneNode(true));
       const article = reader.parse();
-      mainContent = article?.textContent || visibleText.slice(0, 2000);
+      mainContent = article?.textContent || visibleText.slice(0, 3000);
     } catch (readabilityError) {
       console.warn('Readability parsing failed:', readabilityError.message);
-      mainContent = visibleText.slice(0, 2000);
+      mainContent = visibleText.slice(0, 3000);
     }
     
     return {
-      visibleText: visibleText.slice(0, 4000), // Limit to 4KB
-      mainContent: mainContent.slice(0, 2000)  // Limit to 2KB
+      title: title.slice(0, 200),
+      metaDescription: metaDescription.slice(0, 300),
+      h1Elements: h1Elements.slice(0, 5),
+      h2Elements: h2Elements.slice(0, 10),
+      visibleText: visibleText.slice(0, 6000),
+      mainContent: mainContent.slice(0, 3000)
     };
     
   } catch (error) {
@@ -752,132 +858,184 @@ app.post('/api/generate-report', async (req, res) => {
 // --- SEND REPORT VIA EMAIL ---
 app.post('/api/send-report', async (req, res) => {
   try {
-    console.log('📄 PDF generation request received');
+    console.log('📄 Enhanced PDF generation request received');
     
     const { url, name, company, email, isPdfEmail, pdfContent, htmlTemplate } = req.body;
     
-    // Enhanced validation
-    if (!email || !email.includes('@')) {
-      console.error('📄 Invalid email:', email);
+    // ENHANCED: Better validation
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({
         success: false,
         error: 'Valid email address is required'
       });
     }
     
-    if (!url) {
-      console.error('📄 Missing URL');
+    if (!url || !/^https?:\/\/.+/.test(url)) {
       return res.status(400).json({
         success: false,
-        error: 'Website URL is required'
+        error: 'Valid website URL is required'
       });
     }
     
-    console.log('📄 Processing request for:', { email, url, isPdfEmail: !!isPdfEmail });
+    console.log('📄 Processing request:', { email, url, isPdfEmail: !!isPdfEmail });
     
-    // FIXED: Check for required environment variables first
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.error('📧 Email configuration missing');
+    // ENHANCED: Check email configuration
+    const requiredEnvVars = ['EMAIL_USER', 'EMAIL_PASS', 'EMAIL_HOST'];
+    const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+    
+    if (missingVars.length > 0) {
+      console.error('📧 Missing email configuration:', missingVars);
       return res.status(500).json({
         success: false,
-        error: 'Email service not configured'
+        error: 'Email service not properly configured'
       });
     }
     
-    // FIXED: Always disable PDF generation in production due to Render limitations
-    console.log('📄 Production mode: Sending HTML email instead of PDF');
-    
-    // FIXED: Correct method name - createTransport not createTransporter
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    // ENHANCED: Create transporter with better configuration
+    const transporter = nodemailer.createTransporter({
+      host: process.env.EMAIL_HOST,
       port: parseInt(process.env.EMAIL_PORT) || 587,
       secure: process.env.EMAIL_SECURE === 'true',
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+      },
+      connectionTimeout: 60000,
+      greetingTimeout: 30000,
+      socketTimeout: 60000,
+      tls: {
+        rejectUnauthorized: false
       }
     });
     
-    // Verify email configuration
+    // ENHANCED: Verify transporter with timeout
     try {
-      await transporter.verify();
-      console.log('📧 Email configuration verified');
-    } catch (emailConfigError) {
-      console.error('📧 Email configuration failed:', emailConfigError.message);
+      await Promise.race([
+        transporter.verify(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Email verification timeout')), 10000)
+        )
+      ]);
+      console.log('📧 Email transporter verified successfully');
+    } catch (verifyError) {
+      console.error('📧 Email verification failed:', verifyError.message);
       return res.status(500).json({
         success: false,
-        error: 'Email service configuration error: ' + emailConfigError.message
+        error: 'Email service verification failed: ' + verifyError.message
       });
     }
     
-    // Prepare email content - simplified and safe
-    const emailSubject = `Your LandingFix AI Report - ${url}`;
+    // ENHANCED: Generate better email content
+    const now = new Date();
+    const timestamp = now.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
     
-    // FIXED: Use simplified HTML template to avoid size issues
-    const safeHtmlContent = htmlTemplate ? 
-      htmlTemplate.substring(0, 100000) : // Limit to 100KB
-      `
-      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
-        <h1 style="color: #333; text-align: center;">Your LandingFix AI Report</h1>
-        <p>Dear ${name || 'User'},</p>
-        <p>Your comprehensive landing page analysis for <strong>${url}</strong> has been completed.</p>
-        
-        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h2 style="color: #333; margin-top: 0;">Report Summary</h2>
-          <p>We've analyzed your landing page and identified key optimization opportunities.</p>
-          <p>This report includes detailed recommendations specifically tailored for your business.</p>
-        </div>
-        
-        ${pdfContent ? `<div style="margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">${pdfContent.substring(0, 50000)}</div>` : ''}
-        
-        <div style="margin-top: 30px; padding: 20px; background: #e8f4fd; border-radius: 8px;">
-          <p><strong>Need more detailed analysis?</strong></p>
-          <p>Visit <a href="https://landingfixai.com" style="color: #007bff;">LandingFix AI</a> to generate additional reports and access our full optimization toolkit.</p>
-        </div>
-        
-        <p style="margin-top: 30px;">Best regards,<br>The LandingFix AI Team</p>
-      </div>
-      `;
+    const emailSubject = `🚀 Your LandingFix AI Report - ${new URL(url).hostname}`;
+    
+    // ENHANCED: Better HTML email template
+    const enhancedHtmlContent = htmlTemplate || generateEnhancedEmailTemplate({
+      url, name, company, email, timestamp, pdfContent
+    });
     
     const mailOptions = {
       from: `"LandingFix AI" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: emailSubject,
-      html: safeHtmlContent
+      html: enhancedHtmlContent,
+      headers: {
+        'X-Mailer': 'LandingFix AI v1.2',
+        'X-Priority': '1',
+        'Importance': 'high'
+      }
     };
     
-    // Send email with timeout protection
-    const emailPromise = transporter.sendMail(mailOptions);
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Email send timeout after 30 seconds')), 30000)
-    );
+    // ENHANCED: Add PDF attachment if content is provided
+    if (pdfContent && pdfContent.length > 1000) {
+      try {
+        console.log('📄 Attempting to create PDF attachment');
+        
+        // ENHANCED: Try to create actual PDF if possible
+        if (puppeteer) {
+          const pdfBuffer = await generatePdfFromHtml(pdfContent, {
+            url, name, company, email, timestamp
+          });
+          
+          if (pdfBuffer) {
+            mailOptions.attachments = [{
+              filename: `LandingFix-AI-Report-${new URL(url).hostname}-${Date.now()}.pdf`,
+              content: pdfBuffer,
+              contentType: 'application/pdf'
+            }];
+            console.log('📄 PDF attachment created successfully');
+          }
+        } else {
+          console.log('📄 Puppeteer not available, sending HTML content only');
+        }
+      } catch (pdfError) {
+        console.warn('📄 PDF generation failed, sending HTML only:', pdfError.message);
+      }
+    }
     
-    await Promise.race([emailPromise, timeoutPromise]);
-    console.log('📧 Report email sent successfully to:', email);
+    // ENHANCED: Send email with retry logic
+    const maxEmailRetries = 3;
+    let emailSent = false;
+    
+    for (let attempt = 1; attempt <= maxEmailRetries && !emailSent; attempt++) {
+      try {
+        console.log(`📧 Sending email attempt ${attempt}/${maxEmailRetries}`);
+        
+        await Promise.race([
+          transporter.sendMail(mailOptions),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Email send timeout')), 45000)
+          )
+        ]);
+        
+        emailSent = true;
+        console.log('📧 Email sent successfully to:', email);
+        
+      } catch (emailError) {
+        console.error(`📧 Email attempt ${attempt} failed:`, emailError.message);
+        
+        if (attempt === maxEmailRetries) {
+          throw emailError;
+        }
+        
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+      }
+    }
     
     return res.json({
       success: true,
-      message: 'Report sent successfully via email (HTML format due to server limitations)'
+      message: 'Report sent successfully via email',
+      attachmentIncluded: !!mailOptions.attachments,
+      timestamp: timestamp
     });
     
   } catch (error) {
-    console.error('📄 PDF/Email generation error:', {
+    console.error('📄 Email sending error:', {
       message: error.message,
-      stack: error.stack,
-      name: error.name
+      stack: error.stack?.substring(0, 500),
+      code: error.code
     });
     
-    // More specific error handling
-    let errorMessage = 'Email send failed';
+    // ENHANCED: More specific error messages
+    let errorMessage = 'Failed to send report email';
     
     if (error.message.includes('timeout')) {
-      errorMessage = 'Email send timeout - please try again';
-    } else if (error.message.includes('authentication')) {
+      errorMessage = 'Email service timeout - please try again';
+    } else if (error.message.includes('authentication') || error.code === 'EAUTH') {
       errorMessage = 'Email authentication error';
     } else if (error.message.includes('ENOTFOUND') || error.message.includes('ECONNREFUSED')) {
       errorMessage = 'Email server connection error';
-    } else {
-      errorMessage = error.message;
+    } else if (error.code === 'EMESSAGE') {
+      errorMessage = 'Email content error - please try again';
     }
     
     return res.status(500).json({
@@ -886,6 +1044,198 @@ app.post('/api/send-report', async (req, res) => {
     });
   }
 });
+
+// ENHANCED: Generate PDF from HTML using Puppeteer
+async function generatePdfFromHtml(htmlContent, metadata) {
+  if (!puppeteer) {
+    console.warn('📄 Puppeteer not available for PDF generation');
+    return null;
+  }
+  
+  let browser;
+  
+  try {
+    console.log('📄 Generating PDF from HTML content');
+    
+    browser = await puppeteer.launch({
+      headless: "new",
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-extensions',
+        '--disable-gpu'
+      ]
+    });
+    
+    const page = await browser.newPage();
+    
+    // ENHANCED: Set page content with metadata
+    const fullHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>LandingFix AI Report - ${metadata.url}</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #007bff; padding-bottom: 20px; }
+          .metadata { background: #f8f9fa; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+          .content { margin: 20px 0; }
+          @media print { * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>LandingFix AI Analysis Report</h1>
+          <p>Generated on ${metadata.timestamp}</p>
+        </div>
+        <div class="metadata">
+          <h3>Report Details</h3>
+          <p><strong>Website:</strong> ${metadata.url}</p>
+          <p><strong>Generated for:</strong> ${metadata.name || 'LandingFix AI User'}</p>
+          ${metadata.company ? `<p><strong>Company:</strong> ${metadata.company}</p>` : ''}
+        </div>
+        <div class="content">
+          ${htmlContent}
+        </div>
+      </body>
+      </html>
+    `;
+    
+    await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
+    
+    // ENHANCED: Generate PDF with better options
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '20mm',
+        right: '15mm',
+        bottom: '20mm',
+        left: '15mm'
+      },
+      displayHeaderFooter: true,
+      headerTemplate: '<div></div>',
+      footerTemplate: `
+        <div style="font-size: 10px; text-align: center; width: 100%; color: #666;">
+          LandingFix AI Report - Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+        </div>
+      `
+    });
+    
+    await browser.close();
+    console.log('📄 PDF generated successfully, size:', pdfBuffer.length, 'bytes');
+    
+    return pdfBuffer;
+    
+  } catch (error) {
+    console.error('📄 PDF generation error:', error.message);
+    
+    if (browser) {
+      try {
+        await browser.close();
+      } catch (closeError) {
+        console.error('📄 Error closing browser:', closeError.message);
+      }
+    }
+    
+    return null;
+  }
+}
+
+// ENHANCED: Generate enhanced email template
+function generateEnhancedEmailTemplate({ url, name, company, email, timestamp, pdfContent }) {
+  const domain = new URL(url).hostname;
+  
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Your LandingFix AI Report</title>
+    </head>
+    <body style="margin:0;padding:0;background-color:#f8fafc;font-family:Arial,sans-serif;">
+      <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.1);">
+        
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#007bff,#0056b3);padding:40px 24px;text-align:center;color:white;">
+          <h1 style="margin:0;font-size:28px;font-weight:700;">🚀 Your Landing Page Analysis is Ready!</h1>
+          <p style="margin:12px 0 0 0;font-size:16px;opacity:0.9;">Comprehensive optimization insights for ${domain}</p>
+        </div>
+
+        <!-- Content -->
+        <div style="padding:32px 24px;">
+          <h2 style="margin:0 0 20px 0;font-size:20px;color:#2d3748;">Report Summary</h2>
+          
+          <div style="background:#f8fafc;padding:20px;border-radius:8px;margin-bottom:24px;">
+            <p style="margin:0 0 8px 0;"><strong>Website Analyzed:</strong> ${url}</p>
+            <p style="margin:0 0 8px 0;"><strong>Report Generated For:</strong> ${name || 'LandingFix AI User'}</p>
+            ${company ? `<p style="margin:0 0 8px 0;"><strong>Company:</strong> ${company}</p>` : ''}
+            <p style="margin:0 0 8px 0;"><strong>Analysis Date:</strong> ${timestamp}</p>
+            <p style="margin:0;"><strong>Email:</strong> ${email}</p>
+          </div>
+
+          <!-- Key Benefits -->
+          <div style="margin-bottom:24px;">
+            <h3 style="margin:0 0 16px 0;color:#2d3748;">What's Included in Your Report</h3>
+            <ul style="margin:0;padding-left:20px;color:#4a5568;">
+              <li style="margin-bottom:8px;">Detailed analysis of your landing page performance</li>
+              <li style="margin-bottom:8px;">Specific optimization recommendations</li>
+              <li style="margin-bottom:8px;">Implementation timelines and priorities</li>
+              <li style="margin-bottom:8px;">Industry-specific best practices</li>
+              <li style="margin-bottom:8px;">Actionable steps to improve conversions</li>
+            </ul>
+          </div>
+
+          ${pdfContent ? `
+          <!-- Report Content Preview -->
+          <div style="background:#f0f8ff;padding:20px;border-radius:8px;border:2px solid #007bff;margin-bottom:24px;">
+            <h3 style="margin:0 0 16px 0;color:#007bff;">📊 Your Analysis Preview</h3>
+            <div style="max-height:300px;overflow:hidden;color:#333;font-size:14px;line-height:1.6;">
+              ${pdfContent.substring(0, 1000)}...
+            </div>
+            <p style="margin:16px 0 0 0;font-style:italic;color:#666;font-size:12px;">
+              This is a preview - the complete analysis ${pdfContent.length > 10000 ? 'is attached as a PDF' : 'is included above'}
+            </p>
+          </div>
+          ` : ''}
+
+          <!-- Next Steps -->
+          <div style="background:#e8f5e8;padding:20px;border-radius:8px;border:1px solid #28a745;margin-bottom:24px;">
+            <h3 style="margin:0 0 16px 0;color:#28a745;">🎯 Next Steps</h3>
+            <ol style="margin:0;padding-left:20px;color:#2d3748;">
+              <li style="margin-bottom:8px;">Review the detailed recommendations</li>
+              <li style="margin-bottom:8px;">Prioritize high-impact, quick-win optimizations</li>
+              <li style="margin-bottom:8px;">Implement changes incrementally</li>
+              <li style="margin-bottom:8px;">Monitor conversion improvements</li>
+              <li>Return to LandingFix AI for follow-up analysis</li>
+            </ol>
+          </div>
+
+          <!-- CTA -->
+          <div style="text-align:center;margin:32px 0;">
+            <a href="https://landingfixai.com" 
+               style="display:inline-block;background:linear-gradient(135deg,#007bff,#0056b3);color:white;padding:16px 32px;text-decoration:none;border-radius:8px;font-weight:600;font-size:16px;box-shadow:0 4px 12px rgba(0,123,255,0.3);">
+              Generate Another Report
+            </a>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding:24px;background:#2d3748;color:#a0aec0;text-align:center;">
+          <p style="margin:0 0 16px 0;">Thank you for using LandingFix AI!</p>
+          <p style="margin:0;font-size:14px;">
+            <a href="https://landingfixai.com" style="color:#667eea;text-decoration:none;">Visit our website</a> | 
+            <a href="mailto:support@landingfixai.com" style="color:#667eea;text-decoration:none;">Contact Support</a>
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
 
 // --- TEST ROUTE ---
 // Simple health check endpoint for API status.
@@ -1596,15 +1946,39 @@ function enhanceActionsWithTools(actions, element, industry) {
 
 const port = process.env.PORT || 10000;
 
-// Start server with proper binding for Render
+// ENHANCED: Start server with better error handling
 app.listen(port, '0.0.0.0', () => {
-  console.log(`🚀 LandingFix AI Server running on port ${port}`);
+  console.log(`🚀 LandingFix AI Server v1.2 running on port ${port}`);
   console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 CORS origins: ${JSON.stringify([
-    'https://landingfixai.com',
-    'https://landingfixv1-2.onrender.com',
-    'http://localhost:5500',
-    process.env.FRONTEND_URL
-  ])}`);
-  console.log(`🤖 Puppeteer enabled: ${USE_PUPPETEER}`);
+  console.log(`🔗 CORS origins configured: ${allowedOrigins.length} domains`);
+  console.log(`🤖 Services status:`);
+  console.log(`   - Puppeteer: ${USE_PUPPETEER && puppeteer ? '✅ Available' : '❌ Disabled'}`);
+  console.log(`   - Email: ${process.env.EMAIL_USER ? '✅ Configured' : '❌ Missing'}`);
+  console.log(`   - OpenAI: ${process.env.OPENAI_API_KEY ? '✅ Configured' : '❌ Missing'}`);
+  console.log(`   - Stripe: ${process.env.STRIPE_SECRET_KEY ? '✅ Configured' : '❌ Missing'}`);
+  console.log(`   - PayPal: ${process.env.PAYPAL_CLIENT_ID ? '✅ Configured' : '❌ Missing'}`);
+  console.log(`📊 Health check available at: http://localhost:${port}/health`);
+}).on('error', (error) => {
+  console.error('🚨 Server startup error:', error);
+  process.exit(1);
+});
+
+// ENHANCED: Graceful shutdown handling
+process.on('SIGTERM', () => {
+  console.log('🛑 SIGTERM received, shutting down gracefully');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 SIGINT received, shutting down gracefully');
+  process.exit(0);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('🚨 Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('🚨 Uncaught Exception:', error);
+  process.exit(1);
 });

@@ -1,83 +1,172 @@
-// PDF Report System for LandingFix AI
+// PDF Report System for LandingFix AI - Enhanced Version
 
-// NEW: Main PDF handler with unlock checking
+// ENHANCED: Main PDF handler with better unlock checking and error handling
 window.showPdfPopup = function() {
-  // Check if dependencies are loaded
-  if (typeof window.getReportData !== 'function') {
-    console.error('❌ report-utils.js not loaded');
-    alert('System error: Dependencies not loaded. Please refresh the page.');
-    return;
-  }
+  try {
+    // Check if dependencies are loaded
+    if (typeof window.getReportData !== 'function') {
+      console.error('❌ report-utils.js not loaded');
+      showErrorMessage('System error: Dependencies not loaded. Please refresh the page.');
+      return;
+    }
 
-  // 🚨 CRITICAL: Real-time unlock check
-  const isUnlocked = localStorage.getItem('landingfix_unlocked') === 'true';
-  
-  console.log('📄 showPdfPopup called - REAL-TIME UNLOCK CHECK:', {
-    isUnlocked: isUnlocked,
-    localStorage_value: localStorage.getItem('landingfix_unlocked'),
-    timestamp: new Date().toISOString()
-  });
-  
-  // FIXED: Immediate check without additional validation
-  if (!isUnlocked) {
-    console.log('🔒 PDF popup blocked - report not unlocked, redirecting to checkout');
-    showCheckoutForPdf();
-    return; // Stop execution here
+    // ENHANCED: Real-time unlock check with validation
+    const isUnlocked = localStorage.getItem('landingfix_unlocked') === 'true';
+    const unlockTimestamp = localStorage.getItem('landingfix_unlock_timestamp');
+    
+    console.log('📄 showPdfPopup called - ENHANCED UNLOCK CHECK:', {
+      isUnlocked: isUnlocked,
+      unlockTimestamp: unlockTimestamp,
+      timeSinceUnlock: unlockTimestamp ? Date.now() - parseInt(unlockTimestamp) : null,
+      timestamp: new Date().toISOString()
+    });
+    
+    // ENHANCED: Check if unlock is recent (within 24 hours)
+    const isRecentUnlock = unlockTimestamp && (Date.now() - parseInt(unlockTimestamp)) < 24 * 60 * 60 * 1000;
+    
+    if (!isUnlocked || !isRecentUnlock) {
+      console.log('🔒 PDF access blocked - report not unlocked or unlock expired');
+      showCheckoutForPdf();
+      return;
+    }
+    
+    console.log('✅ Report access verified - proceeding with PDF popup');
+    showActualPdfPopup();
+    
+  } catch (error) {
+    console.error('❌ Error in showPdfPopup:', error);
+    showErrorMessage('An error occurred while opening the PDF system. Please try again.');
   }
-  
-  // Continue with PDF popup only if unlocked
-  console.log('✅ Report is unlocked - proceeding with PDF popup');
-  showActualPdfPopup();
 };
 
-// NEW: Show checkout when PDF is clicked but report is locked
-function showCheckoutForPdf() {
-  if (typeof window.loadCheckoutPopup === 'function') {
-    window.loadCheckoutPopup(() => {
-      console.log('Checkout loaded from PDF popup block, opening...');
-      if (typeof window.openCheckout === 'function') {
-        window.openCheckout();
-      } else {
-        console.error('❌ openCheckout function not available from PDF block');
-        alert('Please unlock the report first to download PDF.');
-      }
-    });
+// ENHANCED: Better error message display
+function showErrorMessage(message) {
+  if (typeof alert === 'function') {
+    alert(message);
   } else {
-    console.error('❌ loadCheckoutPopup function not available from PDF block');
-    alert('Please unlock the report first to download PDF.');
+    console.error('Error message:', message);
   }
 }
 
-// NEW: Actually show the PDF popup
-function showActualPdfPopup() {
-  const existingPopup = document.getElementById('pdf-popup');
-  if (existingPopup) {
-    existingPopup.style.display = 'flex';
-    return;
+// ENHANCED: Show checkout with better error handling
+function showCheckoutForPdf() {
+  try {
+    if (typeof window.loadCheckoutPopup === 'function') {
+      window.loadCheckoutPopup(() => {
+        console.log('Checkout loaded from PDF popup block, opening...');
+        if (typeof window.openCheckout === 'function') {
+          window.openCheckout();
+        } else {
+          console.error('❌ openCheckout function not available from PDF block');
+          showErrorMessage('Please unlock the report first to download PDF.');
+        }
+      });
+    } else {
+      console.error('❌ loadCheckoutPopup function not available from PDF block');
+      showErrorMessage('Please unlock the report first to download PDF.');
+    }
+  } catch (error) {
+    console.error('❌ Error showing checkout:', error);
+    showErrorMessage('Please unlock the report first to download PDF.');
   }
+}
 
-  // Load the PDF popup HTML
-  fetch('report-pdf.html')
-    .then(res => res.text())
-    .then(html => {
-      document.body.insertAdjacentHTML('beforeend', html);
-      
-      // Populate the popup with current data
+// ENHANCED: Show PDF popup with better loading and error handling
+function showActualPdfPopup() {
+  try {
+    const existingPopup = document.getElementById('pdf-popup');
+    if (existingPopup) {
+      existingPopup.style.display = 'flex';
       populatePdfPreview();
+      return;
+    }
+
+    // Show loading indicator
+    showLoadingIndicator('Loading PDF system...');
+
+    // Load the PDF popup HTML with timeout
+    const fetchPromise = fetch('report-pdf.html');
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout loading PDF system')), 10000)
+    );
+
+    Promise.race([fetchPromise, timeoutPromise])
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        return res.text();
+      })
+      .then(html => {
+        hideLoadingIndicator();
+        document.body.insertAdjacentHTML('beforeend', html);
+        
+        // Populate and setup the popup
+        populatePdfPreview();
+        setupPdfEventHandlers();
+        
+        // Show the popup with animation
+        const popup = document.getElementById('pdf-popup');
+        if (popup) {
+          popup.style.display = 'flex';
+          popup.style.opacity = '0';
+          setTimeout(() => {
+            popup.style.opacity = '1';
+            popup.style.transition = 'opacity 0.3s ease';
+          }, 10);
+        }
+      })
+      .catch(err => {
+        hideLoadingIndicator();
+        console.error('Failed to load PDF popup:', err);
+        showErrorMessage('Failed to load PDF system: ' + err.message);
+      });
       
-      // Setup event handlers
-      setupPdfEventHandlers();
-      
-      // Show the popup
-      const popup = document.getElementById('pdf-popup');
-      if (popup) {
-        popup.style.display = 'flex';
-      }
-    })
-    .catch(err => {
-      console.error('Failed to load PDF popup:', err);
-      alert('Failed to load PDF system. Please refresh the page.');
-    });
+  } catch (error) {
+    hideLoadingIndicator();
+    console.error('❌ Error in showActualPdfPopup:', error);
+    showErrorMessage('Failed to initialize PDF system. Please refresh the page.');
+  }
+}
+
+// ENHANCED: Loading indicator functions
+function showLoadingIndicator(message = 'Loading...') {
+  let loader = document.getElementById('pdf-loading');
+  if (!loader) {
+    loader = document.createElement('div');
+    loader.id = 'pdf-loading';
+    loader.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999999;
+      font-family: Arial, sans-serif;
+    `;
+    loader.innerHTML = `
+      <div style="background: white; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+        <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+        <p style="margin: 0; color: #333; font-size: 16px;">${message}</p>
+        <style>
+          @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        </style>
+      </div>
+    `;
+    document.body.appendChild(loader);
+  }
+  loader.style.display = 'flex';
+}
+
+function hideLoadingIndicator() {
+  const loader = document.getElementById('pdf-loading');
+  if (loader) {
+    loader.style.display = 'none';
+  }
 }
 
 // FIXED: Get report data safely - removed infinite recursion
@@ -240,176 +329,356 @@ function setupPdfEventHandlers() {
 async function handlePdfGeneration(e) {
   e.preventDefault();
   
-  console.log('📄 PDF generation started');
-  
-  // FIXED: Simple unlock check
-  const isUnlocked = localStorage.getItem('landingfix_unlocked') === 'true';
-  
-  console.log('📄 PDF generation - UNLOCK CHECK:', {
-    isUnlocked: isUnlocked
-  });
-  
-  if (!isUnlocked) {
-    console.log('📄 PDF generation blocked - report not unlocked');
-    alert('Please unlock the report first to download PDF.');
-    closePdfPopup();
-    showCheckoutForPdf();
-    return;
-  }
-  
-  // Get form data
-  const emailInput = document.getElementById('pdf-email');
-  const nameInput = document.getElementById('pdf-name');
-  const companyInput = document.getElementById('pdf-company');
-  
-  const email = emailInput?.value?.trim();
-  const name = nameInput?.value?.trim();
-  const company = companyInput?.value?.trim();
-  
-  console.log('📄 Form data extracted:', { email, name, company });
-  
-  // Validate email
-  if (!email) {
-    alert('Please enter your email address.');
-    emailInput?.focus();
-    return;
-  }
-  
-  if (!email.includes('@') || !email.includes('.')) {
-    alert('Please enter a valid email address.');
-    emailInput?.focus();
-    return;
-  }
-  
-  const submitBtn = document.getElementById('generate-pdf-btn');
-  const submitText = document.getElementById('pdf-submit-text');
-  const originalText = submitText?.textContent || 'Send PDF Report via Email';
+  console.log('📄 Enhanced PDF generation started');
   
   try {
-    // Show loading state
-    if (submitBtn) submitBtn.disabled = true;
-    if (submitText) submitText.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Generating and sending PDF...';
+    // ENHANCED: Comprehensive unlock validation
+    const isUnlocked = localStorage.getItem('landingfix_unlocked') === 'true';
+    const unlockTimestamp = localStorage.getItem('landingfix_unlock_timestamp');
+    const isRecentUnlock = unlockTimestamp && (Date.now() - parseInt(unlockTimestamp)) < 24 * 60 * 60 * 1000;
     
-    console.log('📄 Getting report data...');
+    console.log('📄 PDF generation - ENHANCED UNLOCK CHECK:', {
+      isUnlocked,
+      unlockTimestamp,
+      isRecentUnlock,
+      timeSinceUnlock: unlockTimestamp ? Date.now() - parseInt(unlockTimestamp) : null
+    });
     
-    // Get report data and scores
+    if (!isUnlocked || !isRecentUnlock) {
+      console.log('📄 PDF generation blocked - invalid unlock status');
+      showErrorMessage('Please unlock the report first to download PDF.');
+      closePdfPopup();
+      showCheckoutForPdf();
+      return;
+    }
+    
+    // ENHANCED: Form validation with better UX
+    const formData = extractFormData();
+    const validation = validateFormData(formData);
+    
+    if (!validation.isValid) {
+      showFormErrors(validation.errors);
+      return;
+    }
+    
+    // ENHANCED: Show loading state with progress
+    setLoadingState(true, 'Preparing your PDF report...');
+    
+    console.log('📄 Form validation passed, generating PDF content...');
+    
+    // ENHANCED: Get report data with error handling
     const reportData = getReportData();
     const scores = getCurrentScores();
+    
+    if (!reportData || !reportData.url) {
+      throw new Error('No valid report data found. Please refresh the page and try again.');
+    }
     
     console.log('📄 Report data retrieved:', { 
       url: reportData.url, 
       hasData: !!reportData,
-      scores: scores 
+      scores: scores,
+      dataSize: JSON.stringify(reportData).length
     });
     
-    if (!reportData || !reportData.url) {
-      throw new Error('No valid report data found');
-    }
+    // ENHANCED: Generate optimized content for backend
+    updateLoadingMessage('Generating PDF content...');
+    const pdfContent = generateOptimizedPdfHTML(reportData, scores, formData);
+    const emailTemplate = generateOptimizedEmailTemplate(reportData, scores, formData);
     
-    console.log('📄 Generating PDF content...');
+    console.log('📄 Content generated:', {
+      pdfContentLength: pdfContent.length,
+      emailTemplateLength: emailTemplate.length
+    });
     
-    // Generate PDF content for backend processing
-    const pdfContent = generatePdfHTML(reportData, scores, email, name, company);
-    
-    console.log('📄 PDF content generated, length:', pdfContent.length);
-    
-    // Generate email template
-    const emailTemplate = generatePdfEmailTemplate(reportData, scores, email, name, company);
-    
-    console.log('📄 Email template generated, length:', emailTemplate.length);
-    
-    // Send PDF email request to backend
+    // ENHANCED: Prepare request with validation
     const requestData = {
       url: reportData.url,
-      name: name || null,
-      company: company || null,
-      email: email,
+      name: formData.name || null,
+      company: formData.company || null,
+      email: formData.email,
       isPdfEmail: true,
       pdfContent: pdfContent,
-      htmlTemplate: emailTemplate
+      htmlTemplate: emailTemplate,
+      timestamp: new Date().toISOString(),
+      reportMetadata: {
+        focus: reportData.focus || 'general',
+        industry: reportData.industry || 'other',
+        scores: scores
+      }
     };
     
-    console.log('📄 Sending request to backend:', {
+    console.log('📄 Sending enhanced request to backend:', {
       url: requestData.url,
       email: requestData.email,
-      isPdfEmail: requestData.isPdfEmail,
+      requestSize: JSON.stringify(requestData).length,
       hasPdfContent: !!requestData.pdfContent,
-      hasHtmlTemplate: !!requestData.htmlTemplate,
-      requestDataSize: JSON.stringify(requestData).length
+      hasEmailTemplate: !!requestData.htmlTemplate
     });
     
-    const response = await fetch('https://landingfixv1-2.onrender.com/api/send-report', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestData)
-    });
+    // ENHANCED: Send request with retry logic
+    updateLoadingMessage('Sending to email service...');
+    const response = await sendPdfRequest(requestData);
     
-    console.log('📄 Response received:', {
+    console.log('📄 Backend response received:', {
       ok: response.ok,
       status: response.status,
       statusText: response.statusText
     });
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('📄 PDF email send error response:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorText: errorText
-      });
-      throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(`Server error (${response.status}): ${errorData.error || response.statusText}`);
     }
     
     const result = await response.json();
     
-    console.log('📄 Response parsed:', result);
-    
     if (result.success) {
-      console.log('📄 PDF sent successfully');
-      // Show success message
-      showPdfSuccess(email);
+      console.log('📄 PDF email sent successfully');
+      showPdfSuccess(formData.email, result);
       
-      // Track PDF generation
-      if (typeof gtag === 'function') {
-        gtag('event', 'pdf_download', {
-          email: email
-        });
-      }
+      // ENHANCED: Track success
+      trackPdfGeneration(formData.email, reportData.url);
     } else {
       throw new Error('PDF email sending failed: ' + (result.error || 'Unknown error'));
     }
     
   } catch (error) {
-    console.error('📄 PDF generation failed:', {
+    console.error('📄 Enhanced PDF generation failed:', {
       error: error.message,
-      stack: error.stack,
+      stack: error.stack?.substring(0, 500),
       name: error.name
     });
     
-    // More specific error messages
-    let errorMessage = 'Failed to generate and send PDF report. ';
-    
-    if (error.message.includes('fetch')) {
-      errorMessage += 'Connection error - please check your internet connection.';
-    } else if (error.message.includes('HTTP 500')) {
-      errorMessage += 'Server error - please try again in a few moments.';
-    } else if (error.message.includes('No valid report data')) {
-      errorMessage += 'Report data is missing - please refresh the page.';
-    } else {
-      errorMessage += 'Please try again. Error: ' + error.message;
-    }
-    
-    alert(errorMessage);
+    showPdfError(error);
   } finally {
-    // Reset button state
-    if (submitBtn) submitBtn.disabled = false;
-    if (submitText) submitText.textContent = originalText;
+    setLoadingState(false);
   }
 }
 
-// NEW: Generate email template for PDF notification with better error handling
+// ENHANCED: Extract and validate form data
+function extractFormData() {
+  return {
+    email: document.getElementById('pdf-email')?.value?.trim() || '',
+    name: document.getElementById('pdf-name')?.value?.trim() || '',
+    company: document.getElementById('pdf-company')?.value?.trim() || ''
+  };
+}
+
+function validateFormData(formData) {
+  const errors = [];
+  
+  if (!formData.email) {
+    errors.push({ field: 'email', message: 'Email address is required' });
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    errors.push({ field: 'email', message: 'Please enter a valid email address' });
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors: errors
+  };
+}
+
+function showFormErrors(errors) {
+  errors.forEach(error => {
+    const field = document.getElementById(`pdf-${error.field}`);
+    if (field) {
+      field.style.borderColor = '#dc3545';
+      field.focus();
+      
+      // Show error message
+      let errorDiv = field.parentNode.querySelector('.error-message');
+      if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.style.cssText = 'color: #dc3545; font-size: 12px; margin-top: 4px;';
+        field.parentNode.appendChild(errorDiv);
+      }
+      errorDiv.textContent = error.message;
+      
+      // Clear error on input
+      field.addEventListener('input', () => {
+        field.style.borderColor = '';
+        if (errorDiv) errorDiv.remove();
+      }, { once: true });
+    }
+  });
+}
+
+// ENHANCED: Loading state management
+function setLoadingState(isLoading, message = 'Processing...') {
+  const submitBtn = document.getElementById('generate-pdf-btn');
+  const submitText = document.getElementById('pdf-submit-text');
+  
+  if (submitBtn) {
+    submitBtn.disabled = isLoading;
+  }
+  
+  if (submitText) {
+    if (isLoading) {
+      submitText.innerHTML = `<i class="fa fa-spinner fa-spin"></i> ${message}`;
+    } else {
+      submitText.textContent = 'Send PDF Report via Email';
+    }
+  }
+}
+
+function updateLoadingMessage(message) {
+  const submitText = document.getElementById('pdf-submit-text');
+  if (submitText) {
+    submitText.innerHTML = `<i class="fa fa-spinner fa-spin"></i> ${message}`;
+  }
+}
+
+// ENHANCED: Send PDF request with retry logic
+async function sendPdfRequest(requestData, maxRetries = 3) {
+  const backendUrl = 'https://landingfixv1-2.onrender.com/api/send-report';
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`📄 PDF request attempt ${attempt}/${maxRetries}`);
+      
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+      
+      const response = await fetch(backendUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeout);
+      return response;
+      
+    } catch (error) {
+      console.error(`📄 Request attempt ${attempt} failed:`, error.message);
+      
+      if (attempt === maxRetries) {
+        throw error;
+      }
+      
+      // Wait before retry with exponential backoff
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
+    }
+  }
+}
+
+// ENHANCED: Error handling with user-friendly messages
+function showPdfError(error) {
+  let userMessage = 'Failed to generate and send PDF report. ';
+  
+  if (error.message.includes('timeout') || error.name === 'AbortError') {
+    userMessage += 'The request timed out. Please check your internet connection and try again.';
+  } else if (error.message.includes('network') || error.message.includes('fetch')) {
+    userMessage += 'Network error. Please check your internet connection.';
+  } else if (error.message.includes('500')) {
+    userMessage += 'Server error. Please try again in a few moments.';
+  } else if (error.message.includes('400')) {
+    userMessage += 'Invalid request data. Please refresh the page and try again.';
+  } else {
+    userMessage += 'Please try again. Error: ' + error.message;
+  }
+  
+  showErrorMessage(userMessage);
+}
+
+// ENHANCED: Success handling with better UX
+function showPdfSuccess(email, result) {
+  const successDiv = document.getElementById('pdf-success');
+  const formDiv = document.getElementById('pdf-form');
+  const sentEmailSpan = document.getElementById('pdf-sent-email');
+  
+  if (successDiv && formDiv && sentEmailSpan) {
+    formDiv.style.display = 'none';
+    successDiv.style.display = 'block';
+    sentEmailSpan.textContent = email;
+    
+    // ENHANCED: Show additional success info
+    if (result.attachmentIncluded) {
+      const attachmentInfo = successDiv.querySelector('.attachment-info');
+      if (attachmentInfo) {
+        attachmentInfo.style.display = 'block';
+      }
+    }
+    
+    // ENHANCED: Add regeneration button
+    addRegenerationButton(successDiv);
+  }
+}
+
+function addRegenerationButton(successDiv) {
+  const existingButton = successDiv.querySelector('.generate-another-btn');
+  if (existingButton) return;
+  
+  const generateAnotherBtn = document.createElement('button');
+  generateAnotherBtn.className = 'generate-another-btn';
+  generateAnotherBtn.style.cssText = `
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    margin-right: 12px;
+  `;
+  generateAnotherBtn.innerHTML = '<i class="fa fa-envelope" style="margin-right: 8px;"></i>Send to Another Email';
+  
+  generateAnotherBtn.onclick = () => {
+    const formDiv = document.getElementById('pdf-form');
+    if (formDiv) {
+      formDiv.style.display = 'flex';
+      successDiv.style.display = 'none';
+      
+      // Clear the email field but keep name and company
+      const emailInput = document.getElementById('pdf-email');
+      if (emailInput) {
+        emailInput.value = '';
+        emailInput.focus();
+      }
+    }
+  };
+  
+  // Insert before the close button
+  const closeButton = successDiv.querySelector('button');
+  if (closeButton) {
+    successDiv.insertBefore(generateAnotherBtn, closeButton);
+  } else {
+    successDiv.appendChild(generateAnotherBtn);
+  }
+}
+
+// ENHANCED: Analytics tracking
+function trackPdfGeneration(email, url) {
+  try {
+    if (typeof gtag === 'function') {
+      gtag('event', 'pdf_download', {
+        email: email,
+        url: url,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    if (typeof fbq === 'function') {
+      fbq('track', 'Lead', {
+        content_name: 'PDF Report Download',
+        content_category: 'Landing Page Analysis'
+      });
+    }
+  } catch (error) {
+    console.warn('Analytics tracking failed:', error);
+  }
+}
+
+// ENHANCED: Generate email template for PDF notification with better error handling
 function generatePdfEmailTemplate(reportData, scores, email, name, company) {
   try {
     const now = new Date().toLocaleDateString('en-US', { 
@@ -1173,7 +1442,7 @@ function closePdfPopup() {
 window.closePdfPopup = closePdfPopup;
 
 // FIXED: Show PDF success message with email-like interface
-function showPdfSuccess(email) {
+function showPdfSuccess(email, result) {
   const successDiv = document.getElementById('pdf-success');
   const formDiv = document.getElementById('pdf-form');
   const sentEmailSpan = document.getElementById('pdf-sent-email');
@@ -1183,49 +1452,85 @@ function showPdfSuccess(email) {
     successDiv.style.display = 'block';
     sentEmailSpan.textContent = email;
     
-    // FIXED: Add "Generate Another PDF" button after success
-    const existingButton = successDiv.querySelector('.generate-another-btn');
-    if (!existingButton) {
-      const generateAnotherBtn = document.createElement('button');
-      generateAnotherBtn.className = 'generate-another-btn';
-      generateAnotherBtn.style.cssText = `
-        margin-top: 20px;
-        padding: 12px 24px;
-        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.95rem;
-        transition: all 0.2s;
-        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-        margin-right: 12px;
-      `;
-      generateAnotherBtn.innerHTML = '<i class="fa fa-file-pdf" style="margin-right: 8px;"></i>Send to Another Email';
-      
-      generateAnotherBtn.onclick = () => {
-        // Reset form and show it again
-        formDiv.style.display = 'flex';
-        successDiv.style.display = 'none';
-        
-        // Clear the email field but keep name and company
-        const emailInput = document.getElementById('pdf-email');
-        if (emailInput) {
-          emailInput.value = '';
-          emailInput.focus();
-        }
-      };
-      
-      // Insert before the close button
-      const closeButton = successDiv.querySelector('button');
-      if (closeButton) {
-        successDiv.insertBefore(generateAnotherBtn, closeButton);
-      } else {
-        successDiv.appendChild(generateAnotherBtn);
+    // ENHANCED: Show additional success info
+    if (result.attachmentIncluded) {
+      const attachmentInfo = successDiv.querySelector('.attachment-info');
+      if (attachmentInfo) {
+        attachmentInfo.style.display = 'block';
       }
     }
+    
+    // ENHANCED: Add regeneration button
+    addRegenerationButton(successDiv);
   }
 }
 
-console.log('✅ PDF report system loaded successfully');
+function addRegenerationButton(successDiv) {
+  const existingButton = successDiv.querySelector('.generate-another-btn');
+  if (existingButton) return;
+  
+  const generateAnotherBtn = document.createElement('button');
+  generateAnotherBtn.className = 'generate-another-btn';
+  generateAnotherBtn.style.cssText = `
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    margin-right: 12px;
+  `;
+  generateAnotherBtn.innerHTML = '<i class="fa fa-envelope" style="margin-right: 8px;"></i>Send to Another Email';
+  
+  generateAnotherBtn.onclick = () => {
+    const formDiv = document.getElementById('pdf-form');
+    if (formDiv) {
+      formDiv.style.display = 'flex';
+      successDiv.style.display = 'none';
+      
+      // Clear the email field but keep name and company
+      const emailInput = document.getElementById('pdf-email');
+      if (emailInput) {
+        emailInput.value = '';
+        emailInput.focus();
+      }
+    }
+  };
+  
+  // Insert before the close button
+  const closeButton = successDiv.querySelector('button');
+  if (closeButton) {
+    successDiv.insertBefore(generateAnotherBtn, closeButton);
+  } else {
+    successDiv.appendChild(generateAnotherBtn);
+  }
+}
+
+// ENHANCED: Analytics tracking
+function trackPdfGeneration(email, url) {
+  try {
+    if (typeof gtag === 'function') {
+      gtag('event', 'pdf_download', {
+        email: email,
+        url: url,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    if (typeof fbq === 'function') {
+      fbq('track', 'Lead', {
+        content_name: 'PDF Report Download',
+        content_category: 'Landing Page Analysis'
+      });
+    }
+  } catch (error) {
+    console.warn('Analytics tracking failed:', error);
+  }
+}
+
+console.log('✅ Enhanced PDF report system loaded successfully');
