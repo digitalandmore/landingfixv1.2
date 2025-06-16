@@ -9,8 +9,6 @@ const { Readability } = require('@mozilla/readability');
 const jsdom = require('jsdom');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const tools = require('./tools.js');
-const { checkSiteBlocking, isKnownProblematicDomain } = require('./check-domain.js');
-
 
 // Import the new scoring module
 const {
@@ -330,62 +328,31 @@ app.post('/api/generate-report', async (req, res) => {
     const { url, focus, industry, goals } = req.body;
     const openaiKey = process.env.OPENAI_API_KEY;
 
-    // Validazione parametri esistente...
-
-    // Check if domain is known to be problematic (optional warning)
-    if (isKnownProblematicDomain(url)) {
-      console.warn('⚠️ Attempting to analyze known problematic domain:', url);
-    }
-
     // 1. Fetch landing page HTML and CSS with Puppeteer
     let landingHtml = '';
     let cssContent = '';
-    
-    console.log('🔍 Starting HTML fetch for:', url);
-    
     try {
       const rendered = await fetchRenderedHtmlAndCss(url);
       landingHtml = rendered.html;
       cssContent = rendered.css;
-      
-      console.log('✅ HTML fetch successful:', {
-        htmlLength: landingHtml.length,
-        cssLength: cssContent.length,
-        hasBody: /<body[^>]*>[\s\S]*<\/body>/i.test(landingHtml)
-      });
-      
-    } catch (fetchError) {
-      console.error('❌ HTML fetch failed:', fetchError.message);
-      
-      // ✅ USE NEW DOMAIN CHECKING SYSTEM
-      const blockingResponse = checkSiteBlocking(fetchError.message, '', url);
-      
-      if (blockingResponse) {
-        console.log('🚫 Site blocking detected, returning structured response');
-        return res.status(403).json(blockingResponse);
-      }
-      
-      // Fallback for other errors
-      return res.status(400).json({ 
-        error: 'Unable to fetch and analyze the provided URL',
-        details: `Failed to load content from ${url}. Please ensure the URL is accessible and returns valid HTML.`,
-        technicalError: fetchError.message
-      });
+    } catch (err) {
+      landingHtml = '[ERROR: Unable to fetch landing page HTML]';
+      cssContent = '';
     }
 
-    // 2. Check HTML content for blocking indicators
-    const htmlBlockingResponse = checkSiteBlocking('', landingHtml, url);
-    if (htmlBlockingResponse) {
-      console.log('🚫 HTML content indicates blocking, returning structured response');
-      return res.status(403).json(htmlBlockingResponse);
+    // 2. Limit HTML and CSS length to avoid token overflow
+    const MAX_HTML_LENGTH = 10000;
+    const MAX_CSS_LENGTH = 4000;
+    if (landingHtml.length > MAX_HTML_LENGTH) {
+      landingHtml = landingHtml.slice(0, MAX_HTML_LENGTH);
+    }
+    if (cssContent.length > MAX_CSS_LENGTH) {
+      cssContent = cssContent.slice(0, MAX_CSS_LENGTH);
     }
 
-    // 3. Basic validation of HTML content
-    if (!landingHtml || landingHtml.trim().length < 100) {
-      return res.status(400).json({ 
-        error: 'The webpage content is too short or empty',
-        details: 'The URL provided does not contain sufficient content to analyze.'
-      });
+    // 3. Prevent AI call if HTML fetch failed
+    if (!landingHtml || landingHtml.startsWith('[ERROR')) {
+      return res.status(400).json({ error: 'Unable to fetch landing page HTML. Please check the URL.' });
     }
 
     // 4. Calculate benchmark checklist (objective score)
