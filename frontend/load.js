@@ -651,22 +651,140 @@ class ReportLoader {
       // Stop continuous progress
       this.stopContinuousProgress();
       
-      if (result.error) {
-        // FIXED: Direct DOM manipulation instead of window.showErrorMessage
-        const reportContent = document.getElementById('report-content');
-        if (reportContent) {
-          reportContent.innerHTML = `
-            <div style="text-align: center; padding: 48px 24px; color: #dc2626;">
-              <h3>Report Generation Error</h3>
-              <p>${result.error}</p>
-              <button onclick="window.location.reload()" style="padding: 12px 24px; background: #dc2626; color: white; border: none; border-radius: 8px; cursor: pointer;">
-                Try Again
-              </button>
-            </div>
-          `;
-        }
-        return;
-      }
+      // Nella sezione di gestione errore API, sostituisci con:
+
+if (result.error) {
+  const reportContent = document.getElementById('report-content');
+  if (reportContent) {
+    reportContent.innerHTML = `
+      <div style="
+        max-width: 600px;
+        margin: 48px auto;
+        padding: 32px 24px;
+        background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        text-align: center;
+        border: 1px solid #feb2b2;
+      ">
+        <div style="
+          width: 64px;
+          height: 64px;
+          background: linear-gradient(135deg, #e53e3e, #c53030);
+          border-radius: 50%;
+          margin: 0 auto 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 16px rgba(229,62,62,0.3);
+        ">
+          <i class="fas fa-ban" style="color: white; font-size: 24px;"></i>
+        </div>
+        
+        <h3 style="
+          color: #742a2a;
+          font-size: 24px;
+          font-weight: 700;
+          margin-bottom: 16px;
+          letter-spacing: -0.5px;
+        ">Website Analysis Blocked</h3>
+        
+        <div style="
+          background: white;
+          padding: 24px;
+          border-radius: 12px;
+          margin: 24px 0;
+          border-left: 4px solid #e53e3e;
+          text-align: left;
+        ">
+          <h4 style="
+            color: #742a2a;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          ">
+            <i class="fas fa-shield-alt" style="color: #e53e3e;"></i>
+            Server Response: Data Validation Failed
+          </h4>
+          <p style="
+            color: #742a2a;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            font-size: 14px;
+            background: #fed7d7;
+            padding: 12px;
+            border-radius: 6px;
+          ">
+            <strong>Error:</strong> ${result.error}
+          </p>
+          
+          <div style="
+            background: #f7fafc;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+          ">
+            <h5 style="
+              color: #2d3748;
+              font-size: 14px;
+              font-weight: 600;
+              margin-bottom: 12px;
+            ">This usually happens when:</h5>
+            <ul style="
+              color: #4a5568;
+              font-size: 13px;
+              line-height: 1.5;
+              margin: 0;
+              padding-left: 16px;
+            ">
+              <li><strong>Website blocks automated tools</strong> (Cloudflare, bot protection)</li>
+              <li>Landing page URL is not publicly accessible</li>
+              <li>Website requires authentication or special permissions</li>
+              <li>URL format is invalid or contains restricted content</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div style="margin-top: 32px;">
+          <a href="https://landingfixai.com/#analyze-section" style="
+            display: inline-block;
+            background: linear-gradient(90deg, #0070ba 60%, #00c6a7 100%);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: 0 4px 16px rgba(0,112,186,0.3);
+            transition: all 0.3s ease;
+          " onmouseover="this.style.transform='translateY(-2px)'" 
+             onmouseout="this.style.transform='translateY(0px)'">
+            <i class="fas fa-search" style="margin-right: 8px;"></i>
+            Analyze Different Website
+          </a>
+        </div>
+        
+        <div style="
+          margin-top: 24px;
+          padding-top: 20px;
+          border-top: 1px solid #feb2b2;
+        ">
+          <p style="
+            color: #a0aec0;
+            font-size: 12px;
+            margin: 0;
+          ">
+            Need help? Contact support with this error code: <span style="font-family: monospace; background: #edf2f7; padding: 2px 6px; border-radius: 4px;">API_VALIDATION_ERROR</span>
+          </p>
+        </div>
+      </div>
+    `;
+  }
+  return;
+}
 
       // Step 4: Score Calculation (70%)
       this.updateProgress(4, 70, 'Computing optimization metrics...');
@@ -686,23 +804,180 @@ class ReportLoader {
       // Show final report
       this.showFinalReport(processedData);
       
-    } catch (error) {
-      console.error('Report generation error:', error);
-      this.stopContinuousProgress();
-      // FIXED: Direct DOM manipulation instead of window.showErrorMessage
-      const reportContent = document.getElementById('report-content');
-      if (reportContent) {
-        reportContent.innerHTML = `
-          <div style="text-align: center; padding: 48px 24px; color: #dc2626;">
-            <h3>Connection Error</h3>
-            <p>Failed to generate report: ${error.message}</p>
-            <button onclick="window.location.reload()" style="padding: 12px 24px; background: #dc2626; color: white; border: none; border-radius: 8px; cursor: pointer;">
-              Refresh Page
-            </button>
+    // Nella sezione catch generale, sostituisci il messaggio di errore con questo:
+
+} catch (error) {
+  console.error('Report generation error:', error);
+  this.stopContinuousProgress();
+  
+  // ✅ MESSAGGIO ERRORE 400 MIGLIORATO
+  const reportContent = document.getElementById('report-content');
+  if (reportContent) {
+    reportContent.innerHTML = `
+      <div style="
+        max-width: 600px;
+        margin: 48px auto;
+        padding: 32px 24px;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        text-align: center;
+        border: 1px solid #e2e8f0;
+      ">
+        <div style="
+          width: 64px;
+          height: 64px;
+          background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+          border-radius: 50%;
+          margin: 0 auto 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 16px rgba(255,107,107,0.3);
+        ">
+          <i class="fas fa-exclamation-triangle" style="color: white; font-size: 24px;"></i>
+        </div>
+        
+        <h3 style="
+          color: #1a202c;
+          font-size: 24px;
+          font-weight: 700;
+          margin-bottom: 16px;
+          letter-spacing: -0.5px;
+        ">Analysis Could Not Be Completed</h3>
+        
+        <div style="
+          background: white;
+          padding: 24px;
+          border-radius: 12px;
+          margin: 24px 0;
+          border-left: 4px solid #ff6b6b;
+          text-align: left;
+        ">
+          <h4 style="
+            color: #2d3748;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          ">
+            <i class="fas fa-shield-alt" style="color: #ff6b6b;"></i>
+            Most Likely Cause: Website Protection
+          </h4>
+          <p style="
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            font-size: 14px;
+          ">
+            <strong>Your landing page URL appears to be blocking automated analysis.</strong><br>
+            This commonly happens when websites use anti-bot protection, Cloudflare security, or restrict access to analysis tools.
+          </p>
+          
+          <div style="
+            background: #f7fafc;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+          ">
+            <h5 style="
+              color: #2d3748;
+              font-size: 14px;
+              font-weight: 600;
+              margin-bottom: 12px;
+            ">Other possible causes:</h5>
+            <ul style="
+              color: #4a5568;
+              font-size: 13px;
+              line-height: 1.5;
+              margin: 0;
+              padding-left: 16px;
+            ">
+              <li>Website is temporarily offline or unreachable</li>
+              <li>URL requires login or authentication</li>
+              <li>Server maintenance or technical issues</li>
+              <li>Network connectivity problems</li>
+            </ul>
           </div>
-        `;
-      }
-    } finally {
+        </div>
+        
+        <div style="
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 20px;
+          border-radius: 12px;
+          margin: 24px 0;
+        ">
+          <h4 style="
+            margin: 0 0 12px 0;
+            font-size: 18px;
+            font-weight: 600;
+          ">💡 Recommended Solution</h4>
+          <p style="
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+          ">
+            Try analyzing a different landing page URL, or contact your website administrator to temporarily disable bot protection for analysis purposes.
+          </p>
+        </div>
+        
+        <div style="margin-top: 32px;">
+          <a href="https://landingfixai.com/#analyze-section" style="
+            display: inline-block;
+            background: linear-gradient(90deg, #0070ba 60%, #00c6a7 100%);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: 0 4px 16px rgba(0,112,186,0.3);
+            transition: all 0.3s ease;
+            margin-right: 12px;
+          " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0,112,186,0.4)'" 
+             onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 16px rgba(0,112,186,0.3)'">
+            <i class="fas fa-search" style="margin-right: 8px;"></i>
+            Try New Analysis
+          </a>
+          
+          <button onclick="window.location.reload()" style="
+            background: #718096;
+            color: white;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+          " onmouseover="this.style.background='#4a5568'" 
+             onmouseout="this.style.background='#718096'">
+            <i class="fas fa-redo" style="margin-right: 8px;"></i>
+            Retry
+          </button>
+        </div>
+        
+        <div style="
+          margin-top: 24px;
+          padding-top: 20px;
+          border-top: 1px solid #e2e8f0;
+        ">
+          <p style="
+            color: #718096;
+            font-size: 12px;
+            margin: 0;
+          ">
+            Error details: ${error.message}<br>
+            <span style="font-family: monospace;">[Error Code: ${error.status || 'NETWORK_ERROR'}]</span>
+          </p>
+        </div>
+      </div>
+    `;
+  }
+}finally {
       this.isLoading = false;
     }
   }
