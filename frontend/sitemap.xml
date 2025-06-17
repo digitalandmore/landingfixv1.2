@@ -1,27 +1,274 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset
-      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
-
-
-<url>
-  <loc>https://landingfixai.com/</loc>
-  <lastmod>2025-06-06T05:16:10+00:00</lastmod>
-  <priority>1.00</priority>
-</url>
-<url>
-  <loc>https://landingfixai.com/features.html</loc>
-  <lastmod>2025-06-06T05:16:09+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://landingfixai.com/version.html</loc>
-  <lastmod>2025-06-06T05:16:14+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-
-
-</urlset>
+<head>
+  <!-- Basic Meta Tags -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- SEO Essential Meta Tags -->
+  <title>LandingFix AI V1.2 Update: Smart Targeting & Advanced Analytics Revolution</title>
+  <meta name="description" content="Discover the revolutionary LandingFix AI V1.2 with Smart Focus Selection, Industry-Specific Intelligence, Predictive Impact Scoring, and advanced analytics for targeted optimization.">
+  <meta name="keywords" content="LandingFix AI V1.2 update, smart targeting, industry-specific intelligence, predictive analytics, landing page optimization, advanced AI features, conversion optimization">
+  <meta name="author" content="LandingFix AI">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://landingfixai.com/blog/landingfix-ai-v1-2-update.html">
+  
+  <!-- Open Graph Meta Tags for Social Media -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="LandingFix AI V1.2 Update: Smart Targeting & Advanced Analytics Revolution">
+  <meta property="og:description" content="Discover the revolutionary LandingFix AI V1.2 with Smart Focus Selection, Industry-Specific Intelligence, Predictive Impact Scoring, and advanced analytics.">
+  <meta property="og:url" content="https://landingfixai.com/blog/landingfix-ai-v1-2-update.html">
+  <meta property="og:site_name" content="LandingFix AI">
+  <meta property="og:image" content="https://landingfixai.com/blog/images/blog-update-v1-2.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2025-01-16T00:00:00Z">
+  <meta property="article:modified_time" content="2025-01-16T00:00:00Z">
+  <meta property="article:author" content="LandingFix AI">
+  <meta property="article:section" content="Product Updates">
+  <meta property="article:tag" content="V1.2">
+  <meta property="article:tag" content="Smart Targeting">
+  <meta property="article:tag" content="Analytics">
+  <meta property="article:tag" content="AI">
+  
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="LandingFix AI V1.2 Update: Smart Targeting & Advanced Analytics">
+  <meta name="twitter:description" content="Revolutionary V1.2 features: Smart Focus Selection, Industry Intelligence, and Predictive Impact Scoring for landing page optimization.">
+  <meta name="twitter:image" content="https://landingfixai.com/blog/images/blog-update-v1-2.jpg">
+  <meta name="twitter:creator" content="@landingfixai">
+  
+  <!-- Favicons and Apple Touch Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../images/apple-touch-icon.png">
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#0070ba">
+  
+  <!-- Preconnect for Performance Optimization -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://www.googletagmanager.com">
+  <link rel="preconnect" href="https://connect.facebook.net">
+  <link rel="preconnect" href="https://cdn.iubenda.com">
+  
+  <!-- External Stylesheets -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+  
+  <!-- Google Analytics (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N428QVWSBX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N428QVWSBX');
+  </script>
+  
+  <!-- Meta Pixel Code for Facebook Tracking -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '979745484240414');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=979745484240414&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
+  
+  <!-- Cookie Consent Banner -->
+  <script type="text/javascript">
+  var _iub = _iub || [];
+  _iub.csConfiguration = {"siteId":4047297,"cookiePolicyId":80028888,"lang":"en","storage":{"useSiteId":true}};
+  </script>
+  <script type="text/javascript" src="https://cs.iubenda.com/autoblocking/4047297.js"></script>
+  <script type="text/javascript" src="//cdn.iubenda.com/cs/gpp/stub.js"></script>
+  <script type="text/javascript" src="//cdn.iubenda.com/cs/iubenda_cs.js" charset="UTF-8" async></script>
+  <!-- End Cookie Banner -->
+  
+  <!-- Schema Markup for Blog Article -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "LandingFix AI V1.2 Update: Smart Targeting & Advanced Analytics Revolution",
+    "description": "Discover the revolutionary LandingFix AI V1.2 with Smart Focus Selection, Industry-Specific Intelligence, Predictive Impact Scoring, and advanced analytics for targeted optimization.",
+    "image": {
+      "@type": "ImageObject",
+      "url": "https://landingfixai.com/blog/images/blog-update-v1-2.jpg",
+      "width": 1200,
+      "height": 630
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "LandingFix AI",
+      "url": "https://landingfixai.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "LandingFix AI",
+      "url": "https://landingfixai.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://landingfixai.com/images/logo.png",
+        "width": 200,
+        "height": 60
+      }
+    },
+    "datePublished": "2025-01-16T00:00:00Z",
+    "dateModified": "2025-01-16T00:00:00Z",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://landingfixai.com/blog/landingfix-ai-v1-2-update.html"
+    },
+    "url": "https://landingfixai.com/blog/landingfix-ai-v1-2-update.html",
+    "keywords": "LandingFix AI, V1.2 update, smart targeting, industry intelligence, predictive analytics",
+    "articleSection": "Product Updates",
+    "wordCount": 650,
+    "about": {
+      "@type": "SoftwareApplication",
+      "name": "LandingFix AI V1.2",
+      "applicationCategory": "BusinessApplication",
+      "softwareVersion": "1.2"
+    },
+    "mentions": [
+      {
+        "@type": "Thing",
+        "name": "Smart Focus Selection",
+        "description": "5 specialized optimization areas for targeted analysis"
+      },
+      {
+        "@type": "Thing",
+        "name": "Industry-Specific Intelligence",
+        "description": "Tailored analysis for 6 different market sectors"
+      },
+      {
+        "@type": "Thing",
+        "name": "Predictive Impact Scoring",
+        "description": "AI-powered prediction of optimization impact"
+      }
+    ],
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://landingfixai.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Blog",
+          "item": "https://landingfixai.com/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "LandingFix AI V1.2 Update",
+          "item": "https://landingfixai.com/blog/landingfix-ai-v1-2-update.html"
+        }
+      ]
+    }
+  }
+  </script>
+  
+  <!-- Article Interaction Tracking -->
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      // Track article reading progress
+      let maxScroll = 0;
+      let readingStartTime = Date.now();
+      
+      window.addEventListener('scroll', function() {
+        const scrollPercent = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+        
+        if (scrollPercent > maxScroll) {
+          maxScroll = scrollPercent;
+          
+          // Track reading milestones
+          if (maxScroll >= 25 && maxScroll < 50) {
+            if (typeof gtag !== 'undefined') {
+              gtag('event', 'article_read_25', {
+                event_category: 'blog_engagement',
+                event_label: 'v1.2_update',
+                value: Math.round((Date.now() - readingStartTime) / 1000)
+              });
+            }
+          } else if (maxScroll >= 50 && maxScroll < 75) {
+            if (typeof gtag !== 'undefined') {
+              gtag('event', 'article_read_50', {
+                event_category: 'blog_engagement',
+                event_label: 'v1.2_update',
+                value: Math.round((Date.now() - readingStartTime) / 1000)
+              });
+            }
+          } else if (maxScroll >= 75) {
+            if (typeof gtag !== 'undefined') {
+              gtag('event', 'article_read_75', {
+                event_category: 'blog_engagement',
+                event_label: 'v1.2_update',
+                value: Math.round((Date.now() - readingStartTime) / 1000)
+              });
+            }
+            if (typeof fbq !== 'undefined') {
+              fbq('track', 'ViewContent', {
+                content_name: 'V1.2 Article Completed',
+                content_category: 'Blog Engagement'
+              });
+            }
+          }
+        }
+      });
+      
+      // Track CTA clicks with feature context
+      const ctaLinks = document.querySelectorAll('.header-cta-btn, .cta-link');
+      ctaLinks.forEach(link => {
+        link.addEventListener('click', function() {
+          if (typeof gtag !== 'undefined') {
+            gtag('event', 'blog_cta_click', {
+              event_category: 'conversion',
+              event_label: 'v1.2_update_to_analyzer',
+              value: 1
+            });
+          }
+          if (typeof fbq !== 'undefined') {
+            fbq('track', 'Lead', {
+              content_name: 'V1.2 Update CTA - Smart Targeting',
+              content_category: 'Blog Conversion',
+              value: 1.00,
+              currency: 'USD'
+            });
+          }
+        });
+      });
+      
+      // Track feature interest (hover on feature sections)
+      const featureSections = document.querySelectorAll('[style*="border-left:4px solid"]');
+      featureSections.forEach((section, index) => {
+        section.addEventListener('mouseenter', function() {
+          const featureNames = ['Smart Focus Selection', 'Industry Intelligence', 'Benchmark Analysis', 'Predictive Scoring'];
+          if (typeof gtag !== 'undefined') {
+            gtag('event', 'feature_interest', {
+              event_category: 'v1.2_features',
+              event_label: featureNames[index] || `feature_${index}`,
+              value: 1
+            });
+          }
+        });
+      });
+    });
+  </script>
+  
+  <!-- Scripts -->
+  <script src="../script.js"></script>
+</head>
