@@ -25,7 +25,7 @@ function setScore(level) {
       max = 6;
       details = `
         <h4>⚠️ Average Optimization</h4>
-        <p>Your page performs decently, but there’s clear room for improvement in layout, copy clarity, or conversion structure.</p>
+        <p>Your page performs decently, but there's clear room for improvement in layout, copy clarity, or conversion structure.</p>
         <p><strong>Suggestion:</strong> Focus on making your message stronger and streamlining the user journey.</p>
         <a href="/#analyze-section" class="cta-link">📈 Optimize your site →</a>
       `;
@@ -76,18 +76,37 @@ document.addEventListener('DOMContentLoaded', () => {
   function showLoaderAndFields() {
     if (!extraFields || extraFields.innerHTML.trim() !== "") return;
 
-    // Save URL in localStorage
+    // ✅ VALIDAZIONE URL REALE CON check-domain.js
     if (urlInput) {
       let url = urlInput.value.trim();
+      
+      // Auto-add protocol if missing
       if (url && !/^https?:\/\//i.test(url)) {
         url = 'https://' + url;
         urlInput.value = url;
       }
-      if (!urlInput.value.trim() || urlInput.value.trim() === 'https://') {
-        alert('Please enter a valid URL.');
-        return;
+      
+      // ✅ USA LA FUNZIONE REALE DA check-domain.js
+      if (typeof validateUrlForFrontend === 'function') {
+        const urlValidation = validateUrlForFrontend(url, extraFields);
+        if (urlValidation.shouldBlock) {
+          return; // Stop if validation fails
+        }
+        
+        // Use the validated/normalized URL
+        if (urlValidation.url) {
+          urlInput.value = urlValidation.url;
+          url = urlValidation.url;
+        }
+      } else {
+        // Fallback validation if check-domain.js not loaded
+        if (!url || url === 'https://') {
+          alert('Please enter a valid URL.');
+          return;
+        }
       }
-      localStorage.setItem('landingfix_temp_url', urlInput.value.trim());
+      
+      localStorage.setItem('landingfix_temp_url', url);
     }
 
     // Loader with steps
@@ -233,17 +252,67 @@ document.addEventListener('DOMContentLoaded', () => {
           const privacy = document.getElementById('privacyAccept').checked;
           const url = localStorage.getItem('landingfix_temp_url') || '';
 
-          if (!name || !email || !privacy || !industry) {
-            alert('Please fill all required fields and accept privacy.');
+          // ✅ VALIDAZIONI COMPLETE CON check-email.js REALE
+          
+          // Validate name
+          if (!name || name.length < 2) {
+            alert('Please enter your full name.');
+            document.getElementById('userName').focus();
             return;
           }
 
+          // ✅ USA LA FUNZIONE REALE DA check-email.js
+          let normalizedEmail = email;
+          if (typeof validateEmailForFrontend === 'function') {
+            const emailValidation = validateEmailForFrontend(email, extraFields);
+            if (emailValidation.shouldBlock) {
+              return; // Stop if email validation fails
+            }
+            normalizedEmail = emailValidation.email || email.toLowerCase();
+          } else {
+            // Fallback validation if check-email.js not loaded
+            if (!email || !email.includes('@')) {
+              alert('Please enter a valid email address.');
+              document.getElementById('userEmail').focus();
+              return;
+            }
+            normalizedEmail = email.toLowerCase();
+          }
+
+          // Validate focus
+          if (!focus) {
+            alert('Please select a focus area for your analysis.');
+            return;
+          }
+
+          // Validate industry
+          if (!industry) {
+            alert('Please select an industry from the dropdown.');
+            document.getElementById('userIndustry').focus();
+            return;
+          }
+
+          // Validate privacy
+          if (!privacy) {
+            alert('Please accept the Privacy Policy and Terms & Conditions.');
+            document.getElementById('privacyAccept').focus();
+            return;
+          }
+
+          console.log('✅ All frontend validations passed:', {
+            name: name,
+            email: normalizedEmail,
+            emailValid: true,
+            industry: industry,
+            focus: focus,
+            privacy: privacy,
+            hasGoals: goals.length > 0
+          });
+
          // Send to Brevo
-          const listId = 38;
-          
           const subscribeData = {
             name: name,          
-            email: email,
+            email: normalizedEmail, // Use normalized email
             company: company,
             url: url,
             goals: goals,
@@ -253,77 +322,145 @@ document.addEventListener('DOMContentLoaded', () => {
 
           async function sendToBrevo() {
             try {
+              console.log('📧 Sending to Brevo:', subscribeData);
+              
               const res = await fetch('https://landingfixv1-2.onrender.com/api/subscribe', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(subscribeData)  // ✅ USA IL NUOVO OGGETTO
+                body: JSON.stringify(subscribeData)
               });
-              const result = await res.json();
-              console.log('Subscribe API result:', result);
-
-              // Tracking events
-              if (typeof fbq === 'function') {
-                fbq('track', 'Lead');
-              }
-              if (typeof gtag === 'function') {
-                gtag('event', 'generate_lead');
-              }
-            } catch (err) {
-              console.error('Network error:', err);
               
-              // Still fire tracking events even if Brevo fails
-              if (typeof fbq === 'function') {
-                fbq('track', 'Lead');
+              console.log('📧 Brevo response status:', res.status);
+              
+              if (!res.ok) {
+                const errorData = await res.json();
+                console.error('📧 Brevo API error:', errorData);
+                
+                // Show specific error messages
+                if (errorData.error === 'Invalid email format') {
+                  alert('Please check your email address format.');
+                  document.getElementById('userEmail').focus();
+                  return false;
+                } else if (errorData.error === 'Industry is required') {
+                  alert('Please select an industry from the dropdown.');
+                  document.getElementById('userIndustry').focus();
+                  return false;
+                } else if (errorData.error === 'Name is required') {
+                  alert('Please enter your full name.');
+                  document.getElementById('userName').focus();
+                  return false;
+                } else {
+                  console.error('📧 Subscription failed, but continuing with report generation:', errorData);
+                }
+              } else {
+                const result = await res.json();
+                console.log('✅ Subscribe API result:', result);
               }
-              if (typeof gtag === 'function') {
-                gtag('event', 'generate_lead');
+
+              // ✅ TRACKING EVENTS CORRETTI
+              console.log('🎯 Firing conversion tracking events...');
+              
+              // Meta Pixel Lead event - CORRETTO
+              if (typeof fbq !== 'undefined' && fbq) {
+                fbq('track', 'Lead', {
+                  content_name: 'Landing Page Report',
+                  content_category: 'Analysis',
+                  value: 0.00,
+                  currency: 'USD'
+                });
+                console.log('✅ Meta Pixel Lead event fired');
+              } else {
+                console.warn('⚠️ Meta Pixel (fbq) not available');
               }
+              
+              // Google Analytics conversion
+              if (typeof gtag !== 'undefined' && gtag) {
+                gtag('event', 'generate_lead', {
+                  event_category: 'conversion',
+                  event_label: 'landing_page_report',
+                  value: 1
+                });
+                console.log('✅ Google Analytics Lead event fired');
+              } else {
+                console.warn('⚠️ Google Analytics (gtag) not available');
+              }
+              
+              return true;
+              
+            } catch (err) {
+              console.error('❌ Network error during Brevo subscription:', err);
+              
+              // ✅ FIRE TRACKING EVENTS ANCHE IN CASO DI ERRORE
+              console.log('🎯 Firing conversion tracking events (fallback)...');
+              
+              if (typeof fbq !== 'undefined' && fbq) {
+                fbq('track', 'Lead', {
+                  content_name: 'Landing Page Report',
+                  content_category: 'Analysis',
+                  value: 0.00,
+                  currency: 'USD'
+                });
+                console.log('✅ Meta Pixel Lead event fired (fallback)');
+              }
+              
+              if (typeof gtag !== 'undefined' && gtag) {
+                gtag('event', 'generate_lead', {
+                  event_category: 'conversion',
+                  event_label: 'landing_page_report',
+                  value: 1
+                });
+                console.log('✅ Google Analytics Lead event fired (fallback)');
+              }
+              
+              return true; // Don't block for network errors
             }
           }
 
-          // Execute Brevo subscription
-          sendToBrevo();
+          // Execute Brevo subscription and proceed only if successful
+          sendToBrevo().then(success => {
+            if (success !== false) {
+              // Add focus icons mapping
+              const focusIcons = {
+                'Copywriting': 'fa-pen-nib',
+                'UX/UI': 'fa-object-group', 
+                'Mobile': 'fa-mobile-alt',
+                'CTA': 'fa-bullseye',
+                'SEO': 'fa-magnifying-glass'
+              };
 
-          // Add focus icons mapping
-          const focusIcons = {
-            'Copywriting': 'fa-pen-nib',
-            'UX/UI': 'fa-object-group', 
-            'Mobile': 'fa-mobile-alt',
-            'CTA': 'fa-bullseye',
-            'SEO': 'fa-magnifying-glass'
-          };
+              // Industry full names mapping
+              const industryNames = {
+                'saas': 'SaaS / Software',
+                'ecommerce': 'E-commerce',
+                'services': 'Professional Services',
+                'coaching': 'Coaching / Training',
+                'local': 'Local Business',
+                'health': 'Health / Wellness',
+                'other': 'Other'
+              };
 
-          // Industry full names mapping
-          const industryNames = {
-            'saas': 'SaaS / Software',
-            'ecommerce': 'E-commerce',
-            'services': 'Professional Services',
-            'coaching': 'Coaching / Training',
-            'local': 'Local Business',
-            'health': 'Health / Wellness',
-            'other': 'Other'
-          };
+              localStorage.setItem('landingfix_report_data', JSON.stringify({
+                url: url,
+                name,
+                email: normalizedEmail, // Use normalized email
+                company,
+                goals,
+                focus,
+                focusIcon: focusIcons[focus] || 'fa-chart-line',
+                industry,
+                industryName: industryNames[industry] || industry,
+                reportType: 'detailed'
+              }));
 
-          localStorage.setItem('landingfix_report_data', JSON.stringify({
-            url: url,
-            name,
-            email,
-            company,
-            goals,
-            focus,
-            focusIcon: focusIcons[focus] || 'fa-chart-line',
-            industry,
-            industryName: industryNames[industry] || industry,
-            reportType: 'detailed'
-          }));
-
-          window.location.href = 'report.html';
+              window.location.href = 'report.html';
+            }
+          });
         });
       }
 
-    }, 1800); // <-- chiusura setTimeout, puoi regolare il tempo se vuoi
+    }, 1800);
   }
 
   // Mostra i campi extra quando serve
@@ -331,15 +468,29 @@ document.addEventListener('DOMContentLoaded', () => {
     urlForm.addEventListener('submit', function(e) {
       e.preventDefault();
       
-      // Fire tracking events for initial URL submission
-      // Google Analytics Contact event
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'contact');
+      // ✅ TRACKING EVENTS MIGLIORATI
+      console.log('🎯 Firing URL submission tracking events...');
+      
+      // Google Analytics
+      if (typeof gtag !== 'undefined' && gtag) {
+        gtag('event', 'contact', {
+          event_category: 'engagement',
+          event_label: 'url_submission'
+        });
+        console.log('✅ Google Analytics Contact event fired');
+      } else {
+        console.warn('⚠️ Google Analytics (gtag) not available');
       }
 
-      // Meta Pixel Contact event
-      if (typeof fbq !== 'undefined') {
-        fbq('track', 'Contact');
+      // Meta Pixel
+      if (typeof fbq !== 'undefined' && fbq) {
+        fbq('track', 'Contact', {
+          content_name: 'URL Analysis Start',
+          content_category: 'Engagement'
+        });
+        console.log('✅ Meta Pixel Contact event fired');
+      } else {
+        console.warn('⚠️ Meta Pixel (fbq) not available');
       }
 
       showLoaderAndFields();
